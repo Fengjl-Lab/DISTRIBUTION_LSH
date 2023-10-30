@@ -1,2 +1,0 @@
-/Users/chenjunhao/LSH/QALSH/cmake-build-debug/CMakeFiles/edit_cache.dir
-/Users/chenjunhao/LSH/QALSH/cmake-build-debug/CMakeFiles/rebuild_cache.dir
