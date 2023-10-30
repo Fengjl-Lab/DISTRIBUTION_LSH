@@ -11,7 +11,7 @@ assignees: ''
 feat(...):
 fix(...): 
 
-[] PR has added related test and pass all the test before.
-[] PR has supplied related documents.
+- [] PR has added related test and pass all the test before.
+- [] PR has supplied related documents.
 
 **Relative Resource**
