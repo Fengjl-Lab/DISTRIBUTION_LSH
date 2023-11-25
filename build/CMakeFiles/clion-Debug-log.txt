@@ -1,4 +1,0 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -D CMAKE_CXX_COMPILER=/usr/local/bin/g++-13 -D CMAKE_C_COMPILER=/usr/local/bin/gcc-13 -G Ninja -S /Users/chenjunhao/LSH/QALSH -B /Users/chenjunhao/LSH/QALSH/build
--- Configuring done (1.5s)
--- Generating done (0.2s)
--- Build files have been written to: /Users/chenjunhao/LSH/QALSH/build
