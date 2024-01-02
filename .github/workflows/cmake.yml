@@ -1,0 +1,39 @@
+name: CMake Build
+
+on:
+  push:
+    branches: *
+  pull_request:
+    branches: *
+
+env:
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+              name: "Ubuntu 22.0.4 GCC",
+              os: "ubuntu-22.04",
+              cc: "/usr/local/bin/gcc-13",
+              cxx: "/usr/local/bin/g++-13",
+              format: "/usr/bin/clang-format-14",
+              tidy: "/usr/bin/clang-tidy-14",
+          }
+          - {
+              name: "macOS 14 (Sonoma)",
+              os: macos-14,
+              cc: "/usr/local/bin/gcc-13",
+              cxx: "/usr/local/bin/g++-13",
+              format: "/usr/local/opt/llvm@14/bin/clang-format",
+              tidy: "/usr/local/opt/llvm@14/bin/clang-tidy",
+          }
+
+    steps:
+      - uses: action/checkout@v2

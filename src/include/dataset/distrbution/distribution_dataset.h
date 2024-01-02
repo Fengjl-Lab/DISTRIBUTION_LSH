@@ -1,8 +1,30 @@
+//===----------------------------------------------------
+//                          QALSH
+// Created by chenjunhao on 2023/12/24.
+// src/include/dataset/distribution/distribution_dataset.h
 //
-// Created by 陈俊皓 on 2023/12/24.
-//
+//===-----------------------------------------------------
 
-#ifndef QALSH_REFACTOR_VERSION_DISTRIBUTION_DATASET_H
-#define QALSH_REFACTOR_VERSION_DISTRIBUTION_DATASET_H
+#pragma once
+#include <fstream>
+#include <mutex>
 
-#endif //QALSH_REFACTOR_VERSION_DISTRIBUTION_DATASET_H
+namespace qalsh {
+
+    template<typename type>
+    class DistributionDataSet {
+    public:
+        DistributionDataSet() = delete;
+
+    private:
+        // Dimension of the data
+        size_t dimension_;
+        // Number of data
+        size_t n_;
+        // File to write-in
+        std::fstream data_file_;
+        std::string file_name_;
+        // Protect data access
+        std::mutex data_latch_;
+    };
+} // namespace qalsh

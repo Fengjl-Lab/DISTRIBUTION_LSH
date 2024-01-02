@@ -1,3 +1,16 @@
+# judge the system
+if (UNIX)
+    if(APPLE)
+        add_definitions(-D__APPLE__)
+    elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
+        add_definitions(-D__LINUX__)
+    else ()
+        message(FATAL_ERROR "Unsupported operating system")
+    endif ()
+else()
+    message(FATAL_ERROR "Unsupported operating system")
+endif ()
+
 file(GLOB_RECURSE QALSH_sources ${PROJECT_SOURCE_DIR}/src/*/*.cpp)
 file(GLOB_RECURSE QALSH_headers ${PROJECT_SOURCE_DIR}/src/include/*.h)
 add_library(QALSH_static STATIC ${QALSH_sources} ${QALSH_headers})
@@ -12,5 +25,8 @@ target_include_directories(QALSH_static PUBLIC
         $<INSTALL_INTERFACE:include>
 )
 
-add_executable(QALSH main.cpp)
-target_link_libraries(QALSH PUBLIC QALSH_shared)
+add_executable(QALSH_monitor monitor.cpp)
+target_link_libraries(QALSH_monitor PUBLIC QALSH_static fmt)
+
+add_executable(QALSH_main main.cpp)
+target_link_libraries(QALSH_main PUBLIC QALSH_static fmt)

@@ -4,13 +4,13 @@
 
 #include <metric/io_monitor.h>
 
-int main() {
-    std::string processName = "test_io.o";
-    QALSH::IOMonitor monitor(60);
-    monitor.StartMonitoring(processName);
+auto main() -> int {
+    std::string process_name = "gen_distribution";
+    qalsh::IOMonitor monitor(60, 60, 5);
+    monitor.StartMonitoring(process_name);
 
-    std::chrono::seconds sleepDuration(100);
-    std::this_thread::sleep_for(sleepDuration);
+    std::chrono::seconds sleep_duration(120);
+    std::this_thread::sleep_for(sleep_duration);
 
     monitor.StopMonitoring();
     return 0;

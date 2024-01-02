@@ -1,5 +1,8 @@
+# build folder
 cmake-build-debug/
+build/
 
+# system folder
 .idea/
 .vscode/
 .DS_Store

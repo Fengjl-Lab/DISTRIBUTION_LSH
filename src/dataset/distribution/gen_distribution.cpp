@@ -8,16 +8,17 @@
 #include <algorithm>
 #include <stdexcept>
 #include <omp.h>
+#include <dataset/distrbution/distribution_dataset.h>
 
 template<typename T>
 class GenerateDistribution {
 private:
-    int dimension;
+    int dimension_;
     size_t numberOfDistribution;
 
 public:
     GenerateDistribution() = delete;
-    GenerateDistribution(int dimension, size_t numberOfDistribution) : dimension(dimension), numberOfDistribution(numberOfDistribution) {}
+    GenerateDistribution(int dimension, size_t numberOfDistribution) : dimension_(dimension), numberOfDistribution(numberOfDistribution) {}
 
 
     std::vector<std::vector<T>> generate() {
@@ -31,7 +32,7 @@ public:
         static std::random_device rd;
         static std::default_random_engine generator(rd());
 
-        std::vector<std::vector<value_type >> data(numberOfDistribution, std::vector<value_type >(dimension));
+        std::vector<std::vector<value_type >> data(numberOfDistribution, std::vector<value_type >(dimension_));
         for(auto i = 0; i< numberOfDistribution; i++) {
             std::generate(data[i].begin(), data[i].end(), []() { return distribution(generator); });
             normalize(data[i]);
