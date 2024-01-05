@@ -30,7 +30,7 @@
 //
 // Tests for Google Test itself. This file verifies that the parameter
 // generators objects produce correct parameter sequences and that
-// Google Test runtime instantiates correct tests from those sequences.
+// Google Test runtime instantiates correct test from those sequences.
 
 #include "test/googletest-param-test-test.h"
 
@@ -125,7 +125,7 @@ void VerifyGeneratorIsEmpty(const ParamGenerator<T>& generator) {
   EXPECT_TRUE(it == generator.end());
 }
 
-// Generator tests. They test that each of the provided generator functions
+// Generator test. They test that each of the provided generator functions
 // generates an expected sequence of values. The general test pattern
 // instantiates a generator using one of the generator functions,
 // checks the sequence produced by the generator using its iterator API,
@@ -594,7 +594,7 @@ TEST(ParamGeneratorTest, AssignmentWorks) {
   VerifyGenerator(gen, expected_values);
 }
 
-// This test verifies that the tests are expanded and run as specified:
+// This test verifies that the test are expanded and run as specified:
 // one test per element from the sequence produced by the generator
 // specified in INSTANTIATE_TEST_SUITE_P. It also verifies that the test's
 // fixture constructor, SetUp(), and TearDown() have run and have been
@@ -602,7 +602,7 @@ TEST(ParamGeneratorTest, AssignmentWorks) {
 
 // The use of environment object allows detection of the case where no test
 // case functionality is run at all. In this case TearDownTestSuite will not
-// be able to detect missing tests, naturally.
+// be able to detect missing test, naturally.
 template <int kExpectedCalls>
 class TestGenerationEnvironment : public ::testing::Environment {
  public:
@@ -617,7 +617,7 @@ class TestGenerationEnvironment : public ::testing::Environment {
   void TestBodyExecuted() { test_body_count_++; }
 
   void TearDown() override {
-    // If all MultipleTestGenerationTest tests have been de-selected
+    // If all MultipleTestGenerationTest test have been de-selected
     // by the filter flag, the following checks make no sense.
     bool perform_check = false;
 
@@ -700,10 +700,10 @@ class TestGenerationTest : public TestWithParam<int> {
       }
     }
     EXPECT_TRUE(all_tests_in_test_case_selected)
-        << "When running the TestGenerationTest test case all of its tests\n"
+        << "When running the TestGenerationTest test case all of its test\n"
         << "must be selected by the filter flag for the test case to pass.\n"
         << "If not all of them are enabled, we can't reliably conclude\n"
-        << "that the correct number of tests have been generated.";
+        << "that the correct number of test have been generated.";
 
     collected_parameters_.clear();
   }
@@ -810,7 +810,7 @@ class SeparateInstanceTest : public TestWithParam<int> {
 
   static void TearDownTestSuite() {
     EXPECT_GE(global_count_, 2)
-        << "If some (but not all) SeparateInstanceTest tests have been "
+        << "If some (but not all) SeparateInstanceTest test have been "
         << "filtered out this test will fail. Make sure that all "
         << "GeneratorEvaluationTest are selected or de-selected together "
         << "by the test filter.";
@@ -866,7 +866,7 @@ TEST_P(PREFIX_WITH_MACRO(NamingTest), PREFIX_WITH_FOO(SomeTestName)) {
 
 INSTANTIATE_TEST_SUITE_P(FortyTwo, MacroNamingTest, Values(42));
 
-// Tests the same thing for non-parametrized tests.
+// Tests the same thing for non-parametrized test.
 class MacroNamingTestNonParametrized : public ::testing::Test {};
 
 TEST_F(PREFIX_WITH_MACRO(NamingTestNonParametrized),
@@ -1074,7 +1074,7 @@ INSTANTIATE_TEST_SUITE_P(InstantiationWithComments, CommentTest,
 // Verify that we can create a hierarchy of test fixtures, where the base
 // class fixture is not parameterized and the derived class is. In this case
 // ParameterizedDerivedTest inherits from NonParameterizedBaseTest.  We
-// perform simple tests on both.
+// perform simple test on both.
 class NonParameterizedBaseTest : public ::testing::Test {
  public:
   NonParameterizedBaseTest() : n_(17) {}
@@ -1159,13 +1159,13 @@ int main(int argc, char** argv) {
   // Used in TestGenerationTest test suite.
   AddGlobalTestEnvironment(TestGenerationTest::Environment::Instance());
   // Used in GeneratorEvaluationTest test suite. Tests that the updated value
-  // will be picked up for instantiating tests in GeneratorEvaluationTest.
+  // will be picked up for instantiating test in GeneratorEvaluationTest.
   GeneratorEvaluationTest::set_param_value(1);
 
   ::testing::InitGoogleTest(&argc, argv);
 
   // Used in GeneratorEvaluationTest test suite. Tests that value updated
-  // here will NOT be used for instantiating tests in
+  // here will NOT be used for instantiating test in
   // GeneratorEvaluationTest.
   GeneratorEvaluationTest::set_param_value(2);
 

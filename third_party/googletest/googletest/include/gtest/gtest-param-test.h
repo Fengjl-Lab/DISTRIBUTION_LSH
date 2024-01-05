@@ -27,7 +27,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Macros and functions for implementing parameterized tests
+// Macros and functions for implementing parameterized test
 // in Google C++ Testing and Mocking Framework (Google Test)
 
 // IWYU pragma: private, include "gtest/gtest.h"
@@ -37,14 +37,14 @@
 #ifndef GOOGLETEST_INCLUDE_GTEST_GTEST_PARAM_TEST_H_
 #define GOOGLETEST_INCLUDE_GTEST_GTEST_PARAM_TEST_H_
 
-// Value-parameterized tests allow you to test your code with different
+// Value-parameterized test allow you to test your code with different
 // parameters without writing multiple copies of the same test.
 //
-// Here is how you use value-parameterized tests:
+// Here is how you use value-parameterized test:
 
 #if 0
 
-// To write value-parameterized tests, first you should define a fixture
+// To write value-parameterized test, first you should define a fixture
 // class. It is usually derived from testing::TestWithParam<T> (see below for
 // another inheritance scheme that's sometimes useful in more complicated
 // class hierarchies), where the type of your parameter values.
@@ -56,7 +56,7 @@ class FooTest : public ::testing::TestWithParam<const char*> {
   // You can implement all the usual class fixture members here.
 };
 
-// Then, use the TEST_P macro to define as many parameterized tests
+// Then, use the TEST_P macro to define as many parameterized test
 // for this fixture as you want. The _P suffix is for "parameterized"
 // or "pattern", whichever you prefer to think.
 
@@ -92,7 +92,7 @@ TEST_P(FooTest, HasBlahBlah) {
 // For more details, see comments at the definitions of these functions below
 // in this file.
 //
-// The following statement will instantiate tests from the FooTest test suite
+// The following statement will instantiate test from the FooTest test suite
 // each with parameter values "meeny", "miny", and "moe".
 
 INSTANTIATE_TEST_SUITE_P(InstantiationName,
@@ -103,7 +103,7 @@ INSTANTIATE_TEST_SUITE_P(InstantiationName,
 // can instantiate it more than once) the first argument to the
 // INSTANTIATE_TEST_SUITE_P macro is a prefix that will be added to the
 // actual test suite name. Remember to pick unique prefixes for different
-// instantiations. The tests from the instantiation above will have
+// instantiations. The test from the instantiation above will have
 // these names:
 //
 //    * InstantiationName/FooTest.DoesBlah/0 for "meeny"
@@ -115,28 +115,28 @@ INSTANTIATE_TEST_SUITE_P(InstantiationName,
 //
 // You can use these names in --gtest_filter.
 //
-// This statement will instantiate all tests from FooTest again, each
+// This statement will instantiate all test from FooTest again, each
 // with parameter values "cat" and "dog":
 
 const char* pets[] = {"cat", "dog"};
 INSTANTIATE_TEST_SUITE_P(AnotherInstantiationName, FooTest, ValuesIn(pets));
 
-// The tests from the instantiation above will have these names:
+// The test from the instantiation above will have these names:
 //
 //    * AnotherInstantiationName/FooTest.DoesBlah/0 for "cat"
 //    * AnotherInstantiationName/FooTest.DoesBlah/1 for "dog"
 //    * AnotherInstantiationName/FooTest.HasBlahBlah/0 for "cat"
 //    * AnotherInstantiationName/FooTest.HasBlahBlah/1 for "dog"
 //
-// Please note that INSTANTIATE_TEST_SUITE_P will instantiate all tests
+// Please note that INSTANTIATE_TEST_SUITE_P will instantiate all test
 // in the given test suite, whether their definitions come before or
 // AFTER the INSTANTIATE_TEST_SUITE_P statement.
 //
 // Please also note that generator expressions (including parameters to the
 // generators) are evaluated in InitGoogleTest(), after main() has started.
 // This allows the user on one hand, to adjust generator parameters in order
-// to dynamically determine a set of tests to run and on the other hand,
-// give the user a chance to inspect the generated tests with Google Test
+// to dynamically determine a set of test to run and on the other hand,
+// give the user a chance to inspect the generated test with Google Test
 // reflection API before RUN_ALL_TESTS() is executed.
 //
 // You can see samples/sample7_unittest.cc and samples/sample8_unittest.cc
@@ -186,11 +186,11 @@ namespace testing {
 // Functions producing parameter generators.
 //
 // Google Test uses these generators to produce parameters for value-
-// parameterized tests. When a parameterized test suite is instantiated
-// with a particular generator, Google Test creates and runs tests
+// parameterized test. When a parameterized test suite is instantiated
+// with a particular generator, Google Test creates and runs test
 // for each element in the sequence produced by the generator.
 //
-// In the following sample, tests from test suite FooTest are instantiated
+// In the following sample, test from test suite FooTest are instantiated
 // each three times with parameter values 3, 5, and 8:
 //
 // class FooTest : public TestWithParam<int> { ... };
@@ -236,7 +236,7 @@ internal::ParamGenerator<T> Range(T start, T end) {
   return Range(start, end, 1);
 }
 
-// ValuesIn() function allows generation of tests with parameters coming from
+// ValuesIn() function allows generation of test with parameters coming from
 // a container.
 //
 // Synopsis:
@@ -252,17 +252,17 @@ internal::ParamGenerator<T> Range(T start, T end) {
 //     iterators can also be plain C pointers.
 //
 // Please note that ValuesIn copies the values from the containers
-// passed in and keeps them to generate tests in RUN_ALL_TESTS().
+// passed in and keeps them to generate test in RUN_ALL_TESTS().
 //
 // Examples:
 //
-// This instantiates tests from test suite StringTest
+// This instantiates test from test suite StringTest
 // each with C-string values of "foo", "bar", and "baz":
 //
 // const char* strings[] = {"foo", "bar", "baz"};
 // INSTANTIATE_TEST_SUITE_P(StringSequence, StringTest, ValuesIn(strings));
 //
-// This instantiates tests from test suite StlStringTest
+// This instantiates test from test suite StlStringTest
 // each with STL strings with values "a" and "b":
 //
 // ::std::vector< ::std::string> GetParameterStrings() {
@@ -277,7 +277,7 @@ internal::ParamGenerator<T> Range(T start, T end) {
 //                          ValuesIn(GetParameterStrings()));
 //
 //
-// This will also instantiate tests from CharTest
+// This will also instantiate test from CharTest
 // each with parameter values 'a' and 'b':
 //
 // ::std::list<char> GetParameterChars() {
@@ -311,21 +311,21 @@ internal::ParamGenerator<typename Container::value_type> ValuesIn(
   return ValuesIn(container.begin(), container.end());
 }
 
-// Values() allows generating tests from explicitly specified list of
+// Values() allows generating test from explicitly specified list of
 // parameters.
 //
 // Synopsis:
 // Values(T v1, T v2, ..., T vN)
 //   - returns a generator producing sequences with elements v1, v2, ..., vN.
 //
-// For example, this instantiates tests from test suite BarTest each
+// For example, this instantiates test from test suite BarTest each
 // with values "one", "two", and "three":
 //
 // INSTANTIATE_TEST_SUITE_P(NumSequence,
 //                          BarTest,
 //                          Values("one", "two", "three"));
 //
-// This instantiates tests from test suite BazTest each with values 1, 2, 3.5.
+// This instantiates test from test suite BazTest each with values 1, 2, 3.5.
 // The exact type of values will depend on the type of parameter in BazTest.
 //
 // INSTANTIATE_TEST_SUITE_P(FloatingNumbers, BazTest, Values(1, 2, 3.5));
@@ -336,7 +336,7 @@ internal::ValueArray<T...> Values(T... v) {
   return internal::ValueArray<T...>(std::move(v)...);
 }
 
-// Bool() allows generating tests with parameters in a set of (false, true).
+// Bool() allows generating test with parameters in a set of (false, true).
 //
 // Synopsis:
 // Bool()
@@ -346,7 +346,7 @@ internal::ValueArray<T...> Values(T... v) {
 // of multiple flags can be tested when several Bool()'s are combined using
 // Combine() function.
 //
-// In the following example all tests in the test suite FlagDependentTest
+// In the following example all test in the test suite FlagDependentTest
 // will be instantiated twice with parameters false and true.
 //
 // class FlagDependentTest : public testing::TestWithParam<bool> {
@@ -371,7 +371,7 @@ inline internal::ParamGenerator<bool> Bool() { return Values(false, true); }
 //
 // Example:
 //
-// This will instantiate tests in test suite AnimalTest each one with
+// This will instantiate test in test suite AnimalTest each one with
 // the parameter values tuple("cat", BLACK), tuple("cat", WHITE),
 // tuple("dog", BLACK), and tuple("dog", WHITE):
 //
@@ -385,7 +385,7 @@ inline internal::ParamGenerator<bool> Bool() { return Values(false, true); }
 //                          Combine(Values("cat", "dog"),
 //                                  Values(BLACK, WHITE)));
 //
-// This will instantiate tests in FlagDependentTest with all variations of two
+// This will instantiate test in FlagDependentTest with all variations of two
 // Boolean flags:
 //
 // class FlagDependentTest
@@ -420,7 +420,7 @@ internal::CartesianProductHolder<Generator...> Combine(const Generator&... g) {
 //
 // Example:
 //
-// This will instantiate tests in test suite AnimalTest each one with
+// This will instantiate test in test suite AnimalTest each one with
 // the parameter values tuple("cat", BLACK), tuple("cat", WHITE),
 // tuple("dog", BLACK), and tuple("dog", WHITE):
 //

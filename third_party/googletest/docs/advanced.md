@@ -292,7 +292,7 @@ TEST(SkipTest, DoesSkip) {
 class SkipFixture : public ::testing::Test {
  protected:
   void SetUp() override {
-    GTEST_SKIP() << "Skipping all tests for this fixture";
+    GTEST_SKIP() << "Skipping all test for this fixture";
   }
 };
 
@@ -956,7 +956,7 @@ class FooTest : public testing::Test {
   // You can define per-test tear-down logic as usual.
   void TearDown() override { ... }
 
-  // Some expensive resource shared by all tests.
+  // Some expensive resource shared by all test.
   static T* shared_resource_;
 };
 

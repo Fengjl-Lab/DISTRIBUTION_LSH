@@ -29,7 +29,7 @@
 
 // Google Mock - a framework for writing C++ mock classes.
 //
-// This file tests the spec builder syntax.
+// This file test the spec builder syntax.
 
 #include "gmock/gmock-spec-builders.h"
 
@@ -185,7 +185,7 @@ TEST(ExpectCallSyntaxTest, WorksWithMethodNameExpandedFromMacro) {
   EXPECT_EQ(42, cc.Method());
 }
 
-#undef Method  // Done with macro redefinition tests.
+#undef Method  // Done with macro redefinition test.
 
 // Tests that ON_CALL evaluates its arguments exactly once as promised
 // by Google Mock.
@@ -974,7 +974,7 @@ TEST(UnexpectedCallTest, DoesDefaultAction) {
 // Tests that when an unexpected void function generates the right
 // failure message.
 TEST(UnexpectedCallTest, GeneratesFailureForVoidFunction) {
-  // First, tests the message when there is only one EXPECT_CALL().
+  // First, test the message when there is only one EXPECT_CALL().
   MockA a1;
   EXPECT_CALL(a1, DoA(1));
   a1.DoA(1);
@@ -993,7 +993,7 @@ TEST(UnexpectedCallTest, GeneratesFailureForVoidFunction) {
       "         Expected: to be called once\n"
       "           Actual: called once - saturated and active");
 
-  // Next, tests the message when there are more than one EXPECT_CALL().
+  // Next, test the message when there are more than one EXPECT_CALL().
   MockA a2;
   EXPECT_CALL(a2, DoA(1));
   EXPECT_CALL(a2, DoA(3));
@@ -1866,7 +1866,7 @@ TEST(ExpectationBaseTest,
   EXPECT_NONFATAL_FAILURE(delete a, "to be called even number of times");
 }
 
-// The following tests verify the message generated when a mock
+// The following test verify the message generated when a mock
 // function is called.
 
 struct Printable {};
@@ -2591,7 +2591,7 @@ TEST(ParameterlessExpectationsTest,
 
 int main(int argc, char** argv) {
   testing::InitGoogleMock(&argc, argv);
-  // Ensures that the tests pass no matter what value of
+  // Ensures that the test pass no matter what value of
   // --gmock_catch_leaked_mocks and --gmock_verbose the user specifies.
   GMOCK_FLAG_SET(catch_leaked_mocks, true);
   GMOCK_FLAG_SET(verbose, testing::internal::kWarningVerbosity);

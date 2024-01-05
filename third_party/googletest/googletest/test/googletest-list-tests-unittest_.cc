@@ -29,9 +29,9 @@
 
 // Unit test for Google Test's --gtest_list_tests flag.
 //
-// A user can ask Google Test to list all tests that will run
+// A user can ask Google Test to list all test that will run
 // so that when using a filter, a user will know what
-// tests to look for. The tests will not be run after listing.
+// test to look for. The test will not be run after listing.
 //
 // This program will be invoked from a Python unit test.
 // Don't run it directly.
@@ -41,7 +41,7 @@
 
 #include "gtest/gtest.h"
 
-// Several different test cases and tests that will be listed.
+// Several different test cases and test that will be listed.
 TEST(Foo, Bar1) {}
 
 TEST(Foo, Bar2) {}
@@ -64,7 +64,7 @@ TEST_F(FooTest, Test3) {}
 
 TEST(FooDeathTest, Test1) {}
 
-// A group of value-parameterized tests.
+// A group of value-parameterized test.
 
 class MyType {
  public:
@@ -96,7 +96,7 @@ INSTANTIATE_TEST_SUITE_P(
                "ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
                "ooooong line")));  // NOLINT
 
-// A group of typed tests.
+// A group of typed test.
 
 // A deliberately long type name for testing the line-truncating
 // behavior when printing a type parameter.
@@ -121,7 +121,7 @@ TYPED_TEST(TypedTest, TestA) {}
 
 TYPED_TEST(TypedTest, TestB) {}
 
-// A group of type-parameterized tests.
+// A group of type-parameterized test.
 
 template <typename T>
 class TypeParamTest : public testing::Test {};

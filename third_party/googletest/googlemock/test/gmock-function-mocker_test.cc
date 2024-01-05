@@ -29,7 +29,7 @@
 
 // Google Mock - a framework for writing C++ mock classes.
 //
-// This file tests the function mocker classes.
+// This file test the function mocker classes.
 #include "gmock/gmock-function-mocker.h"
 
 // Silence C4503 (decorated name length exceeded) for MSVC.

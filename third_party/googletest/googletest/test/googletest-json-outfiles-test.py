@@ -40,7 +40,7 @@ GTEST_OUTPUT_1_TEST = 'gtest_xml_outfile1_test_'
 GTEST_OUTPUT_2_TEST = 'gtest_xml_outfile2_test_'
 
 EXPECTED_1 = {
-    'tests': 1,
+    'test': 1,
     'failures': 0,
     'disabled': 0,
     'errors': 0,
@@ -49,7 +49,7 @@ EXPECTED_1 = {
     'name': 'AllTests',
     'testsuites': [{
         'name': 'PropertyOne',
-        'tests': 1,
+        'test': 1,
         'failures': 0,
         'disabled': 0,
         'errors': 0,
@@ -72,7 +72,7 @@ EXPECTED_1 = {
 }
 
 EXPECTED_2 = {
-    'tests': 1,
+    'test': 1,
     'failures': 0,
     'disabled': 0,
     'errors': 0,
@@ -81,7 +81,7 @@ EXPECTED_2 = {
     'name': 'AllTests',
     'testsuites': [{
         'name': 'PropertyTwo',
-        'tests': 1,
+        'test': 1,
         'failures': 0,
         'disabled': 0,
         'errors': 0,

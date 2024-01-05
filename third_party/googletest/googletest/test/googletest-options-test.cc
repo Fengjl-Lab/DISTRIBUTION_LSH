@@ -27,9 +27,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Google Test UnitTestOptions tests
+// Google Test UnitTestOptions test
 //
-// This file tests classes and functions used internally by
+// This file test classes and functions used internally by
 // Google Test.  They are subject to change without notice.
 //
 // This file is #included from gtest.cc, to avoid changing build or

@@ -663,7 +663,7 @@ void ThreadLocalRegistry::OnThreadLocalDestroyed(
 
 #ifdef GTEST_USES_POSIX_RE
 
-// Implements RE.  Currently only needed for death tests.
+// Implements RE.  Currently only needed for death test.
 
 RE::~RE() {
   if (is_valid_) {

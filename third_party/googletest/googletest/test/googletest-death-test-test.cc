@@ -28,7 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Tests for death tests.
+// Tests for death test.
 
 #include "gtest/gtest-death-test.h"
 #include "gtest/gtest.h"
@@ -114,7 +114,7 @@ void DieWithMessage(const ::std::string& message) {
   // We call _exit() instead of exit(), as the former is a direct
   // system call and thus safer in the presence of threads.  exit()
   // will invoke user-defined exit-hooks, which may do dangerous
-  // things that conflict with death tests.
+  // things that conflict with death test.
   //
   // Some compilers can recognize that _exit() never returns and issue the
   // 'unreachable code' warning for code following this function, unless
@@ -126,7 +126,7 @@ void DieInside(const ::std::string& function) {
   DieWithMessage("death inside " + function + "().");
 }
 
-// Tests that death tests work.
+// Tests that death test work.
 
 class TestForDeathTest : public testing::Test {
  protected:
@@ -297,7 +297,7 @@ TEST(ExitStatusPredicateTest, KilledBySignal) {
 
 #endif  // GTEST_OS_WINDOWS || GTEST_OS_FUCHSIA
 
-// The following code intentionally tests a suboptimal syntax.
+// The following code intentionally test a suboptimal syntax.
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdangling-else"
@@ -365,7 +365,7 @@ TEST_F(TestForDeathTest, MemberFunctionFastStyle) {
 
 void ChangeToRootDir() { posix::ChDir(GTEST_PATH_SEP_); }
 
-// Tests that death tests work even if the current directory has been
+// Tests that death test work even if the current directory has been
 // changed.
 TEST_F(TestForDeathTest, FastDeathTestInChangedDir) {
   GTEST_FLAG_SET(death_test_style, "fast");
@@ -412,7 +412,7 @@ void DisableSigprofActionAndTimer(struct sigaction* old_signal_action) {
   ASSERT_EQ(0, sigaction(SIGPROF, &signal_action, old_signal_action));
 }
 
-// Tests that death tests work when SIGPROF handler and timer are set.
+// Tests that death test work when SIGPROF handler and timer are set.
 TEST_F(TestForDeathTest, FastSigprofActionSet) {
   GTEST_FLAG_SET(death_test_style, "fast");
   SetSigprofActionAndTimer();
@@ -432,7 +432,7 @@ TEST_F(TestForDeathTest, ThreadSafeSigprofActionSet) {
 }
 #endif  // GTEST_OS_LINUX
 
-// Repeats a representative sample of death tests in the "threadsafe" style:
+// Repeats a representative sample of death test in the "threadsafe" style:
 
 TEST_F(TestForDeathTest, StaticMemberFunctionThreadsafeStyle) {
   GTEST_FLAG_SET(death_test_style, "threadsafe");
@@ -529,7 +529,7 @@ TEST_F(TestForDeathTest, FunctionWithParameter) {
 // Tests that ASSERT_DEATH can be used outside a TEST, TEST_F, or test fixture.
 TEST_F(TestForDeathTest, OutsideFixture) { DeathTestSubroutine(); }
 
-// Tests that death tests can be done inside a loop.
+// Tests that death test can be done inside a loop.
 TEST_F(TestForDeathTest, InsideLoop) {
   for (int i = 0; i < 5; i++) {
     EXPECT_DEATH(DieIfLessThan(-1, i), "DieIfLessThan") << "where i == " << i;
@@ -601,13 +601,13 @@ TEST_F(TestForDeathTest, SingleEvaluation) {
   EXPECT_EQ(regex_save + 1, regex);
 }
 
-// Tests that run-away death tests are reported as failures.
+// Tests that run-away death test are reported as failures.
 TEST_F(TestForDeathTest, RunawayIsFailure) {
   EXPECT_NONFATAL_FAILURE(EXPECT_DEATH(static_cast<void>(0), "Foo"),
                           "failed to die.");
 }
 
-// Tests that death tests report executing 'return' in the statement as
+// Tests that death test report executing 'return' in the statement as
 // failure.
 TEST_F(TestForDeathTest, ReturnIsFailure) {
   EXPECT_FATAL_FAILURE(ASSERT_DEATH(return, "Bar"),
@@ -1311,7 +1311,7 @@ TEST(EnvironmentTest, HandleFitsIntoSizeT) {
 #endif  // GTEST_OS_WINDOWS
 
 // Tests that EXPECT_DEATH_IF_SUPPORTED/ASSERT_DEATH_IF_SUPPORTED trigger
-// failures when death tests are available on the system.
+// failures when death test are available on the system.
 TEST(ConditionalDeathMacrosDeathTest, ExpectsDeathWhenDeathTestsAvailable) {
   EXPECT_DEATH_IF_SUPPORTED(DieInside("CondDeathTestExpectMacro"),
                             "death inside CondDeathTestExpectMacro");
@@ -1354,7 +1354,7 @@ void DieWithMessage(const char* message) {
 }
 
 TEST(MatcherDeathTest, DoesNotBreakBareRegexMatching) {
-  // googletest tests this, of course; here we ensure that including googlemock
+  // googletest test this, of course; here we ensure that including googlemock
   // has not broken it.
 #ifdef GTEST_USES_POSIX_RE
   EXPECT_DEATH(DieWithMessage("O, I die, Horatio."), "I d[aeiou]e");
@@ -1398,16 +1398,16 @@ using testing::internal::CaptureStderr;
 using testing::internal::GetCapturedStderr;
 
 // Tests that EXPECT_DEATH_IF_SUPPORTED/ASSERT_DEATH_IF_SUPPORTED are still
-// defined but do not trigger failures when death tests are not available on
+// defined but do not trigger failures when death test are not available on
 // the system.
 TEST(ConditionalDeathMacrosTest, WarnsWhenDeathTestsNotAvailable) {
   // Empty statement will not crash, but that should not trigger a failure
-  // when death tests are not supported.
+  // when death test are not supported.
   CaptureStderr();
   EXPECT_DEATH_IF_SUPPORTED(;, "");
   std::string output = GetCapturedStderr();
   ASSERT_TRUE(NULL != strstr(output.c_str(),
-                             "Death tests are not supported on this platform"));
+                             "Death test are not supported on this platform"));
   ASSERT_TRUE(NULL != strstr(output.c_str(), ";"));
 
   // The streamed message should not be printed as there is no test failure.
@@ -1420,7 +1420,7 @@ TEST(ConditionalDeathMacrosTest, WarnsWhenDeathTestsNotAvailable) {
   ASSERT_DEATH_IF_SUPPORTED(;, "");  // NOLINT
   output = GetCapturedStderr();
   ASSERT_TRUE(NULL != strstr(output.c_str(),
-                             "Death tests are not supported on this platform"));
+                             "Death test are not supported on this platform"));
   ASSERT_TRUE(NULL != strstr(output.c_str(), ";"));
 
   CaptureStderr();
@@ -1435,7 +1435,7 @@ void FuncWithAssert(int* n) {
 }
 
 // Tests that ASSERT_DEATH_IF_SUPPORTED does not return from the current
-// function (as ASSERT_DEATH does) if death tests are not supported.
+// function (as ASSERT_DEATH does) if death test are not supported.
 TEST(ConditionalDeathMacrosTest, AssertDeatDoesNotReturnhIfUnsupported) {
   int n = 0;
   FuncWithAssert(&n);
@@ -1448,7 +1448,7 @@ TEST(ConditionalDeathMacrosTest, AssertDeatDoesNotReturnhIfUnsupported) {
 
 namespace {
 
-// The following code intentionally tests a suboptimal syntax.
+// The following code intentionally test a suboptimal syntax.
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdangling-else"
@@ -1459,7 +1459,7 @@ namespace {
 // be followed by operator<<, and that in either case the complete text
 // comprises only a single C++ statement.
 //
-// The syntax should work whether death tests are available or not.
+// The syntax should work whether death test are available or not.
 TEST(ConditionalDeathMacrosSyntaxDeathTest, SingleStatement) {
   if (AlwaysFalse())
     // This would fail if executed; this is a compilation test only

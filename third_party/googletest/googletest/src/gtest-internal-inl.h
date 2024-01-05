@@ -68,7 +68,7 @@ GTEST_DISABLE_MSC_WARNINGS_PUSH_(4251 \
 // Declares the flags.
 //
 // We don't want the users to modify this flag in the code, but want
-// Google Test's own unit tests to be able to access it. Therefore we
+// Google Test's own unit test to be able to access it. Therefore we
 // declare it here as opposed to in gtest.h.
 GTEST_DECLARE_bool_(death_test_use_fork);
 
@@ -250,7 +250,7 @@ void WriteToShardStatusFileIfNeeded();
 // but inconsistent (e.g., shard_index >= total_shards), prints
 // an error and exits. If in_subprocess_for_death_test, sharding is
 // disabled because it must only be applied to the original test
-// process. Otherwise, we could filter out death tests we intended to execute.
+// process. Otherwise, we could filter out death test we intended to execute.
 GTEST_API_ bool ShouldShard(const char* total_shards_str,
                             const char* shard_index_str,
                             bool in_subprocess_for_death_test);
@@ -358,7 +358,7 @@ class TestPropertyKeyIs {
 // Class UnitTestOptions.
 //
 // This class contains functions for processing options the user
-// specifies when running the tests.  It has only static members.
+// specifies when running the test.  It has only static members.
 //
 // In most cases, the user can specify an option using either an
 // environment variable or a command line flag.  E.g. you can set the
@@ -544,28 +544,28 @@ class GTEST_API_ UnitTestImpl {
   // that should run.
   int test_suite_to_run_count() const;
 
-  // Gets the number of successful tests.
+  // Gets the number of successful test.
   int successful_test_count() const;
 
-  // Gets the number of skipped tests.
+  // Gets the number of skipped test.
   int skipped_test_count() const;
 
-  // Gets the number of failed tests.
+  // Gets the number of failed test.
   int failed_test_count() const;
 
-  // Gets the number of disabled tests that will be reported in the XML report.
+  // Gets the number of disabled test that will be reported in the XML report.
   int reportable_disabled_test_count() const;
 
-  // Gets the number of disabled tests.
+  // Gets the number of disabled test.
   int disabled_test_count() const;
 
-  // Gets the number of tests to be printed in the XML report.
+  // Gets the number of test to be printed in the XML report.
   int reportable_test_count() const;
 
-  // Gets the number of all tests.
+  // Gets the number of all test.
   int total_test_count() const;
 
-  // Gets the number of tests that should run.
+  // Gets the number of test that should run.
   int test_to_run_count() const;
 
   // Gets the time of the test program start, in ms from the start of the
@@ -580,7 +580,7 @@ class GTEST_API_ UnitTestImpl {
   bool Passed() const { return !Failed(); }
 
   // Returns true if and only if the unit test failed (i.e. some test suite
-  // failed or something outside of all tests failed).
+  // failed or something outside of all test failed).
   bool Failed() const {
     return failed_test_suite_count() > 0 || ad_hoc_test_result()->Failed();
   }
@@ -673,7 +673,7 @@ class GTEST_API_ UnitTestImpl {
                    internal::TearDownTestSuiteFunc tear_down_tc,
                    TestInfo* test_info) {
 #if GTEST_HAS_FILE_SYSTEM
-    // In order to support thread-safe death tests, we need to
+    // In order to support thread-safe death test, we need to
     // remember the original working directory when the test program
     // was first invoked.  We cannot do this in RUN_ALL_TESTS(), as
     // the user may have changed the current directory before calling
@@ -693,7 +693,7 @@ class GTEST_API_ UnitTestImpl {
   }
 
   // Returns ParameterizedTestSuiteRegistry object used to keep track of
-  // value-parameterized tests and instantiate and register them.
+  // value-parameterized test and instantiate and register them.
   internal::ParameterizedTestSuiteRegistry& parameterized_test_registry() {
     return parameterized_test_registry_;
   }
@@ -703,7 +703,7 @@ class GTEST_API_ UnitTestImpl {
   }
 
   // Returns TypeParameterizedTestSuiteRegistry object used to keep track of
-  // type-parameterized tests and instantiations of them.
+  // type-parameterized test and instantiations of them.
   internal::TypeParameterizedTestSuiteRegistry&
   type_parameterized_test_registry() {
     return type_parameterized_test_registry_;
@@ -721,21 +721,21 @@ class GTEST_API_ UnitTestImpl {
     current_test_info_ = a_current_test_info;
   }
 
-  // Registers all parameterized tests defined using TEST_P and
-  // INSTANTIATE_TEST_SUITE_P, creating regular tests for each test/parameter
+  // Registers all parameterized test defined using TEST_P and
+  // INSTANTIATE_TEST_SUITE_P, creating regular test for each test/parameter
   // combination. This method can be called more then once; it has guards
-  // protecting from registering the tests more then once.  If
-  // value-parameterized tests are disabled, RegisterParameterizedTests is
+  // protecting from registering the test more then once.  If
+  // value-parameterized test are disabled, RegisterParameterizedTests is
   // present but does nothing.
   void RegisterParameterizedTests();
 
-  // Runs all tests in this UnitTest object, prints the result, and
-  // returns true if all tests are successful.  If any exception is
+  // Runs all test in this UnitTest object, prints the result, and
+  // returns true if all test are successful.  If any exception is
   // thrown during a test, this test is considered to be failed, but
-  // the rest of the tests will still be run.
+  // the rest of the test will still be run.
   bool RunAllTests();
 
-  // Clears the results of all tests, except the ad hoc tests.
+  // Clears the results of all test, except the ad hoc test.
   void ClearNonAdHocTestResult() {
     ForEach(test_suites_, TestSuite::ClearTestSuiteResult);
   }
@@ -754,12 +754,12 @@ class GTEST_API_ UnitTestImpl {
   // Matches the full name of each test against the user-specified
   // filter to decide whether the test should run, then records the
   // result in each TestSuite and TestInfo object.
-  // If shard_tests == HONOR_SHARDING_PROTOCOL, further filters tests
+  // If shard_tests == HONOR_SHARDING_PROTOCOL, further filters test
   // based on sharding variables in the environment.
-  // Returns the number of tests that should run.
+  // Returns the number of test that should run.
   int FilterTests(ReactionToSharding shard_tests);
 
-  // Prints the names of the tests matching the user-specified filter flag.
+  // Prints the names of the test matching the user-specified filter flag.
   void ListTestsMatchingFilter();
 
   const TestSuite* current_test_suite() const { return current_test_suite_; }
@@ -767,7 +767,7 @@ class GTEST_API_ UnitTestImpl {
   const TestInfo* current_test_info() const { return current_test_info_; }
 
   // Returns the vector of environments that need to be set-up/torn-down
-  // before/after the tests are run.
+  // before/after the test are run.
   std::vector<Environment*>& environments() { return environments_; }
 
   // Getters for the per-thread Google Test trace stack.
@@ -823,11 +823,11 @@ class GTEST_API_ UnitTestImpl {
   // Gets the random number generator.
   internal::Random* random() { return &random_; }
 
-  // Shuffles all test suites, and the tests within each test suite,
-  // making sure that death tests are still run first.
+  // Shuffles all test suites, and the test within each test suite,
+  // making sure that death test are still run first.
   void ShuffleTests();
 
-  // Restores the test suites and tests to their order before the first shuffle.
+  // Restores the test suites and test to their order before the first shuffle.
   void UnshuffleTests();
 
   // Returns the value of GTEST_FLAG(catch_exceptions) at the moment
@@ -866,7 +866,7 @@ class GTEST_API_ UnitTestImpl {
       per_thread_test_part_result_reporter_;
 
   // The vector of environments that need to be set-up/torn-down
-  // before/after the tests are run.
+  // before/after the test are run.
   std::vector<Environment*> environments_;
 
   // The vector of TestSuites in their original order.  It owns the
@@ -880,7 +880,7 @@ class GTEST_API_ UnitTestImpl {
   std::vector<int> test_suite_indices_;
 
   // ParameterizedTestRegistry object used to register value-parameterized
-  // tests.
+  // test.
   internal::ParameterizedTestSuiteRegistry parameterized_test_registry_;
   internal::TypeParameterizedTestSuiteRegistry
       type_parameterized_test_registry_;
@@ -1033,11 +1033,11 @@ bool ParseNaturalNumber(const ::std::string& str, Integer* number) {
 #endif  // GTEST_HAS_DEATH_TEST
 
 // TestResult contains some private methods that should be hidden from
-// Google Test user but are required for testing. This class allow our tests
+// Google Test user but are required for testing. This class allow our test
 // to access them.
 //
 // This class is supplied only for the purpose of testing Google Test's own
-// constructs. Do not use it in user tests, either directly or indirectly.
+// constructs. Do not use it in user test, either directly or indirectly.
 class TestResultAccessor {
  public:
   static void RecordProperty(TestResult* test_result,

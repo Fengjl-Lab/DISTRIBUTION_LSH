@@ -71,7 +71,7 @@ GMOCK_DECLARE_int32_(default_mock_behavior);
 namespace testing {
 
 // Initializes Google Mock.  This must be called before running the
-// tests.  In particular, it parses the command line for the flags
+// test.  In particular, it parses the command line for the flags
 // that Google Mock recognizes.  Whenever a Google Mock flag is seen,
 // it is removed from argv, and *argc is decremented.
 //

@@ -4,8 +4,8 @@
 #
 # CMake build script for Google Test.
 #
-# To run the tests for Google Test itself on Linux, use 'make test' or
-# ctest.  You can select which tests to run using 'ctest -R regex'.
+# To run the test for Google Test itself on Linux, use 'make test' or
+# ctest.  You can select which test to run using 'ctest -R regex'.
 # For more options, run 'ctest --help'.
 
 # When other libraries are using a shared version of runtime libraries,
@@ -114,7 +114,7 @@ include_directories(${gtest_build_include_dirs})
 
 ########################################################################
 #
-# Defines the gtest & gtest_main libraries.  User tests should link
+# Defines the gtest & gtest_main libraries.  User test should link
 # with one of them.
 
 # Google Test libraries.  We build them using more strict warnings than what
@@ -159,7 +159,7 @@ install_project(gtest gtest_main)
 
 ########################################################################
 #
-# Samples on how to link user tests with gtest or gtest_main.
+# Samples on how to link user test with gtest or gtest_main.
 #
 # They are not built by default.  To build them, set the
 # gtest_build_samples option to ON.  You can do it by running ccmake
@@ -180,22 +180,22 @@ endif()
 
 ########################################################################
 #
-# Google Test's own tests.
+# Google Test's own test.
 #
 # You can skip this section if you aren't interested in testing
 # Google Test itself.
 #
-# The tests are not built by default.  To build them, set the
+# The test are not built by default.  To build them, set the
 # gtest_build_tests option to ON.  You can do it by running ccmake
 # or specifying the -Dgtest_build_tests=ON flag when running cmake.
 
 if (gtest_build_tests)
-  # This must be set in the root directory for the tests to be run by
+  # This must be set in the root directory for the test to be run by
   # 'make test' or ctest.
   enable_testing()
 
   ############################################################
-  # C++ tests built with standard compiler flags.
+  # C++ test built with standard compiler flags.
 
   cxx_test(googletest-death-test-test gtest_main)
   cxx_test(gtest_environment_test gtest)
@@ -227,7 +227,7 @@ if (gtest_build_tests)
   cxx_test(gtest_skip_test gtest_main)
 
   ############################################################
-  # C++ tests built with non-standard compiler flags.
+  # C++ test built with non-standard compiler flags.
 
   # MSVC 7.1 does not support STL with exceptions disabled.
   if (NOT MSVC OR MSVC_VERSION GREATER 1310)
@@ -259,7 +259,7 @@ if (gtest_build_tests)
                         COMPILE_DEFINITIONS "GTEST_LINKED_AS_SHARED_LIBRARY=1")
 
   ############################################################
-  # Python tests.
+  # Python test.
 
   cxx_executable(googletest-break-on-failure-unittest_ test gtest)
   py_test(googletest-break-on-failure-unittest)

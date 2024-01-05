@@ -256,7 +256,7 @@ GTEST_DEFINE_bool_(
 GTEST_DEFINE_bool_(
     also_run_disabled_tests,
     testing::internal::BoolFromGTestEnv("also_run_disabled_tests", false),
-    "Run disabled tests too, in addition to the tests normally being run.");
+    "Run disabled test too, in addition to the test normally being run.");
 
 GTEST_DEFINE_bool_(
     break_on_failure,
@@ -282,8 +282,8 @@ GTEST_DEFINE_string_(
     testing::internal::StringFromGTestEnv("filter",
                                           testing::GetDefaultFilter()),
     "A colon-separated list of glob (not regex) patterns "
-    "for filtering the tests to run, optionally followed by a "
-    "'-' and a : separated list of negative patterns (tests to "
+    "for filtering the test to run, optionally followed by a "
+    "'-' and a : separated list of negative patterns (test to "
     "exclude).  A test is run if it matches one of the positive "
     "patterns and does not match any of the negative patterns.");
 
@@ -296,7 +296,7 @@ GTEST_DEFINE_bool_(
     "install a signal handler that dumps debugging information when fatal "
     "signals are raised.");
 
-GTEST_DEFINE_bool_(list_tests, false, "List all tests without running them.");
+GTEST_DEFINE_bool_(list_tests, false, "List all test without running them.");
 
 // The net priority order after flag processing is thus:
 //   --gtest_output command line flag
@@ -338,16 +338,16 @@ GTEST_DEFINE_int32_(
 GTEST_DEFINE_int32_(
     repeat, testing::internal::Int32FromGTestEnv("repeat", 1),
     "How many times to repeat each test.  Specify a negative number "
-    "for repeating forever.  Useful for shaking out flaky tests.");
+    "for repeating forever.  Useful for shaking out flaky test.");
 
 GTEST_DEFINE_bool_(
     recreate_environments_when_repeating,
     testing::internal::BoolFromGTestEnv("recreate_environments_when_repeating",
                                         false),
     "Controls whether global test environments are recreated for each repeat "
-    "of the tests. If set to false the global test environments are only set "
+    "of the test. If set to false the global test environments are only set "
     "up once, for the first iteration, and only torn down once, for the last. "
-    "Useful for shaking out flaky tests with stable, expensive test "
+    "Useful for shaking out flaky test with stable, expensive test "
     "environments. If --gtest_repeat is set to a negative number, meaning "
     "there is no last run, the environments will always be recreated to avoid "
     "leaks.");
@@ -360,7 +360,7 @@ GTEST_DEFINE_bool_(show_internal_stack_frames, false,
 GTEST_DEFINE_bool_(shuffle,
                    testing::internal::BoolFromGTestEnv("shuffle", false),
                    "True if and only if " GTEST_NAME_
-                   " should randomize tests' order on every run.");
+                   " should randomize test' order on every run.");
 
 GTEST_DEFINE_int32_(
     stack_trace_depth,
@@ -525,7 +525,7 @@ void InsertSyntheticTestCase(const std::string& name, CodeLocation location,
       "placed in a library that may be linked in to get other utilities.)";
 
   const char kMissingTestCase[] =  //
-      " is instantiated via INSTANTIATE_TEST_SUITE_P, but no tests are "
+      " is instantiated via INSTANTIATE_TEST_SUITE_P, but no test are "
       "defined via TEST_P . No test cases will run."
       "\n\n"
       "Ideally, INSTANTIATE_TEST_SUITE_P should only ever be invoked from "
@@ -1086,43 +1086,43 @@ int UnitTestImpl::test_suite_to_run_count() const {
   return CountIf(test_suites_, ShouldRunTestSuite);
 }
 
-// Gets the number of successful tests.
+// Gets the number of successful test.
 int UnitTestImpl::successful_test_count() const {
   return SumOverTestSuiteList(test_suites_, &TestSuite::successful_test_count);
 }
 
-// Gets the number of skipped tests.
+// Gets the number of skipped test.
 int UnitTestImpl::skipped_test_count() const {
   return SumOverTestSuiteList(test_suites_, &TestSuite::skipped_test_count);
 }
 
-// Gets the number of failed tests.
+// Gets the number of failed test.
 int UnitTestImpl::failed_test_count() const {
   return SumOverTestSuiteList(test_suites_, &TestSuite::failed_test_count);
 }
 
-// Gets the number of disabled tests that will be reported in the XML report.
+// Gets the number of disabled test that will be reported in the XML report.
 int UnitTestImpl::reportable_disabled_test_count() const {
   return SumOverTestSuiteList(test_suites_,
                               &TestSuite::reportable_disabled_test_count);
 }
 
-// Gets the number of disabled tests.
+// Gets the number of disabled test.
 int UnitTestImpl::disabled_test_count() const {
   return SumOverTestSuiteList(test_suites_, &TestSuite::disabled_test_count);
 }
 
-// Gets the number of tests to be printed in the XML report.
+// Gets the number of test to be printed in the XML report.
 int UnitTestImpl::reportable_test_count() const {
   return SumOverTestSuiteList(test_suites_, &TestSuite::reportable_test_count);
 }
 
-// Gets the number of all tests.
+// Gets the number of all test.
 int UnitTestImpl::total_test_count() const {
   return SumOverTestSuiteList(test_suites_, &TestSuite::total_test_count);
 }
 
-// Gets the number of tests that should run.
+// Gets the number of test that should run.
 int UnitTestImpl::test_to_run_count() const {
   return SumOverTestSuiteList(test_suites_, &TestSuite::test_to_run_count);
 }
@@ -2303,20 +2303,20 @@ void TestResult::RecordProperty(const std::string& xml_element,
 // output.
 static const char* const kReservedTestSuitesAttributes[] = {
     "disabled",    "errors", "failures", "name",
-    "random_seed", "tests",  "time",     "timestamp"};
+    "random_seed", "test",  "time",     "timestamp"};
 
 // The list of reserved attributes used in the <testsuite> element of XML
 // output.
 static const char* const kReservedTestSuiteAttributes[] = {
     "disabled", "errors", "failures",  "name",
-    "tests",    "time",   "timestamp", "skipped"};
+    "test",    "time",   "timestamp", "skipped"};
 
 // The list of reserved attributes used in the <testcase> element of XML output.
 static const char* const kReservedTestCaseAttributes[] = {
     "classname",  "name",        "status", "time",
     "type_param", "value_param", "file",   "line"};
 
-// Use a slightly different set for allowed output to ensure existing tests can
+// Use a slightly different set for allowed output to ensure existing test can
 // still RecordProperty("result") or "RecordProperty(timestamp")
 static const char* const kReservedOutputTestCaseAttributes[] = {
     "classname",   "name", "status", "time",   "type_param",
@@ -2496,7 +2496,7 @@ void ReportFailureInUnknownLocation(TestPartResult::Type result_type,
 
 }  // namespace internal
 
-// Google Test requires all tests in the same test suite to use the same test
+// Google Test requires all test in the same test suite to use the same test
 // fixture class.  This function checks if the current test has the
 // same fixture class as the first test in the current test suite.  If
 // yes, it returns true; otherwise it generates a Google Test failure and
@@ -2527,14 +2527,14 @@ bool Test::HasSameFixtureClass() {
 
       // Gets the name of the TEST and the name of the TEST_F.  Note
       // that first_is_TEST and this_is_TEST cannot both be true, as
-      // the fixture IDs are different for the two tests.
+      // the fixture IDs are different for the two test.
       const char* const TEST_name =
           first_is_TEST ? first_test_name : this_test_name;
       const char* const TEST_F_name =
           first_is_TEST ? this_test_name : first_test_name;
 
       ADD_FAILURE()
-          << "All tests in the same test suite must use the same test fixture\n"
+          << "All test in the same test suite must use the same test fixture\n"
           << "class, so mixing TEST_F and TEST in the same test suite is\n"
           << "illegal.  In test suite " << this_test_info->test_suite_name()
           << ",\n"
@@ -2546,7 +2546,7 @@ bool Test::HasSameFixtureClass() {
       // Two fixture classes with the same name appear in two different
       // namespaces, which is not allowed. Tell the user how to fix this.
       ADD_FAILURE()
-          << "All tests in the same test suite must use the same test fixture\n"
+          << "All test in the same test suite must use the same test fixture\n"
           << "class.  However, in test suite "
           << this_test_info->test_suite_name() << ",\n"
           << "you defined test " << first_test_name << " and test "
@@ -2554,7 +2554,7 @@ bool Test::HasSameFixtureClass() {
           << "using two different test fixture classes.  This can happen if\n"
           << "the two classes are from different namespaces or translation\n"
           << "units and have the same name.  You should probably rename one\n"
-          << "of the classes to put the tests into different test suites.";
+          << "of the classes to put the test into different test suites.";
     }
     return false;
   }
@@ -2777,12 +2777,12 @@ void ReportInvalidTestSuiteType(const char* test_suite_name,
   Message errors;
   errors
       << "Attempted redefinition of test suite " << test_suite_name << ".\n"
-      << "All tests in the same test suite must use the same test fixture\n"
+      << "All test in the same test suite must use the same test fixture\n"
       << "class.  However, in test suite " << test_suite_name << ", you tried\n"
       << "to define a test using a fixture class different from the one\n"
       << "used earlier. This can happen if the two fixture classes are\n"
       << "from different namespaces and have the same name. You should\n"
-      << "probably rename one of the classes to put the tests into different\n"
+      << "probably rename one of the classes to put the test into different\n"
       << "test suites.";
 
   GTEST_LOG_(ERROR) << FormatFileLocation(code_location.file.c_str(),
@@ -2790,8 +2790,8 @@ void ReportInvalidTestSuiteType(const char* test_suite_name,
                     << " " << errors.GetString();
 }
 
-// This method expands all parameterized tests registered with macros TEST_P
-// and INSTANTIATE_TEST_SUITE_P into regular tests and registers those.
+// This method expands all parameterized test registered with macros TEST_P
+// and INSTANTIATE_TEST_SUITE_P into regular test and registers those.
 // This will be done just once during the program runtime.
 void UnitTestImpl::RegisterParameterizedTests() {
   if (!parameterized_tests_registered_) {
@@ -2877,42 +2877,42 @@ void TestInfo::Skip() {
 
 // class TestSuite
 
-// Gets the number of successful tests in this test suite.
+// Gets the number of successful test in this test suite.
 int TestSuite::successful_test_count() const {
   return CountIf(test_info_list_, TestPassed);
 }
 
-// Gets the number of successful tests in this test suite.
+// Gets the number of successful test in this test suite.
 int TestSuite::skipped_test_count() const {
   return CountIf(test_info_list_, TestSkipped);
 }
 
-// Gets the number of failed tests in this test suite.
+// Gets the number of failed test in this test suite.
 int TestSuite::failed_test_count() const {
   return CountIf(test_info_list_, TestFailed);
 }
 
-// Gets the number of disabled tests that will be reported in the XML report.
+// Gets the number of disabled test that will be reported in the XML report.
 int TestSuite::reportable_disabled_test_count() const {
   return CountIf(test_info_list_, TestReportableDisabled);
 }
 
-// Gets the number of disabled tests in this test suite.
+// Gets the number of disabled test in this test suite.
 int TestSuite::disabled_test_count() const {
   return CountIf(test_info_list_, TestDisabled);
 }
 
-// Gets the number of tests to be printed in the XML report.
+// Gets the number of test to be printed in the XML report.
 int TestSuite::reportable_test_count() const {
   return CountIf(test_info_list_, TestReportable);
 }
 
-// Get the number of tests in this test suite that should run.
+// Get the number of test in this test suite that should run.
 int TestSuite::test_to_run_count() const {
   return CountIf(test_info_list_, ShouldRunTest);
 }
 
-// Gets the number of all tests.
+// Gets the number of all test.
 int TestSuite::total_test_count() const {
   return static_cast<int>(test_info_list_.size());
 }
@@ -2943,14 +2943,14 @@ TestSuite::~TestSuite() {
   ForEach(test_info_list_, internal::Delete<TestInfo>);
 }
 
-// Returns the i-th test among all the tests. i can range from 0 to
+// Returns the i-th test among all the test. i can range from 0 to
 // total_test_count() - 1. If i is not in that range, returns NULL.
 const TestInfo* TestSuite::GetTestInfo(int i) const {
   const int index = GetElementOr(test_indices_, i, -1);
   return index < 0 ? nullptr : test_info_list_[static_cast<size_t>(index)];
 }
 
-// Returns the i-th test among all the tests. i can range from 0 to
+// Returns the i-th test among all the test. i can range from 0 to
 // total_test_count() - 1. If i is not in that range, returns NULL.
 TestInfo* TestSuite::GetMutableTestInfo(int i) {
   const int index = GetElementOr(test_indices_, i, -1);
@@ -2973,7 +2973,7 @@ void TestSuite::Run() {
 
   TestEventListener* repeater = UnitTest::GetInstance()->listeners().repeater();
 
-  // Ensure our tests are in a deterministic order.
+  // Ensure our test are in a deterministic order.
   //
   // We do this by sorting lexicographically on (file, line number), providing
   // an order matching what the user can see in the source code.
@@ -3038,7 +3038,7 @@ void TestSuite::Run() {
   impl->set_current_test_suite(nullptr);
 }
 
-// Skips all tests under this TestSuite.
+// Skips all test under this TestSuite.
 void TestSuite::Skip() {
   if (!should_run_) return;
 
@@ -3068,13 +3068,13 @@ void TestSuite::Skip() {
   impl->set_current_test_suite(nullptr);
 }
 
-// Clears the results of all tests in this test suite.
+// Clears the results of all test in this test suite.
 void TestSuite::ClearResult() {
   ad_hoc_test_result_.Clear();
   ForEach(test_info_list_, TestInfo::ClearTestResult);
 }
 
-// Shuffles the tests in this test suite.
+// Shuffles the test in this test suite.
 void TestSuite::ShuffleTests(internal::Random* random) {
   Shuffle(random, &test_indices_);
 }
@@ -3097,9 +3097,9 @@ static std::string FormatCountableNoun(int count, const char* singular_form,
          (count == 1 ? singular_form : plural_form);
 }
 
-// Formats the count of tests.
+// Formats the count of test.
 static std::string FormatTestCount(int test_count) {
-  return FormatCountableNoun(test_count, "test", "tests");
+  return FormatCountableNoun(test_count, "test", "test");
 }
 
 // Formats the count of test suites.
@@ -3389,17 +3389,17 @@ class PrettyUnitTestResultPrinter : public TestEventListener {
   static void PrintSkippedTests(const UnitTest& unit_test);
 };
 
-// Fired before each iteration of tests starts.
+// Fired before each iteration of test starts.
 void PrettyUnitTestResultPrinter::OnTestIterationStart(
     const UnitTest& unit_test, int iteration) {
   if (GTEST_FLAG_GET(repeat) != 1)
-    printf("\nRepeating all tests (iteration %d) . . .\n\n", iteration + 1);
+    printf("\nRepeating all test (iteration %d) . . .\n\n", iteration + 1);
 
   std::string f = GTEST_FLAG_GET(filter);
   const char* const filter = f.c_str();
 
   // Prints the filter if it's not *.  This reminds the user that some
-  // tests may be skipped.
+  // test may be skipped.
   if (!String::CStringEquals(filter, kUniversalFilter)) {
     ColoredPrintf(GTestColor::kYellow, "Note: %s filter = %s\n", GTEST_NAME_,
                   filter);
@@ -3414,7 +3414,7 @@ void PrettyUnitTestResultPrinter::OnTestIterationStart(
 
   if (GTEST_FLAG_GET(shuffle)) {
     ColoredPrintf(GTestColor::kYellow,
-                  "Note: Randomizing tests' orders with a seed of %d .\n",
+                  "Note: Randomizing test' orders with a seed of %d .\n",
                   unit_test.random_seed());
   }
 
@@ -3435,7 +3435,7 @@ void PrettyUnitTestResultPrinter::OnEnvironmentsSetUpStart(
 #ifndef GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 void PrettyUnitTestResultPrinter::OnTestCaseStart(const TestCase& test_case) {
   const std::string counts =
-      FormatCountableNoun(test_case.test_to_run_count(), "test", "tests");
+      FormatCountableNoun(test_case.test_to_run_count(), "test", "test");
   ColoredPrintf(GTestColor::kGreen, "[----------] ");
   printf("%s from %s", counts.c_str(), test_case.name());
   if (test_case.type_param() == nullptr) {
@@ -3449,7 +3449,7 @@ void PrettyUnitTestResultPrinter::OnTestCaseStart(const TestCase& test_case) {
 void PrettyUnitTestResultPrinter::OnTestSuiteStart(
     const TestSuite& test_suite) {
   const std::string counts =
-      FormatCountableNoun(test_suite.test_to_run_count(), "test", "tests");
+      FormatCountableNoun(test_suite.test_to_run_count(), "test", "test");
   ColoredPrintf(GTestColor::kGreen, "[----------] ");
   printf("%s from %s", counts.c_str(), test_suite.name());
   if (test_suite.type_param() == nullptr) {
@@ -3516,7 +3516,7 @@ void PrettyUnitTestResultPrinter::OnTestCaseEnd(const TestCase& test_case) {
   if (!GTEST_FLAG_GET(print_time)) return;
 
   const std::string counts =
-      FormatCountableNoun(test_case.test_to_run_count(), "test", "tests");
+      FormatCountableNoun(test_case.test_to_run_count(), "test", "test");
   ColoredPrintf(GTestColor::kGreen, "[----------] ");
   printf("%s from %s (%s ms total)\n\n", counts.c_str(), test_case.name(),
          internal::StreamableToString(test_case.elapsed_time()).c_str());
@@ -3527,7 +3527,7 @@ void PrettyUnitTestResultPrinter::OnTestSuiteEnd(const TestSuite& test_suite) {
   if (!GTEST_FLAG_GET(print_time)) return;
 
   const std::string counts =
-      FormatCountableNoun(test_suite.test_to_run_count(), "test", "tests");
+      FormatCountableNoun(test_suite.test_to_run_count(), "test", "test");
   ColoredPrintf(GTestColor::kGreen, "[----------] ");
   printf("%s from %s (%s ms total)\n\n", counts.c_str(), test_suite.name(),
          internal::StreamableToString(test_suite.elapsed_time()).c_str());
@@ -3542,7 +3542,7 @@ void PrettyUnitTestResultPrinter::OnEnvironmentsTearDownStart(
   fflush(stdout);
 }
 
-// Internal helper for printing the list of failed tests.
+// Internal helper for printing the list of failed test.
 void PrettyUnitTestResultPrinter::PrintFailedTests(const UnitTest& unit_test) {
   const int failed_test_count = unit_test.failed_test_count();
   ColoredPrintf(GTestColor::kRed, "[  FAILED  ] ");
@@ -3590,7 +3590,7 @@ void PrettyUnitTestResultPrinter::PrintFailedTestSuites(
   }
 }
 
-// Internal helper for printing the list of skipped tests.
+// Internal helper for printing the list of skipped test.
 void PrettyUnitTestResultPrinter::PrintSkippedTests(const UnitTest& unit_test) {
   const int skipped_test_count = unit_test.skipped_test_count();
   if (skipped_test_count == 0) {
@@ -3901,7 +3901,7 @@ class XmlUnitTestResultPrinter : public EmptyTestEventListener {
   void OnTestIterationEnd(const UnitTest& unit_test, int iteration) override;
   void ListTestsMatchingFilter(const std::vector<TestSuite*>& test_suites);
 
-  // Prints an XML summary of all unit tests.
+  // Prints an XML summary of all unit test.
   static void PrintXmlTestsList(std::ostream* stream,
                                 const std::vector<TestSuite*>& test_suites);
 
@@ -4188,7 +4188,7 @@ void XmlUnitTestResultPrinter::OutputXmlTestSuiteForTestResult(
   // Output the boilerplate for a minimal test suite with one test.
   *stream << "  <testsuite";
   OutputXmlAttribute(stream, "testsuite", "name", "NonTestSuiteFailure");
-  OutputXmlAttribute(stream, "testsuite", "tests", "1");
+  OutputXmlAttribute(stream, "testsuite", "test", "1");
   OutputXmlAttribute(stream, "testsuite", "failures", "1");
   OutputXmlAttribute(stream, "testsuite", "disabled", "0");
   OutputXmlAttribute(stream, "testsuite", "skipped", "0");
@@ -4318,7 +4318,7 @@ void XmlUnitTestResultPrinter::PrintXmlTestSuite(std::ostream* stream,
   const std::string kTestsuite = "testsuite";
   *stream << "  <" << kTestsuite;
   OutputXmlAttribute(stream, kTestsuite, "name", test_suite.name());
-  OutputXmlAttribute(stream, kTestsuite, "tests",
+  OutputXmlAttribute(stream, kTestsuite, "test",
                      StreamableToString(test_suite.reportable_test_count()));
   if (!GTEST_FLAG_GET(list_tests)) {
     OutputXmlAttribute(stream, kTestsuite, "failures",
@@ -4354,7 +4354,7 @@ void XmlUnitTestResultPrinter::PrintXmlUnitTest(std::ostream* stream,
   *stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
   *stream << "<" << kTestsuites;
 
-  OutputXmlAttribute(stream, kTestsuites, "tests",
+  OutputXmlAttribute(stream, kTestsuites, "test",
                      StreamableToString(unit_test.reportable_test_count()));
   OutputXmlAttribute(stream, kTestsuites, "failures",
                      StreamableToString(unit_test.failed_test_count()));
@@ -4402,7 +4402,7 @@ void XmlUnitTestResultPrinter::PrintXmlTestsList(
   for (auto test_suite : test_suites) {
     total_tests += test_suite->total_test_count();
   }
-  OutputXmlAttribute(stream, kTestsuites, "tests",
+  OutputXmlAttribute(stream, kTestsuites, "test",
                      StreamableToString(total_tests));
   OutputXmlAttribute(stream, kTestsuites, "name", "AllTests");
   *stream << ">\n";
@@ -4457,7 +4457,7 @@ class JsonUnitTestResultPrinter : public EmptyTestEventListener {
 
   void OnTestIterationEnd(const UnitTest& unit_test, int iteration) override;
 
-  // Prints an JSON summary of all unit tests.
+  // Prints an JSON summary of all unit test.
   static void PrintJsonTestList(::std::ostream* stream,
                                 const std::vector<TestSuite*>& test_suites);
 
@@ -4637,7 +4637,7 @@ void JsonUnitTestResultPrinter::OutputJsonTestSuiteForTestResult(
   // Output the boilerplate for a new test suite.
   *stream << Indent(4) << "{\n";
   OutputJsonKey(stream, "testsuite", "name", "NonTestSuiteFailure", Indent(6));
-  OutputJsonKey(stream, "testsuite", "tests", 1, Indent(6));
+  OutputJsonKey(stream, "testsuite", "test", 1, Indent(6));
   if (!GTEST_FLAG_GET(list_tests)) {
     OutputJsonKey(stream, "testsuite", "failures", 1, Indent(6));
     OutputJsonKey(stream, "testsuite", "disabled", 0, Indent(6));
@@ -4758,7 +4758,7 @@ void JsonUnitTestResultPrinter::PrintJsonTestSuite(
 
   *stream << Indent(4) << "{\n";
   OutputJsonKey(stream, kTestsuite, "name", test_suite.name(), kIndent);
-  OutputJsonKey(stream, kTestsuite, "tests", test_suite.reportable_test_count(),
+  OutputJsonKey(stream, kTestsuite, "test", test_suite.reportable_test_count(),
                 kIndent);
   if (!GTEST_FLAG_GET(list_tests)) {
     OutputJsonKey(stream, kTestsuite, "failures",
@@ -4800,7 +4800,7 @@ void JsonUnitTestResultPrinter::PrintJsonUnitTest(std::ostream* stream,
   const std::string kIndent = Indent(2);
   *stream << "{\n";
 
-  OutputJsonKey(stream, kTestsuites, "tests", unit_test.reportable_test_count(),
+  OutputJsonKey(stream, kTestsuites, "test", unit_test.reportable_test_count(),
                 kIndent);
   OutputJsonKey(stream, kTestsuites, "failures", unit_test.failed_test_count(),
                 kIndent);
@@ -4859,7 +4859,7 @@ void JsonUnitTestResultPrinter::PrintJsonTestList(
   for (auto test_suite : test_suites) {
     total_tests += test_suite->total_test_count();
   }
-  OutputJsonKey(stream, kTestsuites, "tests", total_tests, kIndent);
+  OutputJsonKey(stream, kTestsuites, "test", total_tests, kIndent);
 
   OutputJsonKey(stream, kTestsuites, "name", "AllTests", kIndent);
   *stream << kIndent << "\"" << kTestsuites << "\": [\n";
@@ -5204,38 +5204,38 @@ int UnitTest::test_case_to_run_count() const {
 }
 #endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
-// Gets the number of successful tests.
+// Gets the number of successful test.
 int UnitTest::successful_test_count() const {
   return impl()->successful_test_count();
 }
 
-// Gets the number of skipped tests.
+// Gets the number of skipped test.
 int UnitTest::skipped_test_count() const {
   return impl()->skipped_test_count();
 }
 
-// Gets the number of failed tests.
+// Gets the number of failed test.
 int UnitTest::failed_test_count() const { return impl()->failed_test_count(); }
 
-// Gets the number of disabled tests that will be reported in the XML report.
+// Gets the number of disabled test that will be reported in the XML report.
 int UnitTest::reportable_disabled_test_count() const {
   return impl()->reportable_disabled_test_count();
 }
 
-// Gets the number of disabled tests.
+// Gets the number of disabled test.
 int UnitTest::disabled_test_count() const {
   return impl()->disabled_test_count();
 }
 
-// Gets the number of tests to be printed in the XML report.
+// Gets the number of test to be printed in the XML report.
 int UnitTest::reportable_test_count() const {
   return impl()->reportable_test_count();
 }
 
-// Gets the number of all tests.
+// Gets the number of all test.
 int UnitTest::total_test_count() const { return impl()->total_test_count(); }
 
-// Gets the number of tests that should run.
+// Gets the number of test that should run.
 int UnitTest::test_to_run_count() const { return impl()->test_to_run_count(); }
 
 // Gets the time of the test program start, in ms from the start of the
@@ -5254,7 +5254,7 @@ internal::TimeInMillis UnitTest::elapsed_time() const {
 bool UnitTest::Passed() const { return impl()->Passed(); }
 
 // Returns true if and only if the unit test failed (i.e. some test suite
-// failed or something outside of all tests failed).
+// failed or something outside of all test failed).
 bool UnitTest::Failed() const { return impl()->Failed(); }
 
 // Gets the i-th test suite among all the test suites. i can range from 0 to
@@ -5288,7 +5288,7 @@ TestEventListeners& UnitTest::listeners() { return *impl()->listeners(); }
 
 // Registers and returns a global test environment.  When a test
 // program is run, all global test environments will be set-up in the
-// order they were registered.  After all tests in the program have
+// order they were registered.  After all test in the program have
 // finished, all global test environments will be torn-down in the
 // *reverse* order they were registered.
 //
@@ -5391,7 +5391,7 @@ void UnitTest::RecordProperty(const std::string& key,
   impl_->RecordProperty(TestProperty(key, value));
 }
 
-// Runs all tests in this UnitTest object and prints the result.
+// Runs all test in this UnitTest object and prints the result.
 // Returns 0 if successful, or 1 otherwise.
 //
 // We don't protect this under mutex_, as we only support calling it
@@ -5436,7 +5436,7 @@ int UnitTest::Run() {
 
 #ifdef GTEST_OS_WINDOWS
   // Either the user wants Google Test to catch exceptions thrown by the
-  // tests or this is executing in the context of death test child
+  // test or this is executing in the context of death test child
   // process. In either case the user does not want to see pop-up dialogs
   // about crashes - they are expected.
   if (impl()->catch_exceptions() || in_death_test_child_process) {
@@ -5525,7 +5525,7 @@ const TestInfo* UnitTest::current_test_info() const
 int UnitTest::random_seed() const { return impl_->random_seed(); }
 
 // Returns ParameterizedTestSuiteRegistry object used to keep track of
-// value-parameterized tests and instantiate and register them.
+// value-parameterized test and instantiate and register them.
 internal::ParameterizedTestSuiteRegistry&
 UnitTest::parameterized_test_registry() GTEST_LOCK_EXCLUDED_(mutex_) {
   return impl_->parameterized_test_registry();
@@ -5684,7 +5684,7 @@ void UnitTestImpl::PostFlagParsingInit() {
     SuppressTestEventsIfInSubprocess();
 #endif  // GTEST_HAS_DEATH_TEST
 
-    // Registers parameterized tests. This makes parameterized tests
+    // Registers parameterized test. This makes parameterized test
     // available to the UnitTest reflection API without running
     // RUN_ALL_TESTS.
     RegisterParameterizedTests();
@@ -5785,15 +5785,15 @@ TestSuite* UnitTestImpl::GetTestSuite(
 static void SetUpEnvironment(Environment* env) { env->SetUp(); }
 static void TearDownEnvironment(Environment* env) { env->TearDown(); }
 
-// Runs all tests in this UnitTest object, prints the result, and
-// returns true if all tests are successful.  If any exception is
+// Runs all test in this UnitTest object, prints the result, and
+// returns true if all test are successful.  If any exception is
 // thrown during a test, the test is considered to be failed, but the
-// rest of the tests will still be run.
+// rest of the test will still be run.
 //
-// When parameterized tests are enabled, it expands and registers
-// parameterized tests first in RegisterParameterizedTests().
+// When parameterized test are enabled, it expands and registers
+// parameterized test first in RegisterParameterizedTests().
 // All other functions called from RunAllTests() may safely assume that
-// parameterized tests are ready to be counted and run.
+// parameterized test are ready to be counted and run.
 bool UnitTestImpl::RunAllTests() {
   // True if and only if Google Test is initialized before RUN_ALL_TESTS() is
   // called.
@@ -5830,12 +5830,12 @@ bool UnitTestImpl::RunAllTests() {
                                         in_subprocess_for_death_test);
 
   // Compares the full test names with the filter to decide which
-  // tests to run.
+  // test to run.
   const bool has_tests_to_run =
       FilterTests(should_shard ? HONOR_SHARDING_PROTOCOL
                                : IGNORE_SHARDING_PROTOCOL) > 0;
 
-  // Lists the tests and exits if the --gtest_list_tests flag was specified.
+  // Lists the test and exits if the --gtest_list_tests flag was specified.
   if (GTEST_FLAG_GET(list_tests)) {
     // This must be called *after* FilterTests() has been called.
     ListTestsMatchingFilter();
@@ -5852,7 +5852,7 @@ bool UnitTestImpl::RunAllTests() {
   start_timestamp_ = GetTimeInMillis();
   repeater->OnTestProgramStart(*parent_);
 
-  // How many times to repeat the tests?  We don't want to repeat them
+  // How many times to repeat the test?  We don't want to repeat them
   // when we are inside the subprocess of a death test.
   const int repeat = in_subprocess_for_death_test ? 1 : GTEST_FLAG_GET(repeat);
 
@@ -5861,7 +5861,7 @@ bool UnitTestImpl::RunAllTests() {
 
   // Should test environments be set up and torn down for each repeat, or only
   // set up on the first and torn down on the last iteration? If there is no
-  // "last" iteration because the tests will repeat forever, always recreate the
+  // "last" iteration because the test will repeat forever, always recreate the
   // environments to avoid leaks in case one of the environments is using
   // resources that are external to this process. Without this check there would
   // be no way to clean up those external resources automatically.
@@ -5876,7 +5876,7 @@ bool UnitTestImpl::RunAllTests() {
 
     Timer timer;
 
-    // Shuffles test suites and tests if requested.
+    // Shuffles test suites and test if requested.
     if (has_tests_to_run && GTEST_FLAG_GET(shuffle)) {
       random()->Reseed(static_cast<uint32_t>(random_seed_));
       // This should be done before calling OnTestIterationStart(),
@@ -5885,7 +5885,7 @@ bool UnitTestImpl::RunAllTests() {
       ShuffleTests();
     }
 
-    // Tells the unit test event listeners that the tests are about to start.
+    // Tells the unit test event listeners that the test are about to start.
     repeater->OnTestIterationStart(*parent_, i);
 
     // Runs each test suite if there is at least one test to run.
@@ -5898,7 +5898,7 @@ bool UnitTestImpl::RunAllTests() {
         repeater->OnEnvironmentsSetUpEnd(*parent_);
       }
 
-      // Runs the tests only if there was no fatal failure or skip triggered
+      // Runs the test only if there was no fatal failure or skip triggered
       // during global set-up.
       if (Test::IsSkipped()) {
         // Emit diagnostics when global set-up calls skip, as it will not be
@@ -5928,7 +5928,7 @@ bool UnitTestImpl::RunAllTests() {
         }
       } else if (Test::HasFatalFailure()) {
         // If there was a fatal failure during the global setup then we know we
-        // aren't going to run any tests. Explicitly mark all of the tests as
+        // aren't going to run any test. Explicitly mark all of the test as
         // skipped to make this obvious in the output.
         for (int test_index = 0; test_index < total_test_suite_count();
              test_index++) {
@@ -5949,7 +5949,7 @@ bool UnitTestImpl::RunAllTests() {
 
     elapsed_time_ = timer.Elapsed();
 
-    // Tells the unit test event listener that the tests have just finished.
+    // Tells the unit test event listener that the test have just finished.
     repeater->OnTestIterationEnd(*parent_, i);
 
     // Gets the result and clears it.
@@ -5962,7 +5962,7 @@ bool UnitTestImpl::RunAllTests() {
     // N-th iteration without repeating the first (N - 1) iterations.
     // This is not enclosed in "if (GTEST_FLAG(shuffle)) { ... }", in
     // case the user somehow changes the value of the flag somewhere
-    // (it's always safe to unshuffle the tests).
+    // (it's always safe to unshuffle the test).
     UnshuffleTests();
 
     if (GTEST_FLAG_GET(shuffle)) {
@@ -6013,7 +6013,7 @@ void WriteToShardStatusFileIfNeeded() {
 // but inconsistent (i.e., shard_index >= total_shards), prints
 // an error and exits. If in_subprocess_for_death_test, sharding is
 // disabled because it must only be applied to the original test
-// process. Otherwise, we could filter out death tests we intended to execute.
+// process. Otherwise, we could filter out death test we intended to execute.
 bool ShouldShard(const char* total_shards_env, const char* shard_index_env,
                  bool in_subprocess_for_death_test) {
   if (in_subprocess_for_death_test) {
@@ -6083,10 +6083,10 @@ bool ShouldRunTestOnShard(int total_shards, int shard_index, int test_id) {
 // Compares the name of each test with the user-specified filter to
 // decide whether the test should be run, then records the result in
 // each TestSuite and TestInfo object.
-// If shard_tests == true, further filters tests based on sharding
+// If shard_tests == true, further filters test based on sharding
 // variables in the environment - see
 // https://github.com/google/googletest/blob/main/docs/advanced.md
-// . Returns the number of tests that should run.
+// . Returns the number of test that should run.
 int UnitTestImpl::FilterTests(ReactionToSharding shard_tests) {
   const int32_t total_shards = shard_tests == HONOR_SHARDING_PROTOCOL
                                    ? Int32FromEnvOrDie(kTestTotalShards, -1)
@@ -6098,9 +6098,9 @@ int UnitTestImpl::FilterTests(ReactionToSharding shard_tests) {
   const PositiveAndNegativeUnitTestFilter gtest_flag_filter(
       GTEST_FLAG_GET(filter));
   const UnitTestFilter disable_test_filter(kDisableTestFilter);
-  // num_runnable_tests are the number of tests that will
+  // num_runnable_tests are the number of test that will
   // run across all shards (i.e., match filter and are not disabled).
-  // num_selected_tests are the number of tests to be run on
+  // num_selected_tests are the number of test to be run on
   // this shard.
   int num_runnable_tests = 0;
   int num_selected_tests = 0;
@@ -6164,7 +6164,7 @@ static void PrintOnOneLine(const char* str, int max_length) {
   }
 }
 
-// Prints the names of the tests matching the user-specified filter flag.
+// Prints the names of the test matching the user-specified filter flag.
 void UnitTestImpl::ListTestsMatchingFilter() {
   // Print at most this many characters for each type/value parameter.
   const int kMaxParamLength = 250;
@@ -6258,8 +6258,8 @@ TestResult* UnitTestImpl::current_test_result() {
   return &ad_hoc_test_result_;
 }
 
-// Shuffles all test suites, and the tests within each test suite,
-// making sure that death tests are still run first.
+// Shuffles all test suites, and the test within each test suite,
+// making sure that death test are still run first.
 void UnitTestImpl::ShuffleTests() {
   // Shuffles the death test suites.
   ShuffleRange(random(), 0, last_death_test_suite_ + 1, &test_suite_indices_);
@@ -6268,16 +6268,16 @@ void UnitTestImpl::ShuffleTests() {
   ShuffleRange(random(), last_death_test_suite_ + 1,
                static_cast<int>(test_suites_.size()), &test_suite_indices_);
 
-  // Shuffles the tests inside each test suite.
+  // Shuffles the test inside each test suite.
   for (auto& test_suite : test_suites_) {
     test_suite->ShuffleTests(random());
   }
 }
 
-// Restores the test suites and tests to their order before the first shuffle.
+// Restores the test suites and test to their order before the first shuffle.
 void UnitTestImpl::UnshuffleTests() {
   for (size_t i = 0; i < test_suites_.size(); i++) {
-    // Unshuffles the tests in each test suite.
+    // Unshuffles the test in each test suite.
     test_suites_[i]->UnshuffleTests();
     // Resets the index of each test suite.
     test_suite_indices_[i] = static_cast<int>(i);
@@ -6476,34 +6476,34 @@ static void PrintColorEncoded(const char* str) {
 }
 
 static const char kColorEncodedHelpMessage[] =
-    "This program contains tests written using " GTEST_NAME_
+    "This program contains test written using " GTEST_NAME_
     ". You can use the\n"
     "following command line flags to control its behavior:\n"
     "\n"
     "Test Selection:\n"
     "  @G--" GTEST_FLAG_PREFIX_
     "list_tests@D\n"
-    "      List the names of all tests instead of running them. The name of\n"
+    "      List the names of all test instead of running them. The name of\n"
     "      TEST(Foo, Bar) is \"Foo.Bar\".\n"
     "  @G--" GTEST_FLAG_PREFIX_
     "filter=@YPOSITIVE_PATTERNS"
     "[@G-@YNEGATIVE_PATTERNS]@D\n"
-    "      Run only the tests whose name matches one of the positive patterns "
+    "      Run only the test whose name matches one of the positive patterns "
     "but\n"
     "      none of the negative patterns. '?' matches any single character; "
     "'*'\n"
     "      matches any substring; ':' separates two patterns.\n"
     "  @G--" GTEST_FLAG_PREFIX_
     "also_run_disabled_tests@D\n"
-    "      Run all disabled tests too.\n"
+    "      Run all disabled test too.\n"
     "\n"
     "Test Execution:\n"
     "  @G--" GTEST_FLAG_PREFIX_
     "repeat=@Y[COUNT]@D\n"
-    "      Run the tests repeatedly; use a negative count to repeat forever.\n"
+    "      Run the test repeatedly; use a negative count to repeat forever.\n"
     "  @G--" GTEST_FLAG_PREFIX_
     "shuffle@D\n"
-    "      Randomize tests' orders on every iteration.\n"
+    "      Randomize test' orders on every iteration.\n"
     "  @G--" GTEST_FLAG_PREFIX_
     "random_seed=@Y[NUMBER]@D\n"
     "      Random number seed to use for shuffling test orders (between 1 and\n"
@@ -6568,7 +6568,7 @@ static const char kColorEncodedHelpMessage[] =
     " documentation at\n"
     "@G" GTEST_PROJECT_URL_ "@D. If you find a bug in " GTEST_NAME_
     "\n"
-    "(not one in your own code or tests), please report it to\n"
+    "(not one in your own code or test), please report it to\n"
     "@G<" GTEST_DEV_EMAIL_ ">@D.\n";
 
 static bool ParseGoogleTestFlag(const char* const arg) {

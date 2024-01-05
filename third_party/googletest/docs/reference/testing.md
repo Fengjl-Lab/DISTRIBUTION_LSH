@@ -253,12 +253,12 @@ Registers the type-parameterized tests *`TestNames...`* of the test suite
 For example:
 
 ```cpp
-// Define the test suite and tests.
+// Define the test suite and test.
 TYPED_TEST_SUITE_P(MyFixture);
 TYPED_TEST_P(MyFixture, HasPropertyA) { ... }
 TYPED_TEST_P(MyFixture, HasPropertyB) { ... }
 
-// Register the tests in the test suite.
+// Register the test in the test suite.
 REGISTER_TYPED_TEST_SUITE_P(MyFixture, HasPropertyA, HasPropertyB);
 ```
 

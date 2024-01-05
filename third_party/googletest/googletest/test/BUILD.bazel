@@ -66,7 +66,7 @@ cc_test(
             "googletest-listener-test.cc",
             "googletest-message-test.cc",
             "googletest-output-test_.cc",
-            "googletest-list-tests-unittest_.cc",
+            "googletest-list-test-unittest_.cc",
             "googletest-shuffle-test_.cc",
             "googletest-setuptestsuite-test_.cc",
             "googletest-uninitialized-test_.cc",
@@ -102,7 +102,7 @@ cc_test(
     deps = ["//:gtest_main"],
 )
 
-# Tests death tests.
+# Tests death test.
 cc_test(
     name = "googletest-death-test-test",
     size = "medium",
@@ -117,7 +117,7 @@ cc_test(
     deps = ["//:gtest"],
 )
 
-#These googletest tests have their own main()
+#These googletest test have their own main()
 cc_test(
     name = "googletest-listener-test",
     size = "small",
@@ -155,7 +155,7 @@ cc_test(
     deps = ["//:gtest_main"],
 )
 
-#  Py tests
+#  Py test
 
 py_library(
     name = "gtest_test_utils",
@@ -320,7 +320,7 @@ py_test(
 cc_binary(
     name = "googletest-list-tests-unittest_",
     testonly = 1,
-    srcs = ["googletest-list-tests-unittest_.cc"],
+    srcs = ["googletest-list-test-unittest_.cc"],
     deps = ["//:gtest"],
 )
 
@@ -359,8 +359,8 @@ py_test(
 py_test(
     name = "googletest-list-tests-unittest",
     size = "small",
-    srcs = ["googletest-list-tests-unittest.py"],
-    data = [":googletest-list-tests-unittest_"],
+    srcs = ["googletest-list-test-unittest.py"],
+    data = [":googletest-list-test-unittest_"],
     deps = [":gtest_test_utils"],
 )
 
@@ -546,7 +546,7 @@ py_test(
     deps = [":gtest_test_utils"],
 )
 
-# Verifies interaction of death tests and exceptions.
+# Verifies interaction of death test and exceptions.
 cc_test(
     name = "googletest-death-test_ex_catch_test",
     size = "medium",

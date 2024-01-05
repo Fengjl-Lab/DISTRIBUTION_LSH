@@ -79,7 +79,7 @@ EX_BINARY_OUTPUT = gtest_test_utils.Subprocess(
 ).output
 
 
-# The tests.
+# The test.
 if SUPPORTS_SEH_EXCEPTIONS:
 
   class CatchSehExceptionsTest(gtest_test_utils.TestCase):
@@ -295,8 +295,8 @@ class CatchCxxExceptionsTest(gtest_test_utils.TestCase):
     )
 
   def testUnhandledCxxExceptionsAbortTheProgram(self):
-    # Filters out SEH exception tests on Windows. Unhandled SEH exceptions
-    # cause tests to show pop-up windows there.
+    # Filters out SEH exception test on Windows. Unhandled SEH exceptions
+    # cause test to show pop-up windows there.
     filter_out_seh_tests_flag = FILTER_FLAG + '=-*Seh*'
     # By default, Google Test doesn't catch the exceptions.
     uncaught_exceptions_ex_binary_output = gtest_test_utils.Subprocess(

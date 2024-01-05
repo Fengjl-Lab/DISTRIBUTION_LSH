@@ -29,7 +29,7 @@
 
 // Google Mock - a framework for writing C++ mock classes.
 //
-// This file tests the internal utilities.
+// This file test the internal utilities.
 
 #include "gmock/internal/gmock-internal-utils.h"
 

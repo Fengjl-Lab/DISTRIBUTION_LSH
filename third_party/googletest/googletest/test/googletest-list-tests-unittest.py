@@ -31,9 +31,9 @@
 
 """Unit test for Google Test's --gtest_list_tests flag.
 
-A user can ask Google Test to list all tests by specifying the
---gtest_list_tests flag.  This script tests such functionality
-by invoking googletest-list-tests-unittest_ (a program written with
+A user can ask Google Test to list all test by specifying the
+--gtest_list_tests flag.  This script test such functionality
+by invoking googletest-list-test-unittest_ (a program written with
 Google Test) the command line flags.
 """
 
@@ -42,15 +42,15 @@ from googletest.test import gtest_test_utils
 
 # Constants.
 
-# The command line flag for enabling/disabling listing all tests.
+# The command line flag for enabling/disabling listing all test.
 LIST_TESTS_FLAG = 'gtest_list_tests'
 
-# Path to the googletest-list-tests-unittest_ program.
+# Path to the googletest-list-test-unittest_ program.
 EXE_PATH = gtest_test_utils.GetTestExecutablePath(
-    'googletest-list-tests-unittest_'
+    'googletest-list-test-unittest_'
 )
 
-# The expected output when running googletest-list-tests-unittest_ with
+# The expected output when running googletest-list-test-unittest_ with
 # --gtest_list_tests
 EXPECTED_OUTPUT_NO_FILTER_RE = re.compile(
     r"""FooDeathTest\.
@@ -96,7 +96,7 @@ MyInstantiation/ValueParamTest\.
 """
 )
 
-# The expected output when running googletest-list-tests-unittest_ with
+# The expected output when running googletest-list-test-unittest_ with
 # --gtest_list_tests and --gtest_filter=Foo*.
 EXPECTED_OUTPUT_FILTER_FOO_RE = re.compile(
     r"""FooDeathTest\.
@@ -118,7 +118,7 @@ FooTest\.
 
 
 def Run(args):
-  """Runs googletest-list-tests-unittest_ and returns the list of tests printed."""
+  """Runs googletest-list-test-unittest_ and returns the list of test printed."""
 
   return gtest_test_utils.Subprocess(
       [EXE_PATH] + args, capture_stderr=False
@@ -129,13 +129,13 @@ def Run(args):
 
 
 class GTestListTestsUnitTest(gtest_test_utils.TestCase):
-  """Tests using the --gtest_list_tests flag to list all tests."""
+  """Tests using the --gtest_list_tests flag to list all test."""
 
   def RunAndVerify(self, flag_value, expected_output_re, other_flag):
-    """Run googletest-list-tests-unittest_ and verify the output.
+    """Run googletest-list-test-unittest_ and verify the output.
 
-    Runs googletest-list-tests-unittest_ and verifies that it prints
-    the correct tests.
+    Runs googletest-list-test-unittest_ and verifies that it prints
+    the correct test.
 
     Args:
       flag_value:         value of the --gtest_list_tests flag; None if the flag

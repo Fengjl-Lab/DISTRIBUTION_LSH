@@ -90,7 +90,7 @@ def GetTestsForAllIterations(extra_env, args):
     args: command line flags to pass to googletest-shuffle-test_
 
   Returns:
-    A list where the i-th element is the list of tests run in the i-th
+    A list where the i-th element is the list of test run in the i-th
     test iteration.
   """
 
@@ -112,7 +112,7 @@ def GetTestCases(tests):
     tests: a list of full test names
 
   Returns:
-    A list of test cases from 'tests', in their original order.
+    A list of test cases from 'test', in their original order.
     Consecutive duplicates are removed.
   """
 
@@ -126,7 +126,7 @@ def GetTestCases(tests):
 
 
 def CalculateTestLists():
-  """Calculates the list of tests run under different flags."""
+  """Calculates the list of test run under different flags."""
 
   if not ALL_TESTS:
     ALL_TESTS.extend(
@@ -308,14 +308,14 @@ class GTestShuffleUnitTest(gtest_test_utils.TestCase):
         )
     )
 
-    # Make sure running the tests with random seed 1 gets the same
+    # Make sure running the test with random seed 1 gets the same
     # order as in iteration 1 above.
     tests_with_seed1 = GetTestsForAllIterations(
         {}, [ShuffleFlag(), RandomSeedFlag(1)]
     )[0]
     self.assertEqual(tests_in_iteration1, tests_with_seed1)
 
-    # Make sure running the tests with random seed 2 gets the same
+    # Make sure running the test with random seed 2 gets the same
     # order as in iteration 2 above.  Success means that Google Test
     # correctly restores the test order before re-shuffling at the
     # beginning of iteration 2.
@@ -324,7 +324,7 @@ class GTestShuffleUnitTest(gtest_test_utils.TestCase):
     )[0]
     self.assertEqual(tests_in_iteration2, tests_with_seed2)
 
-    # Make sure running the tests with random seed 3 gets the same
+    # Make sure running the test with random seed 3 gets the same
     # order as in iteration 3 above.  Success means that Google Test
     # correctly restores the test order before re-shuffling at the
     # beginning of iteration 3.
@@ -352,7 +352,7 @@ class GTestShuffleUnitTest(gtest_test_utils.TestCase):
     )
 
   def testShuffleShardedTestsPreservesPartition(self):
-    # If we run M tests on N shards, the same M tests should be run in
+    # If we run M test on N shards, the same M test should be run in
     # total, regardless of the random seeds used by the shards.
     tests1 = GetTestsForAllIterations(
         {TOTAL_SHARDS_ENV_VAR: '3', SHARD_INDEX_ENV_VAR: '0'},

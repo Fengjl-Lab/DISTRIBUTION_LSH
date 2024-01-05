@@ -146,7 +146,7 @@ macro(config_compiler_and_linker)
   endif()
   set(cxx_base_flags "${cxx_base_flags} ${GTEST_HAS_PTHREAD_MACRO}")
 
-  # For building gtest's own tests and samples.
+  # For building gtest's own test and samples.
   set(cxx_exception "${cxx_base_flags} ${cxx_exception_flags}")
   set(cxx_no_exception
     "${CMAKE_CXX_FLAGS} ${cxx_base_flags} ${cxx_no_exception_flags}")
@@ -157,7 +157,7 @@ macro(config_compiler_and_linker)
   set(cxx_strict "${cxx_default} ${cxx_strict_flags}")
 endmacro()
 
-# Defines the gtest & gtest_main libraries.  User tests should link
+# Defines the gtest & gtest_main libraries.  User test should link
 # with one of them.
 function(cxx_library_with_type name type cxx_flags)
   # type can be either STATIC or SHARED to denote a static or shared library.
@@ -217,7 +217,7 @@ endfunction()
 function(cxx_executable_with_flags name cxx_flags libs)
   add_executable(${name} ${ARGN})
   if (MSVC)
-    # BigObj required for tests.
+    # BigObj required for test.
     set(cxx_flags "${cxx_flags} -bigobj")
   endif()
   if (cxx_flags)

@@ -428,7 +428,7 @@ class FooTest : public ::testing::Test {
      // before the destructor).
   }
 
-  // Class members declared here can be used by all tests in the test suite
+  // Class members declared here can be used by all test in the test suite
   // for Foo.
 };
 

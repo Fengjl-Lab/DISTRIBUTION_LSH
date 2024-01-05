@@ -1591,7 +1591,7 @@ class PredicateFormatterFromMatcher {
     const Matcher<const T&> matcher = SafeMatcherCast<const T&>(matcher_);
 
     // The expected path here is that the matcher should match (i.e. that most
-    // tests pass) so optimize for this case.
+    // test pass) so optimize for this case.
     if (matcher.Matches(x)) {
       return AssertionSuccess();
     }
@@ -5433,7 +5433,7 @@ PolymorphicMatcher<internal::ExceptionMatcherImpl<Err>> ThrowsMessage(
 #endif  // GTEST_HAS_EXCEPTIONS
 
 // These macros allow using matchers to check values in Google Test
-// tests.  ASSERT_THAT(value, matcher) and EXPECT_THAT(value, matcher)
+// test.  ASSERT_THAT(value, matcher) and EXPECT_THAT(value, matcher)
 // succeed if and only if the value matches the matcher.  If the assertion
 // fails, the value and the description of the matcher will be printed.
 #define ASSERT_THAT(value, matcher) \

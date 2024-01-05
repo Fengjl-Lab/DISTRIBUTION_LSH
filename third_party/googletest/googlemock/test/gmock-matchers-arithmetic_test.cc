@@ -29,7 +29,7 @@
 
 // Google Mock - a framework for writing C++ mock classes.
 //
-// This file tests some commonly used argument matchers.
+// This file test some commonly used argument matchers.
 
 #include <cmath>
 #include <limits>
@@ -460,7 +460,7 @@ TEST(AllOfTest, MatchesWhenAllMatch) {
   EXPECT_TRUE(m.Matches(1));
   EXPECT_FALSE(m.Matches(3));
 
-  // The following tests for varying number of sub-matchers. Due to the way
+  // The following test for varying number of sub-matchers. Due to the way
   // the sub-matchers are handled it is enough to test every sub-matcher once
   // with sub-matchers using the same matcher type. Varying matcher types are
   // checked for above.
@@ -649,7 +649,7 @@ TEST(AnyOfTest, MatchesWhenAnyMatches) {
   EXPECT_TRUE(m.Matches(3));
   EXPECT_FALSE(m.Matches(2));
 
-  // The following tests for varying number of sub-matchers. Due to the way
+  // The following test for varying number of sub-matchers. Due to the way
   // the sub-matchers are handled it is enough to test every sub-matcher once
   // with sub-matchers using the same matcher type. Varying matcher types are
   // checked for above.
@@ -1044,7 +1044,7 @@ class FloatingPointTest : public testing::Test {
 
   void TestSize() { EXPECT_EQ(sizeof(RawType), sizeof(Bits)); }
 
-  // A battery of tests for FloatingEqMatcher::Matches.
+  // A battery of test for FloatingEqMatcher::Matches.
   // matcher_maker is a pointer to a function which creates a FloatingEqMatcher.
   void TestMatches(
       testing::internal::FloatingEqMatcher<RawType> (*matcher_maker)(RawType)) {
@@ -1090,7 +1090,7 @@ class FloatingPointTest : public testing::Test {
     EXPECT_FALSE(m7.Matches(x));
   }
 
-  // Pre-calculated numbers to be used by the tests.
+  // Pre-calculated numbers to be used by the test.
 
   const Bits max_ulps_;
 
@@ -1126,7 +1126,7 @@ class FloatingPointNearTest : public FloatingPointTest<RawType> {
  protected:
   typedef FloatingPointTest<RawType> ParentType;
 
-  // A battery of tests for FloatingEqMatcher::Matches with a fixed epsilon.
+  // A battery of test for FloatingEqMatcher::Matches with a fixed epsilon.
   // matcher_maker is a pointer to a function which creates a FloatingEqMatcher.
   void TestNearMatches(testing::internal::FloatingEqMatcher<RawType> (
       *matcher_maker)(RawType, RawType)) {

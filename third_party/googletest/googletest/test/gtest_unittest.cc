@@ -297,7 +297,7 @@ class TestingVector : public std::vector<int> {};
   return os;
 }
 
-// This line tests that we can define tests in an unnamed namespace.
+// This line test that we can define test in an unnamed namespace.
 namespace {
 
 TEST(GetRandomSeedFromFlagTest, HandlesZero) {
@@ -332,7 +332,7 @@ TEST(GetNextRandomSeedTest, WorksForValidInput) {
   EXPECT_EQ(1, GetNextRandomSeed(kMaxRandomSeed));
 
   // We deliberately don't test GetNextRandomSeed() with invalid
-  // inputs, as that requires death tests, which are expensive.  This
+  // inputs, as that requires death test, which are expensive.  This
   // is fine as GetNextRandomSeed() is internal and has a
   // straightforward definition.
 }
@@ -1001,7 +1001,7 @@ TEST_F(VectorShuffleTest, HandlesRangeOfSizeOne) {
 }
 
 // Because we use our own random number generator and a fixed seed,
-// we can guarantee that the following "random" tests will succeed.
+// we can guarantee that the following "random" test will succeed.
 
 TEST_F(VectorShuffleTest, ShufflesEntireVector) {
   Shuffle(&random_, &vector_);
@@ -1618,7 +1618,7 @@ class GTestFlagSaverTest : public Test {
     GTEST_FLAG_SET(throw_on_failure, false);
   }
 
-  // Restores the Google Test flags that the tests have modified.  This will
+  // Restores the Google Test flags that the test have modified.  This will
   // be called after the last test in this test case is run.
   static void TearDownTestSuite() {
     delete saver_;
@@ -1674,8 +1674,8 @@ class GTestFlagSaverTest : public Test {
 
 GTestFlagSaver* GTestFlagSaverTest::saver_ = nullptr;
 
-// Google Test doesn't guarantee the order of tests.  The following two
-// tests are designed to work regardless of their order.
+// Google Test doesn't guarantee the order of test.  The following two
+// test are designed to work regardless of their order.
 
 // Modifies the Google Test flags in the test body.
 TEST_F(GTestFlagSaverTest, ModifyGTestFlags) { VerifyAndModifyFlags(); }
@@ -1857,7 +1857,7 @@ TEST(Int32FromEnvOrDieDeathTest, AbortsOnInt32Overflow) {
       Int32FromEnvOrDie(GTEST_FLAG_PREFIX_UPPER_ "VAR", 123), ".*");
 }
 
-// Tests that ShouldRunTestOnShard() selects all tests
+// Tests that ShouldRunTestOnShard() selects all test
 // where there is 1 shard.
 TEST(ShouldRunTestOnShardTest, IsPartitionWhenThereIsOneShard) {
   EXPECT_TRUE(ShouldRunTestOnShard(1, 0, 0));
@@ -1948,7 +1948,7 @@ TEST_F(ShouldShardDeathTest, AbortsWhenShardingEnvVarsAreInvalid) {
 // Tests that ShouldRunTestOnShard is a partition when 5
 // shards are used.
 TEST(ShouldRunTestOnShardTest, IsPartitionWhenThereAreFiveShards) {
-  // Choose an arbitrary number of tests and shards.
+  // Choose an arbitrary number of test and shards.
   const int num_tests = 17;
   const int num_shards = 5;
 
@@ -1981,12 +1981,12 @@ TEST(ShouldRunTestOnShardTest, IsPartitionWhenThereAreFiveShards) {
 }
 
 // For the same reason we are not explicitly testing everything in the
-// Test class, there are no separate tests for the following classes
+// Test class, there are no separate test for the following classes
 // (except for some trivial cases):
 //
 //   TestSuite, UnitTest, UnitTestResultPrinter.
 //
-// Similarly, there are no separate tests for the following macros:
+// Similarly, there are no separate test for the following macros:
 //
 //   TEST, TEST_F, RUN_ALL_TESTS
 
@@ -2001,7 +2001,7 @@ TEST(UnitTestTest, ReturnsPlausibleTimestamp) {
 }
 
 // When a property using a reserved key is supplied to this function, it
-// tests that a non-fatal failure is added, a fatal failure is not added,
+// test that a non-fatal failure is added, a fatal failure is not added,
 // and that the property is not recorded.
 void ExpectNonFatalFailureRecordingPropertyWithReservedKey(
     const TestResult& test_result, const char* key) {
@@ -2033,9 +2033,9 @@ void ExpectNonFatalFailureRecordingPropertyWithReservedKeyOutsideOfTestSuite(
       UnitTest::GetInstance()->ad_hoc_test_result(), key);
 }
 
-// Tests that property recording functions in UnitTest outside of tests
+// Tests that property recording functions in UnitTest outside of test
 // functions correctly.  Creating a separate instance of UnitTest ensures it
-// is in a state similar to the UnitTest's singleton's between tests.
+// is in a state similar to the UnitTest's singleton's between test.
 class UnitTestRecordPropertyTest
     : public testing::internal::UnitTestRecordPropertyTestHelper {
  public:
@@ -2049,7 +2049,7 @@ class UnitTestRecordPropertyTest
     ExpectNonFatalFailureRecordingPropertyWithReservedKeyForCurrentTestSuite(
         "name");
     ExpectNonFatalFailureRecordingPropertyWithReservedKeyForCurrentTestSuite(
-        "tests");
+        "test");
     ExpectNonFatalFailureRecordingPropertyWithReservedKeyForCurrentTestSuite(
         "time");
 
@@ -2140,7 +2140,7 @@ class UnitTestRecordPropertyTestEnvironment : public Environment {
  public:
   void TearDown() override {
     ExpectNonFatalFailureRecordingPropertyWithReservedKeyOutsideOfTestSuite(
-        "tests");
+        "test");
     ExpectNonFatalFailureRecordingPropertyWithReservedKeyOutsideOfTestSuite(
         "failures");
     ExpectNonFatalFailureRecordingPropertyWithReservedKeyOutsideOfTestSuite(
@@ -2162,13 +2162,13 @@ class UnitTestRecordPropertyTestEnvironment : public Environment {
 static Environment* record_property_env GTEST_ATTRIBUTE_UNUSED_ =
     AddGlobalTestEnvironment(new UnitTestRecordPropertyTestEnvironment);
 
-// This group of tests is for predicate assertions (ASSERT_PRED*, etc)
+// This group of test is for predicate assertions (ASSERT_PRED*, etc)
 // of various arities.  They do not attempt to be exhaustive.  Rather,
-// view them as smoke tests that can be easily reviewed and verified.
-// A more complete set of tests for predicate assertions can be found
+// view them as smoke test that can be easily reviewed and verified.
+// A more complete set of test for predicate assertions can be found
 // in gtest_pred_impl_unittest.cc.
 
-// First, some predicates and predicate-formatters needed by the tests.
+// First, some predicates and predicate-formatters needed by the test.
 
 // Returns true if and only if the argument is an even number.
 bool IsEven(int n) { return (n % 2) == 0; }
@@ -2737,7 +2737,7 @@ TEST(IsNotSubstringTest, ReturnsCorrectResultForStdWstring) {
 template <typename RawType>
 class FloatingPointTest : public Test {
  protected:
-  // Pre-calculated numbers to be used by the tests.
+  // Pre-calculated numbers to be used by the test.
   struct TestValues {
     RawType close_to_positive_zero;
     RawType close_to_negative_zero;
@@ -3152,17 +3152,17 @@ TEST(DISABLED_TestSuite, DISABLED_TestShouldNotRun) {
   FAIL() << "Unexpected failure: Test in disabled test case should not be run.";
 }
 
-// Check that when all tests in a test case are disabled, SetUpTestSuite() and
+// Check that when all test in a test case are disabled, SetUpTestSuite() and
 // TearDownTestSuite() are not called.
 class DisabledTestsTest : public Test {
  protected:
   static void SetUpTestSuite() {
-    FAIL() << "Unexpected failure: All tests disabled in test case. "
+    FAIL() << "Unexpected failure: All test disabled in test case. "
               "SetUpTestSuite() should not be called.";
   }
 
   static void TearDownTestSuite() {
-    FAIL() << "Unexpected failure: All tests disabled in test case. "
+    FAIL() << "Unexpected failure: All test disabled in test case. "
               "TearDownTestSuite() should not be called.";
   }
 };
@@ -3175,7 +3175,7 @@ TEST_F(DisabledTestsTest, DISABLED_TestShouldNotRun_2) {
   FAIL() << "Unexpected failure: Disabled test should not be run.";
 }
 
-// Tests that disabled typed tests aren't run.
+// Tests that disabled typed test aren't run.
 
 template <typename T>
 class TypedTest : public Test {};
@@ -3196,7 +3196,7 @@ TYPED_TEST(DISABLED_TypedTest, ShouldNotRun) {
   FAIL() << "Unexpected failure: Disabled typed test should not run.";
 }
 
-// Tests that disabled type-parameterized tests aren't run.
+// Tests that disabled type-parameterized test aren't run.
 
 template <typename T>
 class TypedTestP : public Test {};
@@ -3999,7 +3999,7 @@ static HRESULT OkHRESULTSuccess() { return S_OK; }
 
 static HRESULT FalseHRESULTSuccess() { return S_FALSE; }
 
-// HRESULT assertion tests test both zero and non-zero
+// HRESULT assertion test test both zero and non-zero
 // success codes as well as failure message for each.
 //
 // Windows CE doesn't support message texts.
@@ -4076,7 +4076,7 @@ TEST(HRESULTAssertionTest, Streaming) {
 
 #endif  // GTEST_OS_WINDOWS
 
-// The following code intentionally tests a suboptimal syntax.
+// The following code intentionally test a suboptimal syntax.
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdangling-else"
@@ -4124,7 +4124,7 @@ TEST(ExpectThrowTest, DoesNotGenerateDuplicateCatchClauseWarning) {
   EXPECT_THROW(throw std::exception(), std::exception);
 }
 
-// The following code intentionally tests a suboptimal syntax.
+// The following code intentionally test a suboptimal syntax.
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdangling-else"
@@ -4159,7 +4159,7 @@ TEST(AssertionSyntaxTest, ExceptionAssertionsBehavesLikeSingleStatement) {
 
 #endif  // GTEST_HAS_EXCEPTIONS
 
-// The following code intentionally tests a suboptimal syntax.
+// The following code intentionally test a suboptimal syntax.
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdangling-else"
@@ -4652,7 +4652,7 @@ TEST(StreamableTest, int) { EXPECT_FATAL_FAILURE(FAIL() << 900913, "900913"); }
 //
 // In MSVC, streaming a NULL char * causes access violation.  Google Test
 // implemented a workaround (substituting "(null)" for NULL).  This
-// tests whether the workaround works.
+// test whether the workaround works.
 TEST(StreamableTest, NullCharPtr) {
   EXPECT_FATAL_FAILURE(FAIL() << static_cast<const char*>(nullptr), "(null)");
 }
@@ -4726,10 +4726,10 @@ TEST(MacroTest, SUCCEED) {
 
 // Tests for EXPECT_EQ() and ASSERT_EQ().
 //
-// These tests fail *intentionally*, s.t. the failure messages can be
+// These test fail *intentionally*, s.t. the failure messages can be
 // generated and tested.
 //
-// We have different tests for different argument types.
+// We have different test for different argument types.
 
 // Tests using bool values in {EXPECT|ASSERT}_EQ.
 TEST(EqAssertionTest, Bool) {
@@ -4968,7 +4968,7 @@ class Foo {
  private:
   int Bar() const { return 1; }
 
-  // Declares the friend tests that can access the private member
+  // Declares the friend test that can access the private member
   // Bar().
   FRIEND_TEST(FRIEND_TEST_Test, TEST);
   FRIEND_TEST(FRIEND_TEST_Test2, TEST_F);
@@ -5247,7 +5247,7 @@ TEST(MessageTest, WideStrings) {
   EXPECT_STREQ("abc\xe8\x84\x99", (Message() << wstr).GetString().c_str());
 }
 
-// This line tests that we can define tests in the testing namespace.
+// This line test that we can define test in the testing namespace.
 namespace testing {
 
 // Tests the TestInfo class.
@@ -5387,7 +5387,7 @@ class SetUpTestCaseTest : public Test {
   // Number of test cases that have been set up.
   static int counter_;
 
-  // Some resource to be shared by all tests in this test case.
+  // Some resource to be shared by all test in this test case.
   static const char* shared_resource_;
 };
 
@@ -5446,7 +5446,7 @@ class SetUpTestSuiteTest : public Test {
   // Number of test suites that have been set up.
   static int counter_;
 
-  // Some resource to be shared by all tests in this test case.
+  // Some resource to be shared by all test in this test case.
   static const char* shared_resource_;
 };
 
@@ -5463,7 +5463,7 @@ TEST_F(SetUpTestSuiteTest, TestSetupTestSuite2) {
   EXPECT_STREQ("123", shared_resource_);
 }
 
-// The ParseFlagsTest test case tests ParseGoogleTestFlagsOnly.
+// The ParseFlagsTest test case test ParseGoogleTestFlagsOnly.
 
 // The Flags struct stores a copy of all Google Test flags.
 struct Flags {
@@ -5741,7 +5741,7 @@ class ParseFlagsTest : public Test {
 
 #if GTEST_HAS_STREAM_REDIRECTION
     const char* const expected_help_fragment =
-        "This program contains tests written using";
+        "This program contains test written using";
     if (should_print_help) {
       EXPECT_PRED_FORMAT2(IsSubstring, expected_help_fragment, captured_stdout);
     } else {
@@ -6348,10 +6348,10 @@ class CurrentTestInfoTest : public Test {
   // Tests that current_test_info() returns NULL before the first test in
   // the test case is run.
   static void SetUpTestSuite() {
-    // There should be no tests running at this point.
+    // There should be no test running at this point.
     const TestInfo* test_info = UnitTest::GetInstance()->current_test_info();
     EXPECT_TRUE(test_info == nullptr)
-        << "There should be no tests running at this point.";
+        << "There should be no test running at this point.";
   }
 
   // Tests that current_test_info() returns NULL after the last test in
@@ -6359,7 +6359,7 @@ class CurrentTestInfoTest : public Test {
   static void TearDownTestSuite() {
     const TestInfo* test_info = UnitTest::GetInstance()->current_test_info();
     EXPECT_TRUE(test_info == nullptr)
-        << "There should be no tests running at this point.";
+        << "There should be no test running at this point.";
   }
 };
 
@@ -6391,7 +6391,7 @@ TEST_F(CurrentTestInfoTest, WorksForSecondTestInATestSuite) {
 
 }  // namespace testing
 
-// These two lines test that we can define tests in a namespace that
+// These two lines test that we can define test in a namespace that
 // has the name "testing" and is nested in another namespace.
 namespace my_namespace {
 namespace testing {
@@ -6425,7 +6425,7 @@ TEST(NestedTestingNamespaceTest, Failure) {
 
 // Tests that one can call superclass SetUp and TearDown methods--
 // that is, that they are not private.
-// No tests are based on this fixture; the test "passes" if it compiles
+// No test are based on this fixture; the test "passes" if it compiles
 // successfully.
 class ProtectedFixtureMethodsTest : public Test {
  protected:
@@ -6433,7 +6433,7 @@ class ProtectedFixtureMethodsTest : public Test {
   void TearDown() override { Test::TearDown(); }
 };
 
-// StreamingAssertionsTest tests the streaming versions of a representative
+// StreamingAssertionsTest test the streaming versions of a representative
 // sample of assertions.
 TEST(StreamingAssertionsTest, Unconditional) {
   SUCCEED() << "expected success";

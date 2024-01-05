@@ -274,7 +274,7 @@ void TestCatchesLeakedMocksInAdHocTests() {
 
 int main(int argc, char** argv) {
   testing::InitGoogleMock(&argc, argv);
-  // Ensures that the tests pass no matter what value of
+  // Ensures that the test pass no matter what value of
   // --gmock_catch_leaked_mocks and --gmock_verbose the user specifies.
   GMOCK_FLAG_SET(catch_leaked_mocks, true);
   GMOCK_FLAG_SET(verbose, "warning");

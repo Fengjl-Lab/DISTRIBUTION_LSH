@@ -35,7 +35,7 @@ after a test failure via the GTEST_FAIL_FAST environment variable or the
 --gtest_fail_fast flag. The default value of the flag can also be changed
 by Bazel fail fast environment variable TESTBRIDGE_TEST_RUNNER_FAIL_FAST.
 
-This script tests such functionality by invoking googletest-failfast-unittest_
+This script test such functionality by invoking googletest-failfast-unittest_
 (a program written with Google Test) with different environments and command
 line flags.
 """
@@ -54,7 +54,7 @@ FAIL_FAST_ENV_VAR = 'GTEST_FAIL_FAST'
 # The command line flag for specifying fail fast.
 FAIL_FAST_FLAG = 'gtest_fail_fast'
 
-# The command line flag to run disabled tests.
+# The command line flag to run disabled test.
 RUN_DISABLED_FLAG = 'gtest_also_run_disabled_tests'
 
 # The command line flag for specifying a filter.
@@ -65,11 +65,11 @@ COMMAND = gtest_test_utils.GetTestExecutablePath(
     'googletest-failfast-unittest_'
 )
 
-# The command line flag to tell Google Test to output the list of tests it
+# The command line flag to tell Google Test to output the list of test it
 # will run.
 LIST_TESTS_FLAG = '--gtest_list_tests'
 
-# Indicates whether Google Test supports death tests.
+# Indicates whether Google Test supports death test.
 SUPPORTS_DEATH_TESTS = (
     'HasDeathTest'
     in gtest_test_utils.Subprocess([COMMAND, LIST_TESTS_FLAG]).output
@@ -126,7 +126,7 @@ class GTestFailFastUnitTest(gtest_test_utils.TestCase):
   def testGoogletestFlag(self):
     txt, _ = RunAndReturnOutput(test_suite='HasSimpleTest', fail_fast=True)
     self.assertIn('1 FAILED TEST', txt)
-    self.assertIn('[  SKIPPED ] 3 tests', txt)
+    self.assertIn('[  SKIPPED ] 3 test', txt)
 
     txt, _ = RunAndReturnOutput(test_suite='HasSimpleTest', fail_fast=False)
     self.assertIn('4 FAILED TEST', txt)
@@ -139,7 +139,7 @@ class GTestFailFastUnitTest(gtest_test_utils.TestCase):
       SetEnvVar(FAIL_FAST_ENV_VAR, '1')
       txt, _ = RunAndReturnOutput('HasSimpleTest')
       self.assertIn('1 FAILED TEST', txt)
-      self.assertIn('[  SKIPPED ] 3 tests', txt)
+      self.assertIn('[  SKIPPED ] 3 test', txt)
 
       SetEnvVar(FAIL_FAST_ENV_VAR, '0')
       txt, _ = RunAndReturnOutput('HasSimpleTest')
@@ -155,7 +155,7 @@ class GTestFailFastUnitTest(gtest_test_utils.TestCase):
       SetEnvVar(BAZEL_FAIL_FAST_ENV_VAR, '1')
       txt, _ = RunAndReturnOutput('HasSimpleTest')
       self.assertIn('1 FAILED TEST', txt)
-      self.assertIn('[  SKIPPED ] 3 tests', txt)
+      self.assertIn('[  SKIPPED ] 3 test', txt)
 
       SetEnvVar(BAZEL_FAIL_FAST_ENV_VAR, '0')
       txt, _ = RunAndReturnOutput('HasSimpleTest')
@@ -171,7 +171,7 @@ class GTestFailFastUnitTest(gtest_test_utils.TestCase):
       SetEnvVar(FAIL_FAST_ENV_VAR, '0')
       txt, _ = RunAndReturnOutput('HasSimpleTest', True)
       self.assertIn('1 FAILED TEST', txt)
-      self.assertIn('[  SKIPPED ] 3 tests', txt)
+      self.assertIn('[  SKIPPED ] 3 test', txt)
     finally:
       SetEnvVar(FAIL_FAST_ENV_VAR, None)
 
@@ -183,7 +183,7 @@ class GTestFailFastUnitTest(gtest_test_utils.TestCase):
       SetEnvVar(FAIL_FAST_ENV_VAR, '1')
       txt, _ = RunAndReturnOutput('HasSimpleTest')
       self.assertIn('1 FAILED TEST', txt)
-      self.assertIn('[  SKIPPED ] 3 tests', txt)
+      self.assertIn('[  SKIPPED ] 3 test', txt)
     finally:
       SetEnvVar(FAIL_FAST_ENV_VAR, None)
       SetEnvVar(BAZEL_FAIL_FAST_ENV_VAR, None)
@@ -191,7 +191,7 @@ class GTestFailFastUnitTest(gtest_test_utils.TestCase):
   def testEventListener(self):
     txt, _ = RunAndReturnOutput(test_suite='HasSkipTest', fail_fast=True)
     self.assertIn('1 FAILED TEST', txt)
-    self.assertIn('[  SKIPPED ] 3 tests', txt)
+    self.assertIn('[  SKIPPED ] 3 test', txt)
     for expected_count, callback in [
         (1, 'OnTestSuiteStart'),
         (5, 'OnTestStart'),
@@ -257,7 +257,7 @@ class GTestFailFastUnitTest(gtest_test_utils.TestCase):
     if suppressed_count > 0:
       self.assertIn('%s DISABLED TEST' % suppressed_count, txt)
     if skipped_count > 0:
-      self.assertIn('[  SKIPPED ] %s tests' % skipped_count, txt)
+      self.assertIn('[  SKIPPED ] %s test' % skipped_count, txt)
     self.assertXmlStatusCount(
         'run', passed_count + failure_count + skipped_count, xml
     )
@@ -440,7 +440,7 @@ class GTestFailFastUnitTest(gtest_test_utils.TestCase):
   if SUPPORTS_DEATH_TESTS:
 
     def testFlag_HasDeathTest(self):
-      """Tests the behavior of fail_fast and death tests."""
+      """Tests the behavior of fail_fast and death test."""
       self.assertFailFastBehavior(
           test_suite='HasDeathTest',
           passed_count=1,

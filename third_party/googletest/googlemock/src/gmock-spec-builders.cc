@@ -485,7 +485,7 @@ class MockObjectRegistry {
   typedef std::map<const void*, MockObjectState> StateMap;
 
   // This destructor will be called when a program exits, after all
-  // tests in it have been run.  By then, there should be no mock
+  // test in it have been run.  By then, there should be no mock
   // object alive.  Therefore we report any living object as test
   // failure, unless the user explicitly asked us to ignore it.
   ~MockObjectRegistry() {

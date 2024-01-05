@@ -190,7 +190,7 @@ void InitGoogleMockImpl(int* argc, CharType** argv) {
 }  // namespace internal
 
 // Initializes Google Mock.  This must be called before running the
-// tests.  In particular, it parses a command line for the flags that
+// test.  In particular, it parses a command line for the flags that
 // Google Mock recognizes.  Whenever a Google Mock flag is seen, it is
 // removed from argv, and *argc is decremented.
 //

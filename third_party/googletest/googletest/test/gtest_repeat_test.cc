@@ -147,7 +147,7 @@ void TestRepeat(int repeat) {
 }
 
 // Tests using --gtest_repeat when --gtest_filter specifies an empty
-// set of tests.
+// set of test.
 void TestRepeatWithEmptyFilter(int repeat) {
   GTEST_FLAG_SET(repeat, repeat);
   GTEST_FLAG_SET(recreate_environments_when_repeating, true);
@@ -159,7 +159,7 @@ void TestRepeatWithEmptyFilter(int repeat) {
 }
 
 // Tests using --gtest_repeat when --gtest_filter specifies a set of
-// successful tests.
+// successful test.
 void TestRepeatWithFilterForSuccessfulTests(int repeat) {
   GTEST_FLAG_SET(repeat, repeat);
   GTEST_FLAG_SET(recreate_environments_when_repeating, true);
@@ -176,7 +176,7 @@ void TestRepeatWithFilterForSuccessfulTests(int repeat) {
 }
 
 // Tests using --gtest_repeat when --gtest_filter specifies a set of
-// failed tests.
+// failed test.
 void TestRepeatWithFilterForFailedTests(int repeat) {
   GTEST_FLAG_SET(repeat, repeat);
   GTEST_FLAG_SET(recreate_environments_when_repeating, true);
@@ -211,7 +211,7 @@ int main(int argc, char **argv) {
 
   TestRepeatWithFilterForFailedTests(4);
 
-  // It would be nice to verify that the tests indeed loop forever
+  // It would be nice to verify that the test indeed loop forever
   // when GTEST_FLAG(repeat) is negative, but this test will be quite
   // complicated to write.  Since this flag is for interactive
   // debugging only and doesn't affect the normal test result, such a

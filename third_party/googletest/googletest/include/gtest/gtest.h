@@ -79,7 +79,7 @@ GTEST_DISABLE_MSC_WARNINGS_PUSH_(4251 \
 
 // Declares the flags.
 
-// This flag temporary enables the disabled tests.
+// This flag temporary enables the disabled test.
 GTEST_DECLARE_bool_(also_run_disabled_tests);
 
 // This flag brings the debugger on an assertion failure.
@@ -99,14 +99,14 @@ GTEST_DECLARE_string_(color);
 GTEST_DECLARE_bool_(fail_fast);
 
 // This flag sets up the filter to select by name using a glob pattern
-// the tests to run. If the filter is not given all tests are executed.
+// the test to run. If the filter is not given all test are executed.
 GTEST_DECLARE_string_(filter);
 
 // This flag controls whether Google Test installs a signal handler that dumps
 // debugging information when fatal signals are raised.
 GTEST_DECLARE_bool_(install_failure_signal_handler);
 
-// This flag causes the Google Test to list tests. None of the tests listed
+// This flag causes the Google Test to list test. None of the test listed
 // are actually run if the flag is provided.
 GTEST_DECLARE_bool_(list_tests);
 
@@ -127,12 +127,12 @@ GTEST_DECLARE_bool_(print_utf8);
 // This flag specifies the random number seed.
 GTEST_DECLARE_int32_(random_seed);
 
-// This flag sets how many times the tests are repeated. The default value
-// is 1. If the value is -1 the tests are repeating forever.
+// This flag sets how many times the test are repeated. The default value
+// is 1. If the value is -1 the test are repeating forever.
 GTEST_DECLARE_int32_(repeat);
 
 // This flag controls whether Google Test Environments are recreated for each
-// repeat of the tests. The default value is true. If set to false the global
+// repeat of the test. The default value is true. If set to false the global
 // test Environment objects are only set up once, for the first iteration, and
 // only torn down once, for the last.
 GTEST_DECLARE_bool_(recreate_environments_when_repeating);
@@ -141,7 +141,7 @@ GTEST_DECLARE_bool_(recreate_environments_when_repeating);
 // stack frames in failure stack traces.
 GTEST_DECLARE_bool_(show_internal_stack_frames);
 
-// When this flag is specified, tests' order is randomized on every iteration.
+// When this flag is specified, test' order is randomized on every iteration.
 GTEST_DECLARE_bool_(shuffle);
 
 // This flag specifies the maximum number of stack frames to be
@@ -217,7 +217,7 @@ using TestCase = TestSuite;
 class TestInfo;
 class UnitTest;
 
-// The abstract class that all tests inherit from.
+// The abstract class that all test inherit from.
 //
 // In Google Test, a unit test program contains one or many TestSuites, and
 // each TestSuite contains one or many Tests.
@@ -247,7 +247,7 @@ class GTEST_API_ Test {
   // The d'tor is virtual as we intend to inherit from Test.
   virtual ~Test();
 
-  // Sets up the stuff shared by all tests in this test suite.
+  // Sets up the stuff shared by all test in this test suite.
   //
   // Google Test will call Foo::SetUpTestSuite() before running the first
   // test in test suite Foo.  Hence a sub-class can define its own
@@ -255,7 +255,7 @@ class GTEST_API_ Test {
   // class.
   static void SetUpTestSuite() {}
 
-  // Tears down the stuff shared by all tests in this test suite.
+  // Tears down the stuff shared by all test in this test suite.
   //
   // Google Test will call Foo::TearDownTestSuite() after running the last
   // test in test suite Foo.  Hence a sub-class can define its own
@@ -393,7 +393,7 @@ class TestProperty {
 
 // The result of a single Test.  This includes a list of
 // TestPartResults, a list of TestProperties, a count of how many
-// death tests there are in the Test, and how much time it took to run
+// death test there are in the Test, and how much time it took to run
 // the Test.
 //
 // TestResult is not copyable.
@@ -508,7 +508,7 @@ class GTEST_API_ TestResult {
   std::vector<TestPartResult> test_part_results_;
   // The vector of TestProperties
   std::vector<TestProperty> test_properties_;
-  // Running count of death tests.
+  // Running count of death test.
   int death_test_count_;
   // The start time, in milliseconds since UNIX Epoch.
   TimeInMillis start_timestamp_;
@@ -529,7 +529,7 @@ class GTEST_API_ TestResult {
 //   Test result
 //
 // The constructor of TestInfo registers itself with the UnitTest
-// singleton such that the RUN_ALL_TESTS() macro knows which tests to
+// singleton such that the RUN_ALL_TESTS() macro knows which test to
 // run.
 class GTEST_API_ TestInfo {
  public:
@@ -575,13 +575,13 @@ class GTEST_API_ TestInfo {
   // disabled (or it is disabled but the also_run_disabled_tests flag has
   // been specified) and its full name matches the user-specified filter.
   //
-  // Google Test allows the user to filter the tests by their full names.
+  // Google Test allows the user to filter the test by their full names.
   // The full name of a test Bar in test suite Foo is defined as
-  // "Foo.Bar".  Only the tests that match the filter will run.
+  // "Foo.Bar".  Only the test that match the filter will run.
   //
   // A filter is a colon-separated list of glob (not regex) patterns,
   // optionally followed by a '-' and a colon-separated list of
-  // negative patterns (tests to exclude).  A test is run if it
+  // negative patterns (test to exclude).  A test is run if it
   // matches one of the positive patterns and does not match any of
   // the negative patterns.
   //
@@ -591,7 +591,7 @@ class GTEST_API_ TestInfo {
 
   // Returns true if and only if this test will appear in the XML report.
   bool is_reportable() const {
-    // The XML report includes tests matching the filter, excluding those
+    // The XML report includes test matching the filter, excluding those
     // run in other shards.
     return matches_filter_ && !is_in_another_shard_;
   }
@@ -623,7 +623,7 @@ class GTEST_API_ TestInfo {
            internal::TypeId fixture_class_id,
            internal::TestFactoryBase* factory);
 
-  // Increments the number of death tests encountered in this test so
+  // Increments the number of death test encountered in this test so
   // far.
   int increment_death_test_count() {
     return result_.increment_death_test_count();
@@ -704,28 +704,28 @@ class GTEST_API_ TestSuite {
   // Returns true if any test in this test suite should run.
   bool should_run() const { return should_run_; }
 
-  // Gets the number of successful tests in this test suite.
+  // Gets the number of successful test in this test suite.
   int successful_test_count() const;
 
-  // Gets the number of skipped tests in this test suite.
+  // Gets the number of skipped test in this test suite.
   int skipped_test_count() const;
 
-  // Gets the number of failed tests in this test suite.
+  // Gets the number of failed test in this test suite.
   int failed_test_count() const;
 
-  // Gets the number of disabled tests that will be reported in the XML report.
+  // Gets the number of disabled test that will be reported in the XML report.
   int reportable_disabled_test_count() const;
 
-  // Gets the number of disabled tests in this test suite.
+  // Gets the number of disabled test in this test suite.
   int disabled_test_count() const;
 
-  // Gets the number of tests to be printed in the XML report.
+  // Gets the number of test to be printed in the XML report.
   int reportable_test_count() const;
 
-  // Get the number of tests in this test suite that should run.
+  // Get the number of test in this test suite that should run.
   int test_to_run_count() const;
 
-  // Gets the number of all tests in this test suite.
+  // Gets the number of all test in this test suite.
   int total_test_count() const;
 
   // Returns true if and only if the test suite passed.
@@ -743,7 +743,7 @@ class GTEST_API_ TestSuite {
   // UNIX epoch.
   TimeInMillis start_timestamp() const { return start_timestamp_; }
 
-  // Returns the i-th test among all the tests. i can range from 0 to
+  // Returns the i-th test among all the test. i can range from 0 to
   // total_test_count() - 1. If i is not in that range, returns NULL.
   const TestInfo* GetTestInfo(int i) const;
 
@@ -763,7 +763,7 @@ class GTEST_API_ TestSuite {
     return test_info_list_;
   }
 
-  // Returns the i-th test among all the tests. i can range from 0 to
+  // Returns the i-th test among all the test. i can range from 0 to
   // total_test_count() - 1. If i is not in that range, returns NULL.
   TestInfo* GetMutableTestInfo(int i);
 
@@ -774,10 +774,10 @@ class GTEST_API_ TestSuite {
   // destruction of the TestSuite object.
   void AddTestInfo(TestInfo* test_info);
 
-  // Clears the results of all tests in this test suite.
+  // Clears the results of all test in this test suite.
   void ClearResult();
 
-  // Clears the results of all tests in the given test suite.
+  // Clears the results of all test in the given test suite.
   static void ClearTestSuiteResult(TestSuite* test_suite) {
     test_suite->ClearResult();
   }
@@ -785,7 +785,7 @@ class GTEST_API_ TestSuite {
   // Runs every test in this TestSuite.
   void Run();
 
-  // Skips the execution of tests under this TestSuite
+  // Skips the execution of test under this TestSuite
   void Skip();
 
   // Runs SetUpTestSuite() for this TestSuite.  This wrapper is needed
@@ -840,7 +840,7 @@ class GTEST_API_ TestSuite {
     return test_info->should_run();
   }
 
-  // Shuffles the tests in this test suite.
+  // Shuffles the test in this test suite.
   void ShuffleTests(internal::Random* random);
 
   // Restores the test order to before the first shuffle.
@@ -921,7 +921,7 @@ class GTEST_API_ AssertionException
 
 #endif  // GTEST_HAS_EXCEPTIONS
 
-// The interface for tracing execution of tests. The methods are organized in
+// The interface for tracing execution of test. The methods are organized in
 // the order the corresponding events are fired.
 class TestEventListener {
  public:
@@ -930,16 +930,16 @@ class TestEventListener {
   // Fired before any test activity starts.
   virtual void OnTestProgramStart(const UnitTest& unit_test) = 0;
 
-  // Fired before each iteration of tests starts.  There may be more than
+  // Fired before each iteration of test starts.  There may be more than
   // one iteration if GTEST_FLAG(repeat) is set. iteration is the iteration
   // index, starting from 0.
   virtual void OnTestIterationStart(const UnitTest& unit_test,
                                     int iteration) = 0;
 
-  // Fired before environment set-up for each iteration of tests starts.
+  // Fired before environment set-up for each iteration of test starts.
   virtual void OnEnvironmentsSetUpStart(const UnitTest& unit_test) = 0;
 
-  // Fired after environment set-up for each iteration of tests ends.
+  // Fired after environment set-up for each iteration of test ends.
   virtual void OnEnvironmentsSetUpEnd(const UnitTest& unit_test) = 0;
 
   // Fired before the test suite starts.
@@ -972,13 +972,13 @@ class TestEventListener {
   virtual void OnTestCaseEnd(const TestCase& /*test_case*/) {}
 #endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
-  // Fired before environment tear-down for each iteration of tests starts.
+  // Fired before environment tear-down for each iteration of test starts.
   virtual void OnEnvironmentsTearDownStart(const UnitTest& unit_test) = 0;
 
-  // Fired after environment tear-down for each iteration of tests ends.
+  // Fired after environment tear-down for each iteration of test ends.
   virtual void OnEnvironmentsTearDownEnd(const UnitTest& unit_test) = 0;
 
-  // Fired after each iteration of tests finishes.
+  // Fired after each iteration of test finishes.
   virtual void OnTestIterationEnd(const UnitTest& unit_test, int iteration) = 0;
 
   // Fired after all test activities have ended.
@@ -1118,7 +1118,7 @@ class GTEST_API_ UnitTest {
   // Consecutive calls will return the same object.
   static UnitTest* GetInstance();
 
-  // Runs all tests in this UnitTest object and prints the result.
+  // Runs all test in this UnitTest object and prints the result.
   // Returns 0 if successful, or 1 otherwise.
   //
   // This method can only be called from the main thread.
@@ -1147,7 +1147,7 @@ class GTEST_API_ UnitTest {
   int random_seed() const;
 
   // Returns the ParameterizedTestSuiteRegistry object used to keep track of
-  // value-parameterized tests and instantiate and register them.
+  // value-parameterized test and instantiate and register them.
   //
   // INTERNAL IMPLEMENTATION - DO NOT USE IN A USER PROGRAM.
   internal::ParameterizedTestSuiteRegistry& parameterized_test_registry()
@@ -1174,28 +1174,28 @@ class GTEST_API_ UnitTest {
   int test_case_to_run_count() const;
 #endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
-  // Gets the number of successful tests.
+  // Gets the number of successful test.
   int successful_test_count() const;
 
-  // Gets the number of skipped tests.
+  // Gets the number of skipped test.
   int skipped_test_count() const;
 
-  // Gets the number of failed tests.
+  // Gets the number of failed test.
   int failed_test_count() const;
 
-  // Gets the number of disabled tests that will be reported in the XML report.
+  // Gets the number of disabled test that will be reported in the XML report.
   int reportable_disabled_test_count() const;
 
-  // Gets the number of disabled tests.
+  // Gets the number of disabled test.
   int disabled_test_count() const;
 
-  // Gets the number of tests to be printed in the XML report.
+  // Gets the number of test to be printed in the XML report.
   int reportable_test_count() const;
 
-  // Gets the number of all tests.
+  // Gets the number of all test.
   int total_test_count() const;
 
-  // Gets the number of tests that should run.
+  // Gets the number of test that should run.
   int test_to_run_count() const;
 
   // Gets the time of the test program start, in ms from the start of the
@@ -1210,7 +1210,7 @@ class GTEST_API_ UnitTest {
   bool Passed() const;
 
   // Returns true if and only if the unit test failed (i.e. some test suite
-  // failed or something outside of all tests failed).
+  // failed or something outside of all test failed).
   bool Failed() const;
 
   // Gets the i-th test suite among all the test suites. i can range from 0 to
@@ -1233,7 +1233,7 @@ class GTEST_API_ UnitTest {
  private:
   // Registers and returns a global test environment.  When a test
   // program is run, all global test environments will be set-up in
-  // the order they were registered.  After all tests in the program
+  // the order they were registered.  After all test in the program
   // have finished, all global test environments will be torn-down in
   // the *reverse* order they were registered.
   //
@@ -1636,7 +1636,7 @@ class GTEST_API_ AssertHelper {
 
 }  // namespace internal
 
-// The pure interface class that all value-parameterized tests inherit from.
+// The pure interface class that all value-parameterized test inherit from.
 // A value-parameterized class must inherit from both ::testing::Test and
 // ::testing::WithParamInterface. In most cases that just means inheriting
 // from ::testing::TestWithParam, but more complicated test hierarchies
@@ -1711,7 +1711,7 @@ class TestWithParam : public Test, public WithParamInterface<T> {};
 
 // Skips test in runtime.
 // Skipping test aborts current function.
-// Skipped tests are neither successful nor failed.
+// Skipped test are neither successful nor failed.
 #define GTEST_SKIP() GTEST_SKIP_("")
 
 // ADD_FAILURE unconditionally adds a failure to the current test.
@@ -1728,7 +1728,7 @@ class TestWithParam : public Test, public WithParamInterface<T> {};
 // FAIL and ASSERT_* are similar to ADD_FAILURE and EXPECT_*, except
 // that they will also abort the current function on failure.  People
 // usually want the fail-fast behavior of FAIL and ASSERT_*, but those
-// writing data-driven tests often find themselves using ADD_FAILURE
+// writing data-driven test often find themselves using ADD_FAILURE
 // and EXPECT_* more.
 
 // Generates a nonfatal failure with a generic message.
@@ -1918,7 +1918,7 @@ class TestWithParam : public Test, public WithParamInterface<T> {};
 #define ASSERT_GT(val1, val2) GTEST_ASSERT_GT(val1, val2)
 #endif
 
-// C-string Comparisons.  All tests treat NULL and any non-NULL string
+// C-string Comparisons.  All test treat NULL and any non-NULL string
 // as different.  Two NULLs are equal.
 //
 //    * {ASSERT|EXPECT}_STREQ(s1, s2):     Tests that s1 == s2
@@ -2214,7 +2214,7 @@ constexpr bool StaticAssertTypeEq() noexcept {
 GTEST_API_ std::string TempDir();
 
 // Returns a path to a directory that contains ancillary data files that might
-// be used by tests. It is implementation dependent whether or not the path is
+// be used by test. It is implementation dependent whether or not the path is
 // terminated by the directory-separator character. The directory and the files
 // in it should be considered read-only.
 GTEST_API_ std::string SrcDir();
@@ -2231,7 +2231,7 @@ GTEST_DISABLE_MSC_WARNINGS_POP_()  // 4805 4100
 // function pointer that creates a new instance of the Test object. It
 // handles ownership to the caller. The signature of the callable is
 // `Fixture*()`, where `Fixture` is the test fixture class for the test. All
-// tests registered with the same `test_suite_name` must return the same
+// test registered with the same `test_suite_name` must return the same
 // fixture type. This is checked at runtime.
 //
 // The framework will infer the fixture class from the factory and will call
@@ -2304,8 +2304,8 @@ TestInfo* RegisterTest(const char* test_suite_name, const char* test_name,
 
 }  // namespace testing
 
-// Use this function in main() to run all tests.  It returns 0 if all
-// tests are successful, or 1 otherwise.
+// Use this function in main() to run all test.  It returns 0 if all
+// test are successful, or 1 otherwise.
 //
 // RUN_ALL_TESTS() should be invoked after the command line has been
 // parsed by InitGoogleTest().

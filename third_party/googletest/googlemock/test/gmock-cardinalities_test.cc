@@ -29,7 +29,7 @@
 
 // Google Mock - a framework for writing C++ mock classes.
 //
-// This file tests the built-in cardinalities.
+// This file test the built-in cardinalities.
 
 #include <ostream>
 

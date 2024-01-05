@@ -29,7 +29,7 @@
 
 // Google Mock - a framework for writing C++ mock classes.
 //
-// This file tests some commonly used argument matchers.
+// This file test some commonly used argument matchers.
 
 #include <functional>
 #include <memory>
@@ -530,8 +530,8 @@ TEST(MatcherCastTest, NonImplicitlyConstructibleTypeWithOperatorEq) {
 #if !defined _MSC_VER
 
 // The below ConvertibleFromAny struct is implicitly constructible from anything
-// and when in the same namespace can interact with other tests. In particular,
-// if it is in the same namespace as other tests and one removes
+// and when in the same namespace can interact with other test. In particular,
+// if it is in the same namespace as other test and one removes
 //   NonImplicitlyConstructibleTypeWithOperatorEq::operator==(int lhs, ...);
 // then the corresponding test still compiles (and it should not!) by implicitly
 // converting NonImplicitlyConstructibleTypeWithOperatorEq to ConvertibleFromAny

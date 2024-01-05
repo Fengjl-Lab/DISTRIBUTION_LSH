@@ -28,7 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// This file implements death tests.
+// This file implements death test.
 
 #include "gtest/gtest-death-test.h"
 
@@ -115,7 +115,7 @@ GTEST_DEFINE_string_(
 GTEST_DEFINE_bool_(
     death_test_use_fork,
     testing::internal::BoolFromGTestEnv("death_test_use_fork", false),
-    "Instructs to use fork()/_exit() instead of clone() in death tests. "
+    "Instructs to use fork()/_exit() instead of clone() in death test. "
     "Ignored and always uses fork() on POSIX systems where clone() is not "
     "implemented. Useful when running under valgrind or similar tools if "
     "those do not support clone(). Valgrind 3.3.1 will just fail if "
@@ -139,7 +139,7 @@ namespace testing {
 
 namespace internal {
 
-// Valid only for fast death tests. Indicates the code is running in the
+// Valid only for fast death test. Indicates the code is running in the
 // child process of a fast style death test.
 #if !defined(GTEST_OS_WINDOWS) && !defined(GTEST_OS_FUCHSIA)
 static bool g_in_fast_death_test_child = false;
@@ -148,12 +148,12 @@ static bool g_in_fast_death_test_child = false;
 // Returns a Boolean value indicating whether the caller is currently
 // executing in the context of the death test child process.  Tools such as
 // Valgrind heap checkers may need this to modify their behavior in death
-// tests.  IMPORTANT: This is an internal utility.  Using it may break the
-// implementation of death tests.  User code MUST NOT use it.
+// test.  IMPORTANT: This is an internal utility.  Using it may break the
+// implementation of death test.  User code MUST NOT use it.
 bool InDeathTestChild() {
 #if defined(GTEST_OS_WINDOWS) || defined(GTEST_OS_FUCHSIA)
 
-  // On Windows and Fuchsia, death tests are thread-safe regardless of the value
+  // On Windows and Fuchsia, death test are thread-safe regardless of the value
   // of the death_test_style flag.
   return !GTEST_FLAG_GET(internal_run_death_test).empty();
 
@@ -204,7 +204,7 @@ bool KilledBySignal::operator()(int exit_status) const {
 
 namespace internal {
 
-// Utilities needed for death tests.
+// Utilities needed for death test.
 
 // Generates a textual description of a given exit code, in the format
 // specified by wait(2).
@@ -245,7 +245,7 @@ bool ExitedUnsuccessfully(int exit_status) {
 // caller not to pass a thread_count of 1.
 static std::string DeathTestThreadWarning(size_t thread_count) {
   Message msg;
-  msg << "Death tests use fork(), which is unsafe particularly"
+  msg << "Death test use fork(), which is unsafe particularly"
       << " in a threaded context. For this test, " << GTEST_NAME_ << " ";
   if (thread_count == 0) {
     msg << "couldn't detect the number of threads.";
@@ -254,7 +254,7 @@ static std::string DeathTestThreadWarning(size_t thread_count) {
   }
   msg << " See "
          "https://github.com/google/googletest/blob/main/docs/"
-         "advanced.md#death-tests-and-threads"
+         "advanced.md#death-test-and-threads"
       << " for more explanation and suggested solutions, especially if"
       << " this is the last message you see before your test times out.";
   return msg.GetString();
@@ -640,8 +640,8 @@ static std::unique_ptr<char*[]> CreateArgvFromArgs(
 #endif
 
 #ifdef GTEST_OS_WINDOWS
-// WindowsDeathTest implements death tests on Windows. Due to the
-// specifics of starting new processes on Windows, death tests there are
+// WindowsDeathTest implements death test on Windows. Due to the
+// specifics of starting new processes on Windows, death test there are
 // always threadsafe, and Google Test considers the
 // --gtest_death_test_style=fast setting to be equivalent to
 // --gtest_death_test_style=threadsafe there.
@@ -1030,7 +1030,7 @@ DeathTest::TestRole FuchsiaDeathTest::AssumeRole() {
 
   // Spawn the child process.
   // Note: The test component must have `fuchsia.process.Launcher` declared
-  // in its manifest. (Fuchsia integration tests require creating a
+  // in its manifest. (Fuchsia integration test require creating a
   // "Fuchsia Test Component" which contains a "Fuchsia Component Manifest")
   // Launching processes is a privileged operation in Fuchsia, and the
   // declaration indicates that the ability is required for the component.

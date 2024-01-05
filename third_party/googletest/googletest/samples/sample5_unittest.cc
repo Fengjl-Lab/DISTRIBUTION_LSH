@@ -36,7 +36,7 @@
 //
 // Sometimes, more than one test cases may want to use the same or
 // slightly different test fixtures.  For example, you may want to
-// make sure that all tests for a GUI library don't leak important
+// make sure that all test for a GUI library don't leak important
 // system resources like fonts and brushes.  In Google Test, you do
 // this by putting the shared logic in a super (as in "super class")
 // test fixture, and then have each test case use a fixture derived
@@ -82,14 +82,14 @@ class QuickTest : public testing::Test {
 };
 
 // We derive a fixture named IntegerFunctionTest from the QuickTest
-// fixture.  All tests using this fixture will be automatically
+// fixture.  All test using this fixture will be automatically
 // required to be quick.
 class IntegerFunctionTest : public QuickTest {
   // We don't need any more logic than already in the QuickTest fixture.
   // Therefore the body is empty.
 };
 
-// Now we can write tests in the IntegerFunctionTest test case.
+// Now we can write test in the IntegerFunctionTest test case.
 
 // Tests Factorial()
 TEST_F(IntegerFunctionTest, Factorial) {
@@ -159,7 +159,7 @@ class QueueTest : public QuickTest {
   Queue<int> q2_;
 };
 
-// Now, let's write tests using the QueueTest fixture.
+// Now, let's write test using the QueueTest fixture.
 
 // Tests the default constructor.
 TEST_F(QueueTest, DefaultConstructor) { EXPECT_EQ(0u, q0_.Size()); }

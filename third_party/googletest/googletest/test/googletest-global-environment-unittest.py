@@ -29,9 +29,9 @@
 
 A user can specify a global test environment via
 testing::AddGlobalTestEnvironment. Failures in the global environment should
-result in all unit tests being skipped.
+result in all unit test being skipped.
 
-This script tests such functionality by invoking
+This script test such functionality by invoking
 googletest-global-environment-unittest_ (a program written with Google Test).
 """
 
@@ -67,7 +67,7 @@ class GTestGlobalEnvironmentUnitTest(gtest_test_utils.TestCase):
     # Our test should have been skipped due to the error, and not treated as a
     # pass.
     self.assertIn('[  SKIPPED ] 1 test', txt)
-    self.assertIn('[  PASSED  ] 0 tests', txt)
+    self.assertIn('[  PASSED  ] 0 test', txt)
 
     # The test case shouldn't have been run.
     self.assertNotIn('Unexpected call', txt)
@@ -84,7 +84,7 @@ class GTestGlobalEnvironmentUnitTest(gtest_test_utils.TestCase):
 
     expected_pattern = (
         '(.|\n)*'
-        r'Repeating all tests \(iteration 1\)'
+        r'Repeating all test \(iteration 1\)'
         '(.|\n)*'
         'Global test environment set-up.'
         '(.|\n)*'
@@ -92,7 +92,7 @@ class GTestGlobalEnvironmentUnitTest(gtest_test_utils.TestCase):
         '(.|\n)*'
         'Global test environment tear-down'
         '(.|\n)*'
-        r'Repeating all tests \(iteration 2\)'
+        r'Repeating all test \(iteration 2\)'
         '(.|\n)*'
         'Global test environment set-up.'
         '(.|\n)*'
@@ -116,13 +116,13 @@ class GTestGlobalEnvironmentUnitTest(gtest_test_utils.TestCase):
 
     expected_pattern = (
         '(.|\n)*'
-        r'Repeating all tests \(iteration 1\)'
+        r'Repeating all test \(iteration 1\)'
         '(.|\n)*'
         'Global test environment set-up.'
         '(.|\n)*'
         'SomeTest.DoesFoo'
         '(.|\n)*'
-        r'Repeating all tests \(iteration 2\)'
+        r'Repeating all test \(iteration 2\)'
         '(.|\n)*'
         'SomeTest.DoesFoo'
         '(.|\n)*'

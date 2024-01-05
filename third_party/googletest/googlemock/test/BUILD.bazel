@@ -47,7 +47,7 @@ cc_test(
     deps = ["//:gtest"],
 )
 
-# Python tests
+# Python test
 py_library(
     name = "gmock_test_utils",
     testonly = 1,

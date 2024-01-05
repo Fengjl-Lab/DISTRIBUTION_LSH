@@ -41,7 +41,7 @@ GTEST_DISABLE_MSC_WARNINGS_PUSH_(4127 /* conditional expression is constant */)
 using testing::Test;
 
 // Used for testing that SetUpTestSuite()/TearDownTestSuite(), fixture
-// ctor/dtor, and SetUp()/TearDown() work correctly in typed tests and
+// ctor/dtor, and SetUp()/TearDown() work correctly in typed test and
 // type-parameterized test.
 template <typename T>
 class CommonTest : public Test {
@@ -87,7 +87,7 @@ T* CommonTest<T>::shared_ = nullptr;
 using testing::Types;
 
 // Tests that SetUpTestSuite()/TearDownTestSuite(), fixture ctor/dtor,
-// and SetUp()/TearDown() work correctly in typed tests
+// and SetUp()/TearDown() work correctly in typed test
 
 typedef Types<char, int> TwoTypes;
 TYPED_TEST_SUITE(CommonTest, TwoTypes);
@@ -140,7 +140,7 @@ class TypedTest2 : public Test {};
 // Types<...> type list.
 TYPED_TEST_SUITE(TypedTest2, Types<int>);
 
-// This also verifies that tests from different typed test cases can
+// This also verifies that test from different typed test cases can
 // share the same name.
 TYPED_TEST(TypedTest2, A) {}
 
@@ -214,7 +214,7 @@ TEST_F(TypedTestSuitePStateTest, SucceedsForMatchingList) {
             state_.VerifyRegisteredTestNames("Suite", "foo.cc", 1, tests));
 }
 
-// Makes sure that the order of the tests and spaces around the names
+// Makes sure that the order of the test and spaces around the names
 // don't matter.
 TEST_F(TypedTestSuitePStateTest, IgnoresOrderAndSpaces) {
   const char* tests = "A,C,   B";
@@ -253,7 +253,7 @@ TEST_F(TypedTestSuitePStateDeathTest, DetectsTestAfterRegistration) {
 }
 
 // Tests that SetUpTestSuite()/TearDownTestSuite(), fixture ctor/dtor,
-// and SetUp()/TearDown() work correctly in type-parameterized tests.
+// and SetUp()/TearDown() work correctly in type-parameterized test.
 
 template <typename T>
 class DerivedTest : public CommonTest<T> {};
@@ -286,7 +286,7 @@ REGISTER_TYPED_TEST_SUITE_P(DerivedTest, ValuesAreCorrect,
 typedef Types<short, long> MyTwoTypes;
 INSTANTIATE_TYPED_TEST_SUITE_P(My, DerivedTest, MyTwoTypes);
 
-// Tests that custom names work with type parametrized tests. We reuse the
+// Tests that custom names work with type parametrized test. We reuse the
 // TwoTypes from above here.
 template <typename T>
 class TypeParametrizedTestWithNames : public Test {};
@@ -352,7 +352,7 @@ class TypedTestP2 : public Test {};
 
 TYPED_TEST_SUITE_P(TypedTestP2);
 
-// This also verifies that tests from different type-parameterized
+// This also verifies that test from different type-parameterized
 // test cases can share the same name.
 TYPED_TEST_P(TypedTestP2, A) {}
 

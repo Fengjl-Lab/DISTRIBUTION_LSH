@@ -172,28 +172,28 @@ def NormalizeToCurrentPlatform(test_output):
 def RemoveTestCounts(output):
   """Removes test counts from a Google Test program's output."""
 
-  output = re.sub(r'\d+ tests?, listed below', '? tests, listed below', output)
+  output = re.sub(r'\d+ test?, listed below', '? test, listed below', output)
   output = re.sub(r'\d+ FAILED TESTS', '? FAILED TESTS', output)
   output = re.sub(
-      r'\d+ tests? from \d+ test cases?', '? tests from ? test cases', output
+      r'\d+ test? from \d+ test cases?', '? test from ? test cases', output
   )
-  output = re.sub(r'\d+ tests? from ([a-zA-Z_])', r'? tests from \1', output)
-  return re.sub(r'\d+ tests?\.', '? tests.', output)
+  output = re.sub(r'\d+ test? from ([a-zA-Z_])', r'? test from \1', output)
+  return re.sub(r'\d+ test?\.', '? test.', output)
 
 
 def RemoveMatchingTests(test_output, pattern):
-  """Removes output of specified tests from a Google Test program's output.
+  """Removes output of specified test from a Google Test program's output.
 
   This function strips not only the beginning and the end of a test but also
   all output in between.
 
   Args:
     test_output:       A string containing the test output.
-    pattern:           A regex string that matches names of test cases or tests
+    pattern:           A regex string that matches names of test cases or test
       to remove.
 
   Returns:
-    Contents of test_output with tests whose names match pattern removed.
+    Contents of test_output with test whose names match pattern removed.
   """
 
   test_output = re.sub(
@@ -375,8 +375,8 @@ if __name__ == '__main__':
       golden_file.close()
     else:
       message = """Unable to write a golden file when compiled in an environment
-that does not support all the required features (death tests,
-typed tests, stack traces, and multiple threads).
+that does not support all the required features (death test,
+typed test, stack traces, and multiple threads).
 Please build this test and generate the golden file using Blaze on Linux."""
 
       sys.stderr.write(message)

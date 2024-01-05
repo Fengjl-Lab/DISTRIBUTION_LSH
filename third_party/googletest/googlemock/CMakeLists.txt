@@ -4,8 +4,8 @@
 #
 # CMake build script for Google Mock.
 #
-# To run the tests for Google Mock itself on Linux, use 'make test' or
-# ctest.  You can select which tests to run using 'ctest -R regex'.
+# To run the test for Google Mock itself on Linux, use 'make test' or
+# ctest.  You can select which test to run using 'ctest -R regex'.
 # For more options, run 'ctest --help'.
 
 option(gmock_build_tests "Build all of Google Mock's own tests." OFF)
@@ -75,7 +75,7 @@ include_directories(${gmock_build_include_dirs})
 
 ########################################################################
 #
-# Defines the gmock & gmock_main libraries.  User tests should link
+# Defines the gmock & gmock_main libraries.  User test should link
 # with one of them.
 
 # Google Mock libraries.  We build them using more strict warnings than what
@@ -116,17 +116,17 @@ install_project(gmock gmock_main)
 
 ########################################################################
 #
-# Google Mock's own tests.
+# Google Mock's own test.
 #
 # You can skip this section if you aren't interested in testing
 # Google Mock itself.
 #
-# The tests are not built by default.  To build them, set the
+# The test are not built by default.  To build them, set the
 # gmock_build_tests option to ON.  You can do it by running ccmake
 # or specifying the -Dgmock_build_tests=ON flag when running cmake.
 
 if (gmock_build_tests)
-  # This must be set in the root directory for the tests to be run by
+  # This must be set in the root directory for the test to be run by
   # 'make test' or ctest.
   enable_testing()
 
@@ -135,7 +135,7 @@ if (gmock_build_tests)
   endif()
 
   ############################################################
-  # C++ tests built with standard compiler flags.
+  # C++ test built with standard compiler flags.
 
   cxx_test(gmock-actions_test gmock_main)
   cxx_test(gmock-cardinalities_test gmock_main)
@@ -157,12 +157,12 @@ if (gmock_build_tests)
     cxx_test(gmock_stress_test gmock)
   endif()
 
-  # gmock_all_test is commented to save time building and running tests.
+  # gmock_all_test is commented to save time building and running test.
   # Uncomment if necessary.
   # cxx_test(gmock_all_test gmock_main)
 
   ############################################################
-  # C++ tests built with non-standard compiler flags.
+  # C++ test built with non-standard compiler flags.
 
   if (MSVC)
     cxx_library(gmock_main_no_exception "${cxx_no_exception}"
@@ -199,7 +199,7 @@ if (gmock_build_tests)
     COMPILE_DEFINITIONS "GTEST_LINKED_AS_SHARED_LIBRARY=1")
 
   ############################################################
-  # Python tests.
+  # Python test.
 
   cxx_executable(gmock_leak_test_ test gmock_main)
   py_test(gmock_leak_test)

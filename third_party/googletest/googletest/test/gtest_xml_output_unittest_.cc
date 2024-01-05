@@ -159,21 +159,21 @@ TEST(NoFixtureTest, ExternalUtilityThatCallsRecordStringValuedProperty) {
 }
 
 // Verifies that the test parameter value is output in the 'value_param'
-// XML attribute for value-parameterized tests.
+// XML attribute for value-parameterized test.
 class ValueParamTest : public TestWithParam<int> {};
 TEST_P(ValueParamTest, HasValueParamAttribute) {}
 TEST_P(ValueParamTest, AnotherTestThatHasValueParamAttribute) {}
 INSTANTIATE_TEST_SUITE_P(Single, ValueParamTest, Values(33, 42));
 
 // Verifies that the type parameter name is output in the 'type_param'
-// XML attribute for typed tests.
+// XML attribute for typed test.
 template <typename T> class TypedTest : public Test {};
 typedef testing::Types<int, long> TypedTestTypes;
 TYPED_TEST_SUITE(TypedTest, TypedTestTypes);
 TYPED_TEST(TypedTest, HasTypeParamAttribute) {}
 
 // Verifies that the type parameter name is output in the 'type_param'
-// XML attribute for type-parameterized tests.
+// XML attribute for type-parameterized test.
 template <typename T>
 class TypeParameterizedTestSuite : public Test {};
 TYPED_TEST_SUITE_P(TypeParameterizedTestSuite);

@@ -29,7 +29,7 @@
 
 // Google Mock - a framework for writing C++ mock classes.
 //
-// This file tests the built-in actions in gmock-actions.h.
+// This file test the built-in actions in gmock-actions.h.
 
 #include "gmock/gmock-more-actions.h"
 

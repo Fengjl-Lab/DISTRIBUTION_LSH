@@ -65,9 +65,9 @@ def RemoveReportHeaderAndFooter(output):
   """Removes Google Test result report's header and footer from the output."""
 
   output = re.sub(r'.*gtest_main.*\n', '', output)
-  output = re.sub(r'\[.*\d+ tests.*\n', '', output)
+  output = re.sub(r'\[.*\d+ test.*\n', '', output)
   output = re.sub(r'\[.* test environment .*\n', '', output)
-  output = re.sub(r'\[=+\] \d+ tests .* ran.*', '', output)
+  output = re.sub(r'\[=+\] \d+ test .* ran.*', '', output)
   output = re.sub(r'.* FAILED TESTS\n', '', output)
   return output
 
@@ -141,7 +141,7 @@ def GetShellCommandOutput(cmd):
 
 
 def GetNormalizedCommandOutputAndLeakyTests(cmd):
-  """Runs a command and returns its normalized output and a list of leaky tests.
+  """Runs a command and returns its normalized output and a list of leaky test.
 
   Args:
     cmd:  the shell command.

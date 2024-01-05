@@ -33,7 +33,7 @@
 
 A user can ask Google Test to seg-fault when an assertion fails, using
 either the GTEST_BREAK_ON_FAILURE environment variable or the
---gtest_break_on_failure flag.  This script tests such functionality
+--gtest_break_on_failure flag.  This script test such functionality
 by invoking googletest-break-on-failure-unittest_ (a program written with
 Google Test) with different environments and command line flags.
 """
@@ -84,7 +84,7 @@ def Run(command):
     return 0
 
 
-# The tests.
+# The test.
 
 
 class GTestBreakOnFailureUnitTest(gtest_test_utils.TestCase):

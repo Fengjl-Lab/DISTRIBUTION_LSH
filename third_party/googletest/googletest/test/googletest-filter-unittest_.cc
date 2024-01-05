@@ -74,7 +74,7 @@ TEST(BazTest, DISABLED_TestC) { FAIL() << "Expected failure."; }
 
 TEST(HasDeathTest, Test1) { EXPECT_DEATH_IF_SUPPORTED(exit(1), ".*"); }
 
-// We need at least two death tests to make sure that the all death tests
+// We need at least two death test to make sure that the all death test
 // aren't on the first shard.
 TEST(HasDeathTest, Test2) { EXPECT_DEATH_IF_SUPPORTED(exit(1), ".*"); }
 

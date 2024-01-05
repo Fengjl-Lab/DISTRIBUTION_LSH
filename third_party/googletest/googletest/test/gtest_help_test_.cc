@@ -32,7 +32,7 @@
 
 #include "gtest/gtest.h"
 
-// When a help flag is specified, this program should skip the tests
+// When a help flag is specified, this program should skip the test
 // and exit with 0; otherwise the following test will be executed,
 // causing this program to exit with a non-zero code.
 TEST(HelpFlagTest, ShouldNotBeRun) {

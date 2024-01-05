@@ -29,7 +29,7 @@
 //
 // The Google C++ Testing and Mocking Framework (Google Test)
 //
-// This file contains tests verifying correctness of data provided via
+// This file contains test verifying correctness of data provided via
 // UnitTest's public methods.
 
 #include <string.h>  // For strcmp.
@@ -78,7 +78,7 @@ class UnitTestHelper {
     return nullptr;
   }
 
-  // Returns the array of pointers to all tests in a particular test suite
+  // Returns the array of pointers to all test in a particular test suite
   // sorted by the test name.  The caller is responsible for deleting the
   // array.
   static TestInfo const** GetSortedTests(const TestSuite* test_suite) {
@@ -102,8 +102,8 @@ TYPED_TEST(TestSuiteWithCommentTest, Dummy) {}
 const int kTypedTestSuites = 1;
 const int kTypedTests = 1;
 
-// We can only test the accessors that do not change value while tests run.
-// Since tests can be run in any order, the values the accessors that track
+// We can only test the accessors that do not change value while test run.
+// Since test can be run in any order, the values the accessors that track
 // test execution (such as failed_test_count) can not be predicted.
 TEST(ApiTest, UnitTestImmutableAccessorsWork) {
   const auto& unit_test = UnitTest::GetInstance();
@@ -216,7 +216,7 @@ TEST(ApiTest, TestSuiteDisabledAccessorsWork) {
   EXPECT_FALSE(test_info->should_run());
 }
 
-// These two tests are here to provide support for testing
+// These two test are here to provide support for testing
 // test_suite_to_run_count, disabled_test_count, and test_to_run_count.
 TEST(ApiTest, DISABLED_Dummy1) {}
 TEST(DISABLED_Test, Dummy2) {}

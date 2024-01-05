@@ -28,8 +28,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // This sample shows how to test common properties of multiple
-// implementations of an interface (aka interface tests) using
-// value-parameterized tests. Each test in the test case has
+// implementations of an interface (aka interface test) using
+// value-parameterized test. Each test in the test case has
 // a parameter that is an interface pointer to an implementation
 // tested.
 
@@ -41,7 +41,7 @@ namespace {
 using ::testing::TestWithParam;
 using ::testing::Values;
 
-// As a general rule, to prevent a test from affecting the tests that come
+// As a general rule, to prevent a test from affecting the test that come
 // after it, you should create and destroy the tested objects for each test
 // instead of reusing them.  In this sample we will define a simple factory
 // function for PrimeTable objects.  We will instantiate objects in test's
@@ -99,12 +99,12 @@ TEST_P(PrimeTableTestSmpl7, CanGetNextPrime) {
   EXPECT_EQ(131, table_->GetNextPrime(128));
 }
 
-// In order to run value-parameterized tests, you need to instantiate them,
+// In order to run value-parameterized test, you need to instantiate them,
 // or bind them to a list of values which will be used as test parameters.
 // You can instantiate them in a different translation module, or even
 // instantiate them several times.
 //
-// Here, we instantiate our tests with a list of two PrimeTable object
+// Here, we instantiate our test with a list of two PrimeTable object
 // factory functions:
 INSTANTIATE_TEST_SUITE_P(OnTheFlyAndPreCalculated, PrimeTableTestSmpl7,
                          Values(&CreateOnTheFlyPrimeTable,

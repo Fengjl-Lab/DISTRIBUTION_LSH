@@ -80,7 +80,7 @@ def Run(command):
   return p.exited and p.exit_code == 0
 
 
-# The tests.
+# The test.
 class ThrowOnFailureTest(gtest_test_utils.TestCase):
   """Tests the throw-on-failure mode."""
 

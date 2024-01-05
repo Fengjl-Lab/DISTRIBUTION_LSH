@@ -30,7 +30,7 @@
 // The purpose of this file is to generate Google Test output under
 // various conditions.  The output will then be verified by
 // googletest-output-test.py to ensure that Google Test generates the
-// desired messages.  Therefore, most tests in this file are MEANT TO
+// desired messages.  Therefore, most test in this file are MEANT TO
 // FAIL.
 
 #include <stdlib.h>
@@ -79,14 +79,14 @@ TEST(PassingTest, PassingTest1) {}
 
 TEST(PassingTest, PassingTest2) {}
 
-// Tests that parameters of failing parameterized tests are printed in the
+// Tests that parameters of failing parameterized test are printed in the
 // failing test summary.
 class FailingParamTest : public testing::TestWithParam<int> {};
 
 TEST_P(FailingParamTest, Fails) { EXPECT_EQ(1, GetParam()); }
 
 // This generates a test which will fail. Google Test is expected to print
-// its parameter when it outputs the list of all failed tests.
+// its parameter when it outputs the list of all failed test.
 INSTANTIATE_TEST_SUITE_P(PrintingFailingParams, FailingParamTest,
                          testing::Values(2));
 
@@ -459,12 +459,12 @@ TEST(GtestFailAtTest, MessageContainsSpecifiedFileAndLineNumber) {
 }
 
 // The MixedUpTestSuiteTest test case verifies that Google Test will fail a
-// test if it uses a different fixture class than what other tests in
+// test if it uses a different fixture class than what other test in
 // the same test case use.  It deliberately contains two fixture
 // classes with the same name but defined in different namespaces.
 
 // The MixedUpTestSuiteWithSameTestNameTest test case verifies that
-// when the user defines two tests with the same test case name AND
+// when the user defines two test with the same test case name AND
 // same test name (but in different namespaces), the second test will
 // fail.
 
@@ -486,7 +486,7 @@ namespace bar {
 
 class MixedUpTestSuiteTest : public testing::Test {};
 
-// The following two tests are expected to fail.  We rely on the
+// The following two test are expected to fail.  We rely on the
 // golden file to check that Google Test generates the right error message.
 TEST_F(MixedUpTestSuiteTest, ThisShouldFail) {}
 TEST_F(MixedUpTestSuiteTest, ThisShouldFailToo) {}
@@ -670,7 +670,7 @@ TEST(ExpectFatalFailureTest, FailsWhenStatementThrows) {
 
 #endif  // GTEST_HAS_EXCEPTIONS
 
-// This #ifdef block tests the output of value-parameterized tests.
+// This #ifdef block test the output of value-parameterized test.
 
 std::string ParamNameFunc(const testing::TestParamInfo<std::string>& info) {
   return info.param;
@@ -778,12 +778,12 @@ REGISTER_TYPED_TEST_SUITE_P(DetectNotInstantiatedTypesTest, Used);
 
 #ifdef GTEST_HAS_DEATH_TEST
 
-// We rely on the golden file to verify that tests whose test case
+// We rely on the golden file to verify that test whose test case
 // name ends with DeathTest are run first.
 
 TEST(ADeathTest, ShouldRunFirst) {}
 
-// We rely on the golden file to verify that typed tests whose test
+// We rely on the golden file to verify that typed test whose test
 // case name ends with DeathTest are run first.
 
 template <typename T>
@@ -794,7 +794,7 @@ TYPED_TEST_SUITE(ATypedDeathTest, NumericTypes);
 
 TYPED_TEST(ATypedDeathTest, ShouldRunFirst) {}
 
-// We rely on the golden file to verify that type-parameterized tests
+// We rely on the golden file to verify that type-parameterized test
 // whose test case name ends with DeathTest are run first.
 
 template <typename T>
@@ -948,7 +948,7 @@ class DynamicTest : public DynamicFixture {
 };
 
 auto dynamic_test = (
-    // Register two tests with the same fixture correctly.
+    // Register two test with the same fixture correctly.
     testing::RegisterTest(
         "DynamicFixture", "DynamicTestPass", nullptr, nullptr, __FILE__,
         __LINE__, []() -> DynamicFixture* { return new DynamicTest<true>; }),
@@ -962,7 +962,7 @@ auto dynamic_test = (
         __FILE__, __LINE__,
         []() -> DynamicFixture* { return new DynamicTest<true>; }),
 
-    // Register two tests with the same fixture incorrectly.
+    // Register two test with the same fixture incorrectly.
     testing::RegisterTest(
         "BadDynamicFixture1", "FixtureBase", nullptr, nullptr, __FILE__,
         __LINE__, []() -> DynamicFixture* { return new DynamicTest<true>; }),
@@ -970,7 +970,7 @@ auto dynamic_test = (
         "BadDynamicFixture1", "TestBase", nullptr, nullptr, __FILE__, __LINE__,
         []() -> testing::Test* { return new DynamicTest<true>; }),
 
-    // Register two tests with the same fixture incorrectly by omitting the
+    // Register two test with the same fixture incorrectly by omitting the
     // return type.
     testing::RegisterTest(
         "BadDynamicFixture2", "FixtureBase", nullptr, nullptr, __FILE__,
@@ -1015,13 +1015,13 @@ TEST_F(TestSuiteThatSkipsInSetUp, ShouldNotRun) { std::abort(); }
 
 // The main function.
 //
-// The idea is to use Google Test to run all the tests we have defined (some
+// The idea is to use Google Test to run all the test we have defined (some
 // of them are intended to fail), and then compare the test results
 // with the "golden" file.
 int main(int argc, char** argv) {
   GTEST_FLAG_SET(print_time, false);
 
-  // We just run the tests, knowing some of them are intended to fail.
+  // We just run the test, knowing some of them are intended to fail.
   // We will use a separate Python script to compare the output of
   // this program with the golden file.
 

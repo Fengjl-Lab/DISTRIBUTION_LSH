@@ -647,7 +647,7 @@ class GTEST_API_ Sequence {
 // You can create InSequence objects in multiple threads, as long as
 // they are used to affect different mock objects.  The idea is that
 // each thread can create and set up its own mocks as if it's the only
-// thread.  However, for clarity of your tests we recommend you to set
+// thread.  However, for clarity of your test we recommend you to set
 // up mocks in the main thread unless you have a good reason not to do
 // so.
 class GTEST_API_ InSequence {
@@ -2075,11 +2075,11 @@ GTEST_DISABLE_MSC_WARNINGS_POP_()  //  4251
 // Implementation for ON_CALL and EXPECT_CALL macros. A separate macro is
 // required to avoid compile errors when the name of the method used in call is
 // a result of macro expansion. See CompilesWithMethodNameExpandedFromMacro
-// tests in internal/gmock-spec-builders_test.cc for more details.
+// test in internal/gmock-spec-builders_test.cc for more details.
 //
 // This macro supports statements both with and without parameter matchers. If
 // the parameter list is omitted, gMock will accept any parameters, which allows
-// tests to be written that don't need to encode the number of method
+// test to be written that don't need to encode the number of method
 // parameter. This technique may only be used for non-overloaded methods.
 //
 //   // These are the same:

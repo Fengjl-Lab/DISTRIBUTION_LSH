@@ -392,7 +392,7 @@ class FloatingPoint {
 typedef FloatingPoint<float> Float;
 typedef FloatingPoint<double> Double;
 
-// In order to catch the mistake of putting tests that use different
+// In order to catch the mistake of putting test that use different
 // test fixture classes in the same test suite, we need to assign
 // unique IDs to fixture classes and compare them.  The TypeId type is
 // used to hold such IDs.  The user should treat TypeId as an opaque
@@ -688,7 +688,7 @@ std::vector<std::string> GenerateNames() {
 }
 
 // TypeParameterizedTest<Fixture, TestSel, Types>::Register()
-// registers a list of type-parameterized tests with Google Test.  The
+// registers a list of type-parameterized test with Google Test.  The
 // return value is insignificant - we just need to return something
 // such that we can call this function in a namespace scope.
 //
@@ -1517,7 +1517,7 @@ class NeverThrown {
 #define GTEST_TEST_CLASS_NAME_(test_suite_name, test_name) \
   test_suite_name##_##test_name##_Test
 
-// Helper macro for defining tests.
+// Helper macro for defining test.
 #define GTEST_TEST_(test_suite_name, test_name, parent_class, parent_id)       \
   static_assert(sizeof(GTEST_STRINGIFY_(test_suite_name)) > 1,                 \
                 "test_suite_name must not be empty");                          \

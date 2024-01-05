@@ -28,7 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // This sample shows how to test common properties of multiple
-// implementations of the same interface (aka interface tests).
+// implementations of the same interface (aka interface test).
 
 // The interface and its implementations are in this header.
 #include "prime_tables.h"
@@ -63,7 +63,7 @@ class PrimeTableTest : public testing::Test {
 
   // Note that we test an implementation via the base interface
   // instead of the actual implementation class.  This is important
-  // for keeping the tests close to the real world scenario, where the
+  // for keeping the test close to the real world scenario, where the
   // implementation is invoked via the base interface.  It avoids
   // got-yas where the implementation class has a method that shadows
   // a method with the same name (but slightly different argument
@@ -73,10 +73,10 @@ class PrimeTableTest : public testing::Test {
 
 using testing::Types;
 
-// Google Test offers two ways for reusing tests for different types.
-// The first is called "typed tests".  You should use it if you
+// Google Test offers two ways for reusing test for different types.
+// The first is called "typed test".  You should use it if you
 // already know *all* the types you are gonna exercise when you write
-// the tests.
+// the test.
 
 // To write a typed test case, first use
 //
@@ -133,15 +133,15 @@ TYPED_TEST(PrimeTableTest, CanGetNextPrime) {
 using testing::Types;
 
 // Sometimes, however, you don't yet know all the types that you want
-// to test when you write the tests.  For example, if you are the
+// to test when you write the test.  For example, if you are the
 // author of an interface and expect other people to implement it, you
-// might want to write a set of tests to make sure each implementation
+// might want to write a set of test to make sure each implementation
 // conforms to some basic requirements, but you don't know what
 // implementations will be written in the future.
 //
-// How can you write the tests without committing to the type
-// parameters?  That's what "type-parameterized tests" can do for you.
-// It is a bit more involved than typed tests, but in return you get a
+// How can you write the test without committing to the type
+// parameters?  That's what "type-parameterized test" can do for you.
+// It is a bit more involved than typed test, but in return you get a
 // test pattern that can be reused in many contexts, which is a big
 // win.  Here's how you do it:
 
@@ -185,8 +185,8 @@ TYPED_TEST_P(PrimeTableTest2, CanGetNextPrime) {
   EXPECT_EQ(131, this->table_->GetNextPrime(128));
 }
 
-// Type-parameterized tests involve one extra step: you have to
-// enumerate the tests you defined:
+// Type-parameterized test involve one extra step: you have to
+// enumerate the test you defined:
 REGISTER_TYPED_TEST_SUITE_P(
     PrimeTableTest2,  // The first argument is the test case name.
     // The rest of the arguments are the test names.
@@ -194,9 +194,9 @@ REGISTER_TYPED_TEST_SUITE_P(
 
 // At this point the test pattern is done.  However, you don't have
 // any real test yet as you haven't said which types you want to run
-// the tests with.
+// the test with.
 
-// To turn the abstract test pattern into real tests, you instantiate
+// To turn the abstract test pattern into real test, you instantiate
 // it with a list of types.  Usually the test pattern will be defined
 // in a .h file, and anyone can #include and instantiate it.  You can
 // even instantiate it more than once in the same program.  To tell

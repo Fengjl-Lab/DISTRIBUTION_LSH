@@ -28,7 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Type utilities needed for implementing typed and type-parameterized
-// tests.
+// test.
 
 // IWYU pragma: private, include "gtest/gtest.h"
 // IWYU pragma: friend gtest/.*

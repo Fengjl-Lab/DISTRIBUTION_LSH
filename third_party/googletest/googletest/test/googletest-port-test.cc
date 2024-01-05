@@ -27,7 +27,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// This file tests the internal cross-platform support utilities.
+// This file test the internal cross-platform support utilities.
 #include <stdio.h>
 
 #include "gtest/internal/gtest-port.h"
@@ -204,7 +204,7 @@ TEST(ImplicitCastTest, CanUseImplicitConstructor) {
   EXPECT_TRUE(converted);
 }
 
-// The following code intentionally tests a suboptimal syntax.
+// The following code intentionally test a suboptimal syntax.
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdangling-else"
@@ -956,7 +956,7 @@ TEST(CaptureDeathTest, CannotReenterStdoutCapture) {
                             "Only one stdout capturer can exist at a time");
   GetCapturedStdout();
 
-  // We cannot test stderr capturing using death tests as they use it
+  // We cannot test stderr capturing using death test as they use it
   // themselves.
 }
 

@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
   }
 
   if (kTestForContinuingTest == 0) {
-    Fail("Should have continued with other tests, but did not.");
+    Fail("Should have continued with other test, but did not.");
   }
   return 0;
 }

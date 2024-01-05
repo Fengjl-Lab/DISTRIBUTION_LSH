@@ -119,7 +119,7 @@ class GTestHelpTest(gtest_test_utils.TestCase):
   def TestHelpFlag(self, flag):
     """Verifies correct behavior when help flag is specified.
 
-    The right message must be printed and the tests must
+    The right message must be printed and the test must
     skipped when the given flag is specified.
 
     Args:
@@ -149,7 +149,7 @@ class GTestHelpTest(gtest_test_utils.TestCase):
   def TestUnknownFlagWithAbseil(self, flag):
     """Verifies correct behavior when an unknown flag is specified.
 
-    The right message must be printed and the tests must
+    The right message must be printed and the test must
     skipped when the given flag is specified.
 
     Args:
@@ -162,7 +162,7 @@ class GTestHelpTest(gtest_test_utils.TestCase):
   def TestNonHelpFlag(self, flag):
     """Verifies correct behavior when no help flag is specified.
 
-    Verifies that when no help flag is specified, the tests are run
+    Verifies that when no help flag is specified, the test are run
     and the help message is not printed.
 
     Args:
@@ -179,7 +179,7 @@ class GTestHelpTest(gtest_test_utils.TestCase):
   def testRunsTestsWithoutHelpFlag(self):
     """Verifies correct behavior when no help flag is specified.
 
-    Verifies that when no help flag is specified, the tests are run
+    Verifies that when no help flag is specified, the test are run
     and the help message is not printed.
     """
 
@@ -188,7 +188,7 @@ class GTestHelpTest(gtest_test_utils.TestCase):
   def testRunsTestsWithGtestInternalFlag(self):
     """Verifies correct behavior when internal testing flag is specified.
 
-    Verifies that the tests are run and no help message is printed when
+    Verifies that the test are run and no help message is printed when
     a flag starting with Google Test prefix and 'internal_' is supplied.
     """
 

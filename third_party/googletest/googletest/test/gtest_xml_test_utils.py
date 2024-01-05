@@ -37,7 +37,7 @@ GTEST_DEFAULT_OUTPUT_FILE = 'test_detail.xml'
 
 
 class GTestXMLTestCase(gtest_test_utils.TestCase):
-  """Base class for tests of Google Test's XML output functionality."""
+  """Base class for test of Google Test's XML output functionality."""
 
   def AssertEquivalentNodes(self, expected_node, actual_node):
     """Asserts that actual_node is equivalent to expected_node.

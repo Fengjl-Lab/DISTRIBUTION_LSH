@@ -57,7 +57,7 @@ else:
   STACK_TRACE_TEMPLATE = '\n'
 
 EXPECTED_NON_EMPTY = {
-    'tests': 26,
+    'test': 26,
     'failures': 5,
     'disabled': 2,
     'errors': 0,
@@ -68,7 +68,7 @@ EXPECTED_NON_EMPTY = {
     'testsuites': [
         {
             'name': 'SuccessfulTest',
-            'tests': 1,
+            'test': 1,
             'failures': 0,
             'disabled': 0,
             'errors': 0,
@@ -87,7 +87,7 @@ EXPECTED_NON_EMPTY = {
         },
         {
             'name': 'FailedTest',
-            'tests': 1,
+            'test': 1,
             'failures': 1,
             'disabled': 0,
             'errors': 0,
@@ -115,7 +115,7 @@ EXPECTED_NON_EMPTY = {
         },
         {
             'name': 'DisabledTest',
-            'tests': 1,
+            'test': 1,
             'failures': 0,
             'disabled': 1,
             'errors': 0,
@@ -134,7 +134,7 @@ EXPECTED_NON_EMPTY = {
         },
         {
             'name': 'SkippedTest',
-            'tests': 3,
+            'test': 3,
             'failures': 1,
             'disabled': 0,
             'errors': 0,
@@ -184,7 +184,7 @@ EXPECTED_NON_EMPTY = {
         },
         {
             'name': 'MixedResultTest',
-            'tests': 3,
+            'test': 3,
             'failures': 1,
             'disabled': 1,
             'errors': 0,
@@ -245,7 +245,7 @@ EXPECTED_NON_EMPTY = {
         },
         {
             'name': 'XmlQuotingTest',
-            'tests': 1,
+            'test': 1,
             'failures': 1,
             'disabled': 0,
             'errors': 0,
@@ -273,7 +273,7 @@ EXPECTED_NON_EMPTY = {
         },
         {
             'name': 'InvalidCharactersTest',
-            'tests': 1,
+            'test': 1,
             'failures': 1,
             'disabled': 0,
             'errors': 0,
@@ -301,7 +301,7 @@ EXPECTED_NON_EMPTY = {
         },
         {
             'name': 'PropertyRecordingTest',
-            'tests': 4,
+            'test': 4,
             'failures': 0,
             'disabled': 0,
             'errors': 0,
@@ -360,7 +360,7 @@ EXPECTED_NON_EMPTY = {
         },
         {
             'name': 'NoFixtureTest',
-            'tests': 3,
+            'test': 3,
             'failures': 0,
             'disabled': 0,
             'errors': 0,
@@ -406,7 +406,7 @@ EXPECTED_NON_EMPTY = {
         },
         {
             'name': 'TypedTest/0',
-            'tests': 1,
+            'test': 1,
             'failures': 0,
             'disabled': 0,
             'errors': 0,
@@ -426,7 +426,7 @@ EXPECTED_NON_EMPTY = {
         },
         {
             'name': 'TypedTest/1',
-            'tests': 1,
+            'test': 1,
             'failures': 0,
             'disabled': 0,
             'errors': 0,
@@ -446,7 +446,7 @@ EXPECTED_NON_EMPTY = {
         },
         {
             'name': 'Single/TypeParameterizedTestSuite/0',
-            'tests': 1,
+            'test': 1,
             'failures': 0,
             'disabled': 0,
             'errors': 0,
@@ -466,7 +466,7 @@ EXPECTED_NON_EMPTY = {
         },
         {
             'name': 'Single/TypeParameterizedTestSuite/1',
-            'tests': 1,
+            'test': 1,
             'failures': 0,
             'disabled': 0,
             'errors': 0,
@@ -486,7 +486,7 @@ EXPECTED_NON_EMPTY = {
         },
         {
             'name': 'Single/ValueParamTest',
-            'tests': 4,
+            'test': 4,
             'failures': 0,
             'disabled': 0,
             'errors': 0,
@@ -543,7 +543,7 @@ EXPECTED_NON_EMPTY = {
 }
 
 EXPECTED_FILTERED = {
-    'tests': 1,
+    'test': 1,
     'failures': 0,
     'disabled': 0,
     'errors': 0,
@@ -553,7 +553,7 @@ EXPECTED_FILTERED = {
     'ad_hoc_property': '42',
     'testsuites': [{
         'name': 'SuccessfulTest',
-        'tests': 1,
+        'test': 1,
         'failures': 0,
         'disabled': 0,
         'errors': 0,
@@ -573,7 +573,7 @@ EXPECTED_FILTERED = {
 }
 
 EXPECTED_NO_TEST = {
-    'tests': 0,
+    'test': 0,
     'failures': 0,
     'disabled': 0,
     'errors': 0,
@@ -582,7 +582,7 @@ EXPECTED_NO_TEST = {
     'name': 'AllTests',
     'testsuites': [{
         'name': 'NonTestSuiteFailure',
-        'tests': 1,
+        'test': 1,
         'failures': 1,
         'disabled': 0,
         'skipped': 0,
@@ -623,22 +623,22 @@ class GTestJsonOutputUnitTest(gtest_test_utils.TestCase):
   """Unit test for Google Test's JSON output functionality."""
 
   # This test currently breaks on platforms that do not support typed and
-  # type-parameterized tests, so we don't run it under them.
+  # type-parameterized test, so we don't run it under them.
   if SUPPORTS_TYPED_TESTS:
 
     def testNonEmptyJsonOutput(self):
       """Verifies JSON output for a Google Test binary with non-empty output.
 
       Runs a test program that generates a non-empty JSON output, and
-      tests that the JSON output is expected.
+      test that the JSON output is expected.
       """
       self._TestJsonOutput(GTEST_PROGRAM_NAME, EXPECTED_NON_EMPTY, 1)
 
   def testNoTestJsonOutput(self):
-    """Verifies JSON output for a Google Test binary without actual tests.
+    """Verifies JSON output for a Google Test binary without actual test.
 
     Runs a test program that generates an JSON output for a binary with no
-    tests, and tests that the JSON output is expected.
+    test, and test that the JSON output is expected.
     """
 
     self._TestJsonOutput('gtest_no_test_unittest', EXPECTED_NO_TEST, 0)
@@ -740,8 +740,8 @@ class GTestJsonOutputUnitTest(gtest_test_utils.TestCase):
   def testFilteredTestJsonOutput(self):
     """Verifies JSON output when a filter is applied.
 
-    Runs a test program that executes only some tests and verifies that
-    non-selected tests do not show up in the JSON output.
+    Runs a test program that executes only some test and verifies that
+    non-selected test do not show up in the JSON output.
     """
 
     self._TestJsonOutput(

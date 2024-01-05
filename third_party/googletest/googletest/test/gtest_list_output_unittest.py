@@ -30,11 +30,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """Unit test for Google Test's --gtest_list_tests flag.
 
-A user can ask Google Test to list all tests by specifying the
+A user can ask Google Test to list all test by specifying the
 --gtest_list_tests flag. If output is requested, via --gtest_output=xml
-or --gtest_output=json, the tests are listed, with extra information in the
+or --gtest_output=json, the test are listed, with extra information in the
 output file.
-This script tests such functionality by invoking gtest_list_output_unittest_
+This script test such functionality by invoking gtest_list_output_unittest_
  (a program written with Google Test) the command line flags.
 """
 
@@ -46,32 +46,32 @@ GTEST_LIST_TESTS_FLAG = '--gtest_list_tests'
 GTEST_OUTPUT_FLAG = '--gtest_output'
 
 EXPECTED_XML = """<\?xml version="1.0" encoding="UTF-8"\?>
-<testsuites tests="16" name="AllTests">
-  <testsuite name="FooTest" tests="2">
+<testsuites test="16" name="AllTests">
+  <testsuite name="FooTest" test="2">
     <testcase name="Test1" file=".*gtest_list_output_unittest_.cc" line="43" />
     <testcase name="Test2" file=".*gtest_list_output_unittest_.cc" line="45" />
   </testsuite>
-  <testsuite name="FooTestFixture" tests="2">
+  <testsuite name="FooTestFixture" test="2">
     <testcase name="Test3" file=".*gtest_list_output_unittest_.cc" line="48" />
     <testcase name="Test4" file=".*gtest_list_output_unittest_.cc" line="49" />
   </testsuite>
-  <testsuite name="TypedTest/0" tests="2">
+  <testsuite name="TypedTest/0" test="2">
     <testcase name="Test7" type_param="int" file=".*gtest_list_output_unittest_.cc" line="60" />
     <testcase name="Test8" type_param="int" file=".*gtest_list_output_unittest_.cc" line="61" />
   </testsuite>
-  <testsuite name="TypedTest/1" tests="2">
+  <testsuite name="TypedTest/1" test="2">
     <testcase name="Test7" type_param="bool" file=".*gtest_list_output_unittest_.cc" line="60" />
     <testcase name="Test8" type_param="bool" file=".*gtest_list_output_unittest_.cc" line="61" />
   </testsuite>
-  <testsuite name="Single/TypeParameterizedTestSuite/0" tests="2">
+  <testsuite name="Single/TypeParameterizedTestSuite/0" test="2">
     <testcase name="Test9" type_param="int" file=".*gtest_list_output_unittest_.cc" line="66" />
     <testcase name="Test10" type_param="int" file=".*gtest_list_output_unittest_.cc" line="67" />
   </testsuite>
-  <testsuite name="Single/TypeParameterizedTestSuite/1" tests="2">
+  <testsuite name="Single/TypeParameterizedTestSuite/1" test="2">
     <testcase name="Test9" type_param="bool" file=".*gtest_list_output_unittest_.cc" line="66" />
     <testcase name="Test10" type_param="bool" file=".*gtest_list_output_unittest_.cc" line="67" />
   </testsuite>
-  <testsuite name="ValueParam/ValueParamTest" tests="4">
+  <testsuite name="ValueParam/ValueParamTest" test="4">
     <testcase name="Test5/0" value_param="33" file=".*gtest_list_output_unittest_.cc" line="52" />
     <testcase name="Test5/1" value_param="42" file=".*gtest_list_output_unittest_.cc" line="52" />
     <testcase name="Test6/0" value_param="33" file=".*gtest_list_output_unittest_.cc" line="53" />
@@ -81,12 +81,12 @@ EXPECTED_XML = """<\?xml version="1.0" encoding="UTF-8"\?>
 """
 
 EXPECTED_JSON = """{
-  "tests": 16,
+  "test": 16,
   "name": "AllTests",
   "testsuites": \[
     {
       "name": "FooTest",
-      "tests": 2,
+      "test": 2,
       "testsuite": \[
         {
           "name": "Test1",
@@ -102,7 +102,7 @@ EXPECTED_JSON = """{
     },
     {
       "name": "FooTestFixture",
-      "tests": 2,
+      "test": 2,
       "testsuite": \[
         {
           "name": "Test3",
@@ -118,7 +118,7 @@ EXPECTED_JSON = """{
     },
     {
       "name": "TypedTest\\\\/0",
-      "tests": 2,
+      "test": 2,
       "testsuite": \[
         {
           "name": "Test7",
@@ -136,7 +136,7 @@ EXPECTED_JSON = """{
     },
     {
       "name": "TypedTest\\\\/1",
-      "tests": 2,
+      "test": 2,
       "testsuite": \[
         {
           "name": "Test7",
@@ -154,7 +154,7 @@ EXPECTED_JSON = """{
     },
     {
       "name": "Single\\\\/TypeParameterizedTestSuite\\\\/0",
-      "tests": 2,
+      "test": 2,
       "testsuite": \[
         {
           "name": "Test9",
@@ -172,7 +172,7 @@ EXPECTED_JSON = """{
     },
     {
       "name": "Single\\\\/TypeParameterizedTestSuite\\\\/1",
-      "tests": 2,
+      "test": 2,
       "testsuite": \[
         {
           "name": "Test9",
@@ -190,7 +190,7 @@ EXPECTED_JSON = """{
     },
     {
       "name": "ValueParam\\\\/ValueParamTest",
-      "tests": 4,
+      "test": 4,
       "testsuite": \[
         {
           "name": "Test5\\\\/0",
@@ -224,21 +224,21 @@ EXPECTED_JSON = """{
 
 
 class GTestListTestsOutputUnitTest(gtest_test_utils.TestCase):
-  """Unit test for Google Test's list tests with output to file functionality."""
+  """Unit test for Google Test's list test with output to file functionality."""
 
   def testXml(self):
-    """Verifies XML output for listing tests in a Google Test binary.
+    """Verifies XML output for listing test in a Google Test binary.
 
     Runs a test program that generates an empty XML output, and
-    tests that the XML output is expected.
+    test that the XML output is expected.
     """
     self._TestOutput('xml', EXPECTED_XML)
 
   def testJSON(self):
-    """Verifies XML output for listing tests in a Google Test binary.
+    """Verifies XML output for listing test in a Google Test binary.
 
     Runs a test program that generates an empty XML output, and
-    tests that the XML output is expected.
+    test that the XML output is expected.
     """
     self._TestOutput('json', EXPECTED_JSON)
 

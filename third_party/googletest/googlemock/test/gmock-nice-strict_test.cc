@@ -74,7 +74,7 @@ class CallsMockMethodInDestructor {
   MOCK_METHOD(void, OnDestroy, ());
 };
 
-// Defines some mock classes needed by the tests.
+// Defines some mock classes needed by the test.
 
 class Foo {
  public:

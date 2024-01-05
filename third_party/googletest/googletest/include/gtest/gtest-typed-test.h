@@ -34,11 +34,11 @@
 #ifndef GOOGLETEST_INCLUDE_GTEST_GTEST_TYPED_TEST_H_
 #define GOOGLETEST_INCLUDE_GTEST_GTEST_TYPED_TEST_H_
 
-// This header implements typed tests and type-parameterized tests.
+// This header implements typed test and type-parameterized test.
 
-// Typed (aka type-driven) tests repeat the same test for types in a
+// Typed (aka type-driven) test repeat the same test for types in a
 // list.  You must know which types you want to test with when writing
-// typed tests. Here's how you do it:
+// typed test. Here's how you do it:
 
 #if 0
 
@@ -64,7 +64,7 @@ TYPED_TEST_SUITE(FooTest, MyTypes);
 //   TYPED_TEST_SUITE(FooTest, int);
 
 // Then, use TYPED_TEST() instead of TEST_F() to define as many typed
-// tests for this test suite as you want.
+// test for this test suite as you want.
 TYPED_TEST(FooTest, DoesBlah) {
   // Inside a test, refer to the special name TypeParam to get the type
   // parameter.  Since we are inside a derived class template, C++ requires
@@ -104,19 +104,19 @@ TYPED_TEST(FooTest, HasPropertyA) { ... }
 
 #endif  // 0
 
-// Type-parameterized tests are abstract test patterns parameterized
-// by a type.  Compared with typed tests, type-parameterized tests
+// Type-parameterized test are abstract test patterns parameterized
+// by a type.  Compared with typed test, type-parameterized test
 // allow you to define the test pattern without knowing what the type
 // parameters are.  The defined pattern can be instantiated with
 // different types any number of times, in any number of translation
 // units.
 //
 // If you are designing an interface or concept, you can define a
-// suite of type-parameterized tests to verify properties that any
+// suite of type-parameterized test to verify properties that any
 // valid implementation of the interface/concept should have.  Then,
 // each implementation can easily instantiate the test suite to verify
 // that it conforms to the requirements, without having to write
-// similar tests repeatedly.  Here's an example:
+// similar test repeatedly.  Here's an example:
 
 #if 0
 
@@ -132,7 +132,7 @@ class FooTest : public testing::Test {
 // prefer):
 TYPED_TEST_SUITE_P(FooTest);
 
-// Then, use TYPED_TEST_P() to define as many type-parameterized tests
+// Then, use TYPED_TEST_P() to define as many type-parameterized test
 // for this type-parameterized test suite as you want.
 TYPED_TEST_P(FooTest, DoesBlah) {
   // Inside a test, refer to TypeParam to get the type parameter.
@@ -144,7 +144,7 @@ TYPED_TEST_P(FooTest, HasPropertyA) { ... }
 
 // Now the tricky part: you need to register all test patterns before
 // you can instantiate them.  The first argument of the macro is the
-// test suite name; the rest are the names of the tests in this test
+// test suite name; the rest are the names of the test in this test
 // case.
 REGISTER_TYPED_TEST_SUITE_P(FooTest,
                             DoesBlah, HasPropertyA);
@@ -175,7 +175,7 @@ INSTANTIATE_TYPED_TEST_SUITE_P(My, FooTest, MyTypes);
 #include "gtest/internal/gtest-port.h"
 #include "gtest/internal/gtest-type-util.h"
 
-// Implements typed tests.
+// Implements typed test.
 
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 //
@@ -230,11 +230,11 @@ INSTANTIATE_TYPED_TEST_SUITE_P(My, FooTest, MyTypes);
   TYPED_TEST_SUITE
 #endif  // GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
-// Implements type-parameterized tests.
+// Implements type-parameterized test.
 
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 //
-// Expands to the namespace name that the type-parameterized tests for
+// Expands to the namespace name that the type-parameterized test for
 // the given type-parameterized test suite are defined in.  The exact
 // name of the namespace is subject to change without notice.
 #define GTEST_SUITE_NAMESPACE_(TestSuiteName) gtest_suite_##TestSuiteName##_
@@ -242,14 +242,14 @@ INSTANTIATE_TYPED_TEST_SUITE_P(My, FooTest, MyTypes);
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE.
 //
 // Expands to the name of the variable used to remember the names of
-// the defined tests in the given test suite.
+// the defined test in the given test suite.
 #define GTEST_TYPED_TEST_SUITE_P_STATE_(TestSuiteName) \
   gtest_typed_test_suite_p_state_##TestSuiteName##_
 
 // INTERNAL IMPLEMENTATION - DO NOT USE IN USER CODE DIRECTLY.
 //
 // Expands to the name of the variable used to remember the names of
-// the registered tests in the given test suite.
+// the registered test in the given test suite.
 #define GTEST_REGISTERED_TEST_NAMES_(TestSuiteName) \
   gtest_registered_test_names_##TestSuiteName##_
 

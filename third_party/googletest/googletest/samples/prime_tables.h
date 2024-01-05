@@ -29,7 +29,7 @@
 
 // This provides interface PrimeTable that determines whether a number is a
 // prime and determines a next prime number. This interface is used
-// in Google Test samples demonstrating use of parameterized tests.
+// in Google Test samples demonstrating use of parameterized test.
 
 #ifndef GOOGLETEST_SAMPLES_PRIME_TABLES_H_
 #define GOOGLETEST_SAMPLES_PRIME_TABLES_H_

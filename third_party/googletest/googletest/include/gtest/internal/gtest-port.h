@@ -93,7 +93,7 @@
 //                              platform supports I/O stream redirection using
 //                              dup() and dup2().
 //   GTEST_LINKED_AS_SHARED_LIBRARY
-//                            - Define to 1 when compiling tests that use
+//                            - Define to 1 when compiling test that use
 //                              Google Test as a shared library (known as
 //                              DLL on Windows).
 //   GTEST_CREATE_SHARED_LIBRARY
@@ -160,17 +160,17 @@
 // defines these macros automatically.  Code outside Google Test MUST
 // NOT define them.
 //
-// These macros are public so that portable tests can be written.
-// Such tests typically surround code using a feature with an #ifdef
+// These macros are public so that portable test can be written.
+// Such test typically surround code using a feature with an #ifdef
 // which controls that code.  For example:
 //
 // #ifdef GTEST_HAS_DEATH_TEST
 //   EXPECT_DEATH(DoSomethingDeadly());
 // #endif
 //
-//   GTEST_HAS_DEATH_TEST   - death tests
-//   GTEST_HAS_TYPED_TEST   - typed tests
-//   GTEST_HAS_TYPED_TEST_P - type-parameterized tests
+//   GTEST_HAS_DEATH_TEST   - death test
+//   GTEST_HAS_TYPED_TEST   - typed test
+//   GTEST_HAS_TYPED_TEST_P - type-parameterized test
 //   GTEST_IS_THREADSAFE    - Google Test is thread-safe.
 //   GTEST_USES_RE2         - the RE2 regular expression library is used
 //   GTEST_USES_POSIX_RE    - enhanced POSIX regex is used. Do not confuse with
@@ -634,7 +634,7 @@ typedef struct _RTL_CRITICAL_SECTION GTEST_CRITICAL_SECTION;
 #endif  // GTEST_HAS_CLONE
 
 // Determines whether to support stream redirection. This is used to test
-// output correctness and to implement death tests.
+// output correctness and to implement death test.
 #ifndef GTEST_HAS_STREAM_REDIRECTION
 // By default, we assume that stream redirection is supported on all
 // platforms except known mobile / embedded ones. Also, if the port doesn't have
@@ -649,7 +649,7 @@ typedef struct _RTL_CRITICAL_SECTION GTEST_CRITICAL_SECTION;
 #endif  // !GTEST_OS_WINDOWS_MOBILE
 #endif  // GTEST_HAS_STREAM_REDIRECTION
 
-// Determines whether to support death tests.
+// Determines whether to support death test.
 // pops up a dialog window that cannot be suppressed programmatically.
 #if (defined(GTEST_OS_LINUX) || defined(GTEST_OS_CYGWIN) ||           \
      defined(GTEST_OS_SOLARIS) ||                                     \
@@ -661,15 +661,15 @@ typedef struct _RTL_CRITICAL_SECTION GTEST_CRITICAL_SECTION;
      defined(GTEST_OS_NETBSD) || defined(GTEST_OS_FUCHSIA) ||         \
      defined(GTEST_OS_DRAGONFLY) || defined(GTEST_OS_GNU_KFREEBSD) || \
      defined(GTEST_OS_HAIKU) || defined(GTEST_OS_GNU_HURD))
-// Death tests require a file system to work properly.
+// Death test require a file system to work properly.
 #if GTEST_HAS_FILE_SYSTEM
 #define GTEST_HAS_DEATH_TEST 1
 #endif  // GTEST_HAS_FILE_SYSTEM
 #endif
 
-// Determines whether to support type-driven tests.
+// Determines whether to support type-driven test.
 
-// Typed tests need <typeinfo> and variadic macros, which GCC, VC++ 8.0,
+// Typed test need <typeinfo> and variadic macros, which GCC, VC++ 8.0,
 // Sun Pro CC, IBM Visual Age, and HP aCC support.
 #if defined(__GNUC__) || defined(_MSC_VER) || defined(__SUNPRO_CC) || \
     defined(__IBMCPP__) || defined(__HP_aCC)
@@ -1194,7 +1194,7 @@ void ClearInjectableArgvs();
 
 #ifdef GTEST_OS_WINDOWS
 // Provides leak-safe Windows kernel handle ownership.
-// Used in death tests and in threading support.
+// Used in death test and in threading support.
 class GTEST_API_ AutoHandle {
  public:
   // Assume that Win32 HANDLE type is equivalent to void*. Doing so allows us to
@@ -1237,7 +1237,7 @@ GTEST_DISABLE_MSC_WARNINGS_PUSH_(4251 \
 // and destroyed in the controller thread.
 //
 // This class is only for testing Google Test's own constructs. Do not
-// use it in user tests, either directly or indirectly.
+// use it in user test, either directly or indirectly.
 // TODO(b/203539622): Replace unconditionally with absl::Notification.
 class GTEST_API_ Notification {
  public:
@@ -1306,7 +1306,7 @@ extern "C" inline void* ThreadFuncWithCLinkage(void* thread) {
 //   thread_can_start.Notify();
 //
 // These classes are only for testing Google Test's own constructs. Do
-// not use them in user tests, either directly or indirectly.
+// not use them in user test, either directly or indirectly.
 template <typename T>
 class ThreadWithParam : public ThreadWithParamBase {
  public:

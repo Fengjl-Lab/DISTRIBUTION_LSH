@@ -75,7 +75,7 @@ const char kAlternatePathSeparator = '/';
 const char kAlternatePathSeparatorString[] = "/";
 #ifdef GTEST_OS_WINDOWS_MOBILE
 // Windows CE doesn't have a current directory. You should not use
-// the current directory in tests on Windows CE, but this at least
+// the current directory in test on Windows CE, but this at least
 // provides a reasonable fallback.
 const char kCurrentDirectoryString[] = "\\";
 // Windows CE doesn't define INVALID_FILE_ATTRIBUTES

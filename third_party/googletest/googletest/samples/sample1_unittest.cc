@@ -46,7 +46,7 @@
 #include "gtest/gtest.h"
 namespace {
 
-// Step 2. Use the TEST macro to define your tests.
+// Step 2. Use the TEST macro to define your test.
 //
 // TEST has two parameters: the test case name and the test name.
 // After using the macro, you should define your test logic between a
@@ -56,16 +56,16 @@ namespace {
 //
 // <TechnicalDetails>
 //
-// In Google Test, tests are grouped into test cases.  This is how we
-// keep test code organized.  You should put logically related tests
+// In Google Test, test are grouped into test cases.  This is how we
+// keep test code organized.  You should put logically related test
 // into the same test case.
 //
 // The test case name and the test name should both be valid C++
 // identifiers.  And you should not use underscore (_) in the names.
 //
 // Google Test guarantees that each test you define is run exactly
-// once, but it makes no guarantee on the order the tests are
-// executed.  Therefore, you should write your tests in such a way
+// once, but it makes no guarantee on the order the test are
+// executed.  Therefore, you should write your test in such a way
 // that their results don't depend on their order.
 //
 // </TechnicalDetails>
@@ -140,9 +140,9 @@ TEST(IsPrimeTest, Positive) {
 // We do this by linking in src/gtest_main.cc file, which consists of
 // a main() function which calls RUN_ALL_TESTS() for us.
 //
-// This runs all the tests you've defined, prints the result, and
+// This runs all the test you've defined, prints the result, and
 // returns 0 if successful, or 1 otherwise.
 //
-// Did you notice that we didn't register the tests?  The
-// RUN_ALL_TESTS() macro magically knows about all the tests we
+// Did you notice that we didn't register the test?  The
+// RUN_ALL_TESTS() macro magically knows about all the test we
 // defined.  Isn't this convenient?

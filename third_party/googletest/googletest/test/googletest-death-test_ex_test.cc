@@ -28,7 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //
-// Tests that verify interaction of exceptions and death tests.
+// Tests that verify interaction of exceptions and death test.
 
 #include "gtest/gtest-death-test.h"
 #include "gtest/gtest.h"
@@ -45,7 +45,7 @@
 
 #include <exception>  // For std::exception.
 
-// Tests that death tests report thrown exceptions as failures and that the
+// Tests that death test report thrown exceptions as failures and that the
 // exceptions do not escape death test macros.
 TEST(CxxExceptionDeathTest, ExceptionIsFailure) {
   try {
@@ -74,7 +74,7 @@ TEST(CxxExceptionDeathTest, PrintsMessageForStdExceptions) {
 #if GTEST_HAS_SEH
 // Tests that enabling interception of SEH exceptions with the
 // catch_exceptions flag does not interfere with SEH exceptions being
-// treated as death by death tests.
+// treated as death by death test.
 TEST(SehExceptionDeasTest, CatchExceptionsDoesNotInterfere) {
   EXPECT_DEATH(RaiseException(42, 0x0, 0, NULL), "")
       << "with catch_exceptions "

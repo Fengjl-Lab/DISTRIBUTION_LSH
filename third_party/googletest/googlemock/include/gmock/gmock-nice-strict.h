@@ -40,7 +40,7 @@
 // Currently a mock is naggy by default, so MockFoo and
 // NaggyMock<MockFoo> behave like the same.  However, we will soon
 // switch the default behavior of mocks to be nice, as that in general
-// leads to more maintainable tests.  When that happens, MockFoo will
+// leads to more maintainable test.  When that happens, MockFoo will
 // stop behaving like NaggyMock<MockFoo> and start behaving like
 // NiceMock<MockFoo>.
 //
@@ -162,8 +162,8 @@ class GTEST_INTERNAL_EMPTY_BASE_CLASS NiceMock
 
   // Ideally, we would inherit base class's constructors through a using
   // declaration, which would preserve their visibility. However, many existing
-  // tests rely on the fact that current implementation reexports protected
-  // constructors as public. These tests would need to be cleaned up first.
+  // test rely on the fact that current implementation reexports protected
+  // constructors as public. These test would need to be cleaned up first.
 
   // Single argument constructor is special-cased so that it can be
   // made explicit.
@@ -204,8 +204,8 @@ class GTEST_INTERNAL_EMPTY_BASE_CLASS NaggyMock
 
   // Ideally, we would inherit base class's constructors through a using
   // declaration, which would preserve their visibility. However, many existing
-  // tests rely on the fact that current implementation reexports protected
-  // constructors as public. These tests would need to be cleaned up first.
+  // test rely on the fact that current implementation reexports protected
+  // constructors as public. These test would need to be cleaned up first.
 
   // Single argument constructor is special-cased so that it can be
   // made explicit.
@@ -246,8 +246,8 @@ class GTEST_INTERNAL_EMPTY_BASE_CLASS StrictMock
 
   // Ideally, we would inherit base class's constructors through a using
   // declaration, which would preserve their visibility. However, many existing
-  // tests rely on the fact that current implementation reexports protected
-  // constructors as public. These tests would need to be cleaned up first.
+  // test rely on the fact that current implementation reexports protected
+  // constructors as public. These test would need to be cleaned up first.
 
   // Single argument constructor is special-cased so that it can be
   // made explicit.

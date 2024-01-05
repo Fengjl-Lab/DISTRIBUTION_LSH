@@ -29,7 +29,7 @@
 
 // Google Mock - a framework for writing C++ mock classes.
 //
-// This file tests some commonly used argument matchers.
+// This file test some commonly used argument matchers.
 
 #ifndef GOOGLEMOCK_TEST_GMOCK_MATCHERS_TEST_H_
 #define GOOGLEMOCK_TEST_GMOCK_MATCHERS_TEST_H_

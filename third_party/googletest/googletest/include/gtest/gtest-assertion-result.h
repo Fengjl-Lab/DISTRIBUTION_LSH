@@ -90,7 +90,7 @@ namespace testing {
 //
 // If you expect your predicate to be reused and want to support informative
 // messages in EXPECT_FALSE and ASSERT_FALSE (negative assertions show up
-// about half as often as positive ones in our tests), supply messages for
+// about half as often as positive ones in our test), supply messages for
 // both success and failure cases:
 //
 //   testing::AssertionResult IsEven(int n) {
@@ -107,7 +107,7 @@ namespace testing {
 //   Expected: false
 //
 // NB: Predicates that support negative Boolean assertions have reduced
-// performance in positive ones so be careful not to use them in tests
+// performance in positive ones so be careful not to use them in test
 // that have lots (tens of thousands) of positive Boolean assertions.
 //
 // To use this class with EXPECT_PRED_FORMAT assertions such as:

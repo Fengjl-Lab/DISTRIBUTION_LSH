@@ -42,7 +42,7 @@ using ::testing::AddGlobalTestEnvironment;
 using ::testing::InitGoogleTest;
 using ::testing::UnitTest;
 
-// Used by tests to register their events.
+// Used by test to register their events.
 std::vector<std::string>* g_events = nullptr;
 
 namespace testing {

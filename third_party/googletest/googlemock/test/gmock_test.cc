@@ -29,7 +29,7 @@
 
 // Google Mock - a framework for writing C++ mock classes.
 //
-// This file tests code in gmock.cc.
+// This file test code in gmock.cc.
 
 #include "gmock/gmock.h"
 
