@@ -5,7 +5,29 @@
 //
 //===-----------------------------------------------------
 
-#ifndef QALSH_REFACTOR_VERSION_SRC_INCLUDE_RECOVERY_LOG_RECORD_H_
-#define QALSH_REFACTOR_VERSION_SRC_INCLUDE_RECOVERY_LOG_RECORD_H_
+#pragma once
 
-#endif //QALSH_REFACTOR_VERSION_SRC_INCLUDE_RECOVERY_LOG_RECORD_H_
+#include <cassert>
+#include <string>
+
+#include <common/config.h>
+
+namespace qalsh {
+/** The type of the log record. */
+enum class LogRecordType {
+  INVALID = 0,
+  INSERT,
+  MARKDELETE,
+  APPLDELETE,
+  ROLLBACKDELETE,
+  UPDATE,
+  BEGIN,
+  COMMIT,
+  ABORT,
+  NEWPAGE,
+};
+
+class LogRecord {
+  friend class LogManager;
+};
+}// namespace qalsh

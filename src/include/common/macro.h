@@ -17,11 +17,11 @@ namespace qalsh {
 
 #define UNIMPLEMENTED(message) throw std::logic_error(message)
 
-#define QALSH_ENSURE(expr, message)         \
-    if (!(expr)) {                         \
-        std::cerr << "ERROR: " << (message) << std::endl; \
-        std::terminate()                                    \
-    }
+#define QALSH_ENSURE(expr, message)                  \
+  if (!(expr)) {                                      \
+    std::cerr << "ERROR: " << (message) << "\n"; \
+    std::terminate();                                 \
+  }
 
 #define UNREACHABLE(message) throw std::logic_error(message)
 

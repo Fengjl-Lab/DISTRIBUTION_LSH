@@ -25,8 +25,7 @@ target_include_directories(QALSH_static PUBLIC
         $<INSTALL_INTERFACE:include>
 )
 
-add_executable(QALSH_monitor monitor.cpp)
-target_link_libraries(QALSH_monitor PUBLIC QALSH_static fmt)
+target_link_libraries(QALSH_static fmt)
 
 add_executable(QALSH_main main.cpp)
 target_link_libraries(QALSH_main PUBLIC QALSH_static fmt)

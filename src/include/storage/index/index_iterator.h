@@ -5,7 +5,31 @@
 //
 //===-----------------------------------------------------
 
-#ifndef QALSH_REFACTOR_VERSION_SRC_INCLUDE_STORAGE_INDEX_INDEX_ITERATOR_H_
-#define QALSH_REFACTOR_VERSION_SRC_INCLUDE_STORAGE_INDEX_INDEX_ITERATOR_H_
+#pragma
 
-#endif //QALSH_REFACTOR_VERSION_SRC_INCLUDE_STORAGE_INDEX_INDEX_ITERATOR_H_
+#include <storage/page/b_plus_tree_leaf_page.h>
+
+namespace qalsh {
+
+#define INDEXITERATOR_TYPE IndexIterator<KeyType, ValueType, KeyComparator>
+
+INDEX_TEMPLATE_ARGUMENTS
+class IndexIterator {
+ public:
+  IndexIterator();
+  ~IndexIterator();
+
+  auto IsEnd() -> bool;
+
+  auto operator*() -> const MappingType &;
+
+  auto operator++() -> IndexIterator &;
+
+  auto operator==(const IndexIterator &itr) const -> bool { throw std::runtime_error("unimplemented"); }
+
+  auto operator!=(const IndexIterator &itr) const -> bool { throw std::runtime_error("unimplemented"); }
+
+ private:
+  // TODO add opaque variable here
+};
+} // namespace qalsh
