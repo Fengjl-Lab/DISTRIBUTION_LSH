@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/2.
 // src/include/buffer/lru_k_replacer.h
 //
@@ -16,7 +16,7 @@
 #include <common/config.h>
 #include <common/macro.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 
 class LRUKNode;
 class LRUKReplacer;
@@ -107,7 +107,7 @@ class LRUKReplacer {
    * Create a new entry for access history if frame id has not been seen before.
   *
   * If frame id is invalid (ie. larger than replacer_size_), throw an exception. You can
-  * also use QALSH_ASSERT to abort the process if frame id is invalid.
+  * also use DISTRIBUTION_LSH_ASSERT to abort the process if frame id is invalid.
    *
    * @param frame_id  id of frame that received a new access.
    * @param access_type type of access that was received.
@@ -164,5 +164,5 @@ class LRUKReplacer {
   static const size_t MAX_CURRENT_TIMESTAMP = 1e10;
 };
 
-} // namespace qalsh
+} // namespace distribution_lsh
 

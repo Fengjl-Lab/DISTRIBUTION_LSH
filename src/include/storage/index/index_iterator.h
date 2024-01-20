@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/5.
 // src/include/storage/index/index_iterator.h
 //
@@ -9,7 +9,7 @@
 
 #include <storage/page/b_plus_tree_leaf_page.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 
 #define INDEXITERATOR_TYPE IndexIterator<KeyType, ValueType, KeyComparator>
 
@@ -32,4 +32,4 @@ class IndexIterator {
  private:
   // TODO add opaque variable here
 };
-} // namespace qalsh
+} // namespace distribution_lsh

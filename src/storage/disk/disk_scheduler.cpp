@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/2.
 // src/storage/disk/disk_scheduler.cpp
 //
@@ -9,9 +9,9 @@
 #include <common/exception.h>
 #include <storage/disk/disk_manager.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 
-DiskScheduler::DiskScheduler(qalsh::DiskManager *disk_manager) : disk_manager_(disk_manager) {
+DiskScheduler::DiskScheduler(distribution_lsh::DiskManager *disk_manager) : disk_manager_(disk_manager) {
   // Spawn the background thread
   background_thread_.emplace([&]{ StartWorkerThread(); });
 }
@@ -23,7 +23,7 @@ DiskScheduler::~DiskScheduler() {
   }
 }
 
-void DiskScheduler::Schedule(qalsh::DiskRequest r) {
+void DiskScheduler::Schedule(distribution_lsh::DiskRequest r) {
   if (r.is_write_) {
     disk_manager_->WritePage(r.page_id_, r.data_);
     r.callback_.set_value(true);
@@ -41,4 +41,4 @@ void DiskScheduler::StartWorkerThread() {
   }
 }
 
-}// namespace qalsh
+}// namespace distribution_lsh

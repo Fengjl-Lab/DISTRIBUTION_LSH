@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/11/30.
 // src/include/random/one_dimension_random_number.h
 //
@@ -9,7 +9,7 @@
 
 #include <random>
 
-namespace qalsh {
+namespace distribution_lsh {
     /**
      * @brief class used to generating random variable
      * */
@@ -37,4 +37,4 @@ namespace qalsh {
          */
         static auto GenerateUnitDistribution(int min, int max) -> T;
     };
-} // namespace qalsh
+} // namespace distribution_lsh

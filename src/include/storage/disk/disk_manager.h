@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/2.
 // src/include/storage/disk/disk_manager.h
 //
@@ -15,7 +15,7 @@
 
 #include <common/config.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 /**
  * DiskManager takes care of the allocation and de-allocation of pages.
  */
@@ -99,4 +99,4 @@ class DiskManager {
   // With multiple buffer pool instances, need to protect file access
   std::mutex data_io_latch_;
 };
-} // namespace qalsh
+} // namespace distribution_lsh

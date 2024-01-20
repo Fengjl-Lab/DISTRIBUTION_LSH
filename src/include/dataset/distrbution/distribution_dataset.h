@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2023/12/24.
 // src/include/dataset/distribution/distribution_dataset.h
 //
@@ -9,7 +9,7 @@
 #include <fstream>
 #include <mutex>
 
-namespace qalsh {
+namespace distribution_lsh {
 
     template<typename type>
     class DistributionDataSet {
@@ -27,4 +27,4 @@ namespace qalsh {
         // Protect data access
         std::mutex data_latch_;
     };
-} // namespace qalsh
+} // namespace distribution_lsh

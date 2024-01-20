@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/2.
 // src/include/common/config.h
 //
@@ -11,7 +11,7 @@
 #include <chrono>
 #include <cstdint>
 
-namespace qalsh {
+namespace distribution_lsh {
 
 /** Cycle detection is performed every CYCLE_DETECTION_INTERVAL milliseconds. */
 extern std::chrono::milliseconds cycle_detection_interval;
@@ -25,9 +25,9 @@ static const int INVALID_PAGE_ID = -1;                                          
 static const int INVALID_TXN_ID = -1;                                           // invalid transaction id
 static const int INVALID_LSN = -1;                                              // invalid log sequence number
 static const int HEADER_PAGE_ID = 0;                                            // the header page id
-static const int QALSH_PAGE_SIZE = 4096;                                        // size of a data page in byte
+static const int DISTRIBUTION_LSH_PAGE_SIZE = 4096;                                        // size of a data page in byte
 static const int BUFFER_POOL_SIZE = 10;                                         // size of buffer pool
-static const int LOG_BUFFER_SIZE = ((BUFFER_POOL_SIZE + 1) * QALSH_PAGE_SIZE);  // size of a log buffer in byte
+static const int LOG_BUFFER_SIZE = ((BUFFER_POOL_SIZE + 1) * DISTRIBUTION_LSH_PAGE_SIZE);  // size of a log buffer in byte
 static const int BUCKET_SIZE = 50;                                              // size of extendable hash bucket
 static const int LRUK_REPLACER_K = 10;                                          // lookback window for lru-k replacer
 
@@ -38,4 +38,4 @@ using lsn_t = int32_t;          // log sequence number
 using oid_t = uint16_t;
 
 static const int VARCHAR_DEFAULT_LENGTH = 128;
-} // namespace qalsh
+} // namespace distribution_lsh

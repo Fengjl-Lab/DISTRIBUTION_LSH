@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2023/11/25.
 // src/include/storage/page/b_plus_tree_leaf_page.h
 //
@@ -14,11 +14,29 @@
 #include <common/config.h>
 #include <storage/page/b_plus_tree_page.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 
-#define B_PLUS_TREE_LEAF_PAGE_TYPE BPlusTreeLeafPage<KeyType, ValueType, KetComparator>
+INDEX_TEMPLATE_ARGUMENTS
+class BPlusTree;
+
+#define B_PLUS_TREE_LEAF_PAGE_TYPE BPlusTreeLeafPage<KeyType, ValueType>
 #define LEAF_PAGE_HEADER_SIZE 16
-#define LEAF_PAGE_SIZE ((QALSH_PAGE_SIZE - LEAF_PAGE_HEADER_SIZE) / sizeof(MappingType))
+#define LEAF_PAGE_SIZE ((DISTRIBUTION_LSH_PAGE_SIZE - LEAF_PAGE_HEADER_SIZE) / sizeof(MappingType))
+
+/**
+ * Store indexed key and record id ( record id = page id combined with slot id )
+ * together within leaf page. Only support unique key.
+ *
+ * Leaf page format (keys are stored in order):
+ * -----------------------------------------------------------------------
+ * | HEADER | KEY(1) + RID(1) | KEY(2) + RID(2) | ... | KEY(n) + RID(n)  |
+ * -----------------------------------------------------------------------
+ *
+ * Header format (size in byte, 16 bytes in total):
+ * -----------------------------------------------------------------------
+ * | PageType (4) | CurrentSize (4) | MaxSize (4) | NextPageId (4) | ... |
+ * -----------------------------------------------------------------------
+ */
 
 INDEX_TEMPLATE_ARGUMENTS
 class BPlusTreeLeafPage : public BPlusTreePage {
@@ -57,7 +75,7 @@ class BPlusTreeLeafPage : public BPlusTreePage {
         kstr.append(",");
       }
 
-      kstr.append(std::to_string(key.ToString()));
+      kstr.append(std::to_string(key));
     }
     kstr.append(")");
 
@@ -68,6 +86,7 @@ class BPlusTreeLeafPage : public BPlusTreePage {
   page_id_t next_page_id_;
   // Flexible array member for page data.
   MappingType array_[0];
+  friend class BPlusTree<KeyType, ValueType>;
 };
-}
+}// namespace distribution_lsh
 

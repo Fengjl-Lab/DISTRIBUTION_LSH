@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/5.
 // src/include/storage/disk/disk_manager_memory.h
 //
@@ -27,7 +27,7 @@
 #include <fmt/core.h>
 #include <storage/disk/disk_manager.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 /**
  * DiskManagerMemory replicates the utility of DiskManager on memory. It is primarily used for
  * data structure performance testing.
@@ -86,7 +86,7 @@ class DiskManagerUnlimitedMemory : public DiskManager {
     std::unique_lock<std::shared_mutex> l_page(ptr->second);
     l.unlock();
 
-    memcpy(ptr->first.data(), page_data, QALSH_PAGE_SIZE);
+    memcpy(ptr->first.data(), page_data, DISTRIBUTION_LSH_PAGE_SIZE);
 
     PostProcessLatency(page_id);
   }
@@ -115,7 +115,7 @@ class DiskManagerUnlimitedMemory : public DiskManager {
     std::shared_lock<std::shared_mutex> l_page(ptr->second);
     l.unlock();
 
-    memcpy(page_data, ptr->first.data(), QALSH_PAGE_SIZE);
+    memcpy(page_data, ptr->first.data(), DISTRIBUTION_LSH_PAGE_SIZE);
 
     PostProcessLatency(page_id);
   }
@@ -163,7 +163,7 @@ class DiskManagerUnlimitedMemory : public DiskManager {
   std::array<page_id_t, 4> recent_access_;
   uint64_t access_ptr_{0};
 
-  using Page = std::array<char, QALSH_PAGE_SIZE>;
+  using Page = std::array<char, DISTRIBUTION_LSH_PAGE_SIZE>;
   using ProtectedPage = std::pair<Page, std::shared_mutex>;
 
   std::mutex mutex_;
@@ -171,4 +171,4 @@ class DiskManagerUnlimitedMemory : public DiskManager {
   std::vector<std::shared_ptr<ProtectedPage>> data_;
 };
 
-} // namespace qalsh
+} // namespace distribution_lsh

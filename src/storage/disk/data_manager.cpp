@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/2.
 // src/storage/disk/disk_manager.cpp
 //
@@ -17,7 +17,7 @@
 #include <common/logger.h>
 #include <storage/disk/disk_manager.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 static char *buffer_used;
 
 DiskManager::DiskManager(const std::string &db_file) : file_name_(db_file) {
@@ -61,13 +61,13 @@ void DiskManager::ShutDown() {
   log_io_.close();
 }
 
-void DiskManager::WritePage(qalsh::page_id_t page_id, const char *page_data) {
+void DiskManager::WritePage(distribution_lsh::page_id_t page_id, const char *page_data) {
   std::scoped_lock scoped_data_io_latch(data_io_latch_);
-  size_t offset = static_cast<size_t>(page_id) * QALSH_PAGE_SIZE;
+  size_t offset = static_cast<size_t>(page_id) * DISTRIBUTION_LSH_PAGE_SIZE;
   // set write cursor to offset
   num_writes_ += 1;
   data_io_.seekp(offset);
-  data_io_.write(page_data, QALSH_PAGE_SIZE);
+  data_io_.write(page_data, DISTRIBUTION_LSH_PAGE_SIZE);
   // check for I/O error
   if (data_io_.bad()) {
     LOG_DEBUG("I/O error while writting");
@@ -78,24 +78,24 @@ void DiskManager::WritePage(qalsh::page_id_t page_id, const char *page_data) {
 
 void DiskManager::ReadPage(page_id_t page_id, char *page_data) {
   std::scoped_lock scoped_data_io_latch(data_io_latch_);
-  int offset = page_id * QALSH_PAGE_SIZE;
+  int offset = page_id * DISTRIBUTION_LSH_PAGE_SIZE;
   // check if read beyond file length
   if (offset > GetFileSize(file_name_)) {
     LOG_DEBUG("I/O error reading past end of file");
   } else {
     // set read cursor to offset
     data_io_.seekp(offset);
-    data_io_.read(page_data, QALSH_PAGE_SIZE);
+    data_io_.read(page_data, DISTRIBUTION_LSH_PAGE_SIZE);
     if (data_io_.bad()) {
       LOG_DEBUG("I/O error while reading");
       return;
     }
     // if file ends before reading BUSTUB_PAGE_SIZE
     int read_count = data_io_.gcount();
-    if (read_count < QALSH_PAGE_SIZE) {
+    if (read_count < DISTRIBUTION_LSH_PAGE_SIZE) {
       LOG_DEBUG("Read less than a page");
       data_io_.clear();
-      memset(page_data + read_count, 0, QALSH_PAGE_SIZE - read_count);
+      memset(page_data + read_count, 0, DISTRIBUTION_LSH_PAGE_SIZE - read_count);
     }
   }
 }
@@ -178,4 +178,4 @@ auto DiskManager::GetFileSize(const std::string &file_name) -> int {
   return rc == 0 ? static_cast<int>(stat_buf.st_size) : -1;
 }
 
-}// namespace qalsh
+}// namespace distribution_lsh

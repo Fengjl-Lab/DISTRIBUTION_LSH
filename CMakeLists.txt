@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(QALSH_refactor_version
+project(DISTRIBUTION_LSH_refactor_version
         VERSION 2024.1
-        DESCRIPTION "qalsh c-ANNs algorithm"
+        DESCRIPTION "distribution_lsh c-ANNs algorithm"
         LANGUAGES C CXX
 )
 
@@ -52,9 +52,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
 # Includes.
-set(QALSH_SRC_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/include)
-set(QALSH_TEST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/test/include)
-set(QALSH_THIRD_PARTY_INCLUDE_DIR
+set(DISTRIBUTION_LSH_SRC_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/include)
+set(DISTRIBUTION_LSH_TEST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/test/include)
+set(DISTRIBUTION_LSH_THIRD_PARTY_INCLUDE_DIR
         ${PROJECT_SOURCE_DIR}/third_party
         ${PROJECT_SOURCE_DIR}/third_party/fmt/include
         # ${PROJECT_SOURCE_DIR}/third_party/libpg_query/include
@@ -63,7 +63,7 @@ set(QALSH_THIRD_PARTY_INCLUDE_DIR
         ${PROJECT_SOURCE_DIR}/third_party/backward-cpp/include
 )
 
-include_directories(${QALSH_SRC_INCLUDE_DIR} ${QALSH_TEST_INCLUDE_DIR} ${QALSH_THIRD_PARTY_INCLUDE_DIR})
+include_directories(${DISTRIBUTION_LSH_SRC_INCLUDE_DIR} ${DISTRIBUTION_LSH_TEST_INCLUDE_DIR} ${DISTRIBUTION_LSH_THIRD_PARTY_INCLUDE_DIR})
 include_directories(BEFORE src) # This is needed for gtest.
 
 add_subdirectory(third_party)

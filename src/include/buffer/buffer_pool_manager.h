@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/3.
 // src/include/buffer/buffer_pool_manager.h
 //
@@ -19,7 +19,7 @@
 #include <storage/page/page.h>
 #include <storage/page/page_guard.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 /**
  * BufferPoolManager reads disk page to and from its internal buffer pool
  */
@@ -151,4 +151,4 @@ class BufferPoolManager {
     // This is a no-nop right now without a more complex data structure to track deallocated pages
   }
 };
-}// namespace qalsh
+}// namespace distribution_lsh

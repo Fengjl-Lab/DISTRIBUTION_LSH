@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/5.
 // test/storage/disk_manager_test.cpp
 //
@@ -12,7 +12,7 @@
 
 #include <gtest/gtest.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 class DiskManagerTest : public ::testing::Test {
  protected:
   // This function is called before every test.
@@ -30,8 +30,8 @@ class DiskManagerTest : public ::testing::Test {
 
 // NOLINTNEXTLINE
 TEST_F(DiskManagerTest, ReadWritePageTest) {
-  char buf[QALSH_PAGE_SIZE] = {0};
-  char data[QALSH_PAGE_SIZE] = {0};
+  char buf[DISTRIBUTION_LSH_PAGE_SIZE] = {0};
+  char data[DISTRIBUTION_LSH_PAGE_SIZE] = {0};
   std::string db_file("test.db");
   auto dm = DiskManager(db_file);
   std::strncpy(data, "A test string.", sizeof(data));
@@ -69,4 +69,4 @@ TEST_F(DiskManagerTest, ReadWriteLogTest) {
 
 // NOLINTNEXTLINE
 TEST_F(DiskManagerTest, ThrowBadFileTest) { EXPECT_THROW(DiskManager("dev/null\\/foo/bar/baz/test.db"), Exception); }
-} // namespace qalsh
+} // namespace distribution_lsh

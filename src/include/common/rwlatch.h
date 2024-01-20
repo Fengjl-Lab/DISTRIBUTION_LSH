@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2023/12/30.
 // src/include/common/rwlatch.h
 //
@@ -9,7 +9,7 @@
 
 #include <shared_mutex>
 
-namespace qalsh {
+namespace distribution_lsh {
 
 /**
  * Reader-Writer latch backed by std::mutex
@@ -40,4 +40,4 @@ class ReaderWriterLatch {
   std::shared_mutex mutex_;
 };
 
-}// namespace qalsh
+}// namespace distribution_lsh

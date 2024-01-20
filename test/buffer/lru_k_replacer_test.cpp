@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/5.
 // test/buffer/lru_k_replacer_test.cpp
 //
@@ -17,7 +17,7 @@
 
 #include <gtest/gtest.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 TEST(LRUKReplacerTest, SampleTest
 ) {
   LRUKReplacer lru_replacer(7, 2);
@@ -136,4 +136,4 @@ TEST(LRUKReplacerTest, SampleTest
       Size()
   );
 }
-} // namespace qalsh
+} // namespace distribution_lsh

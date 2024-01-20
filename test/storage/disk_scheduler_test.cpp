@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/5.
 // test/storage/disk_scheduler.cpp
 //
@@ -15,14 +15,14 @@
 
 #include <gtest/gtest.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 
-using qalsh::DiskManagerUnlimitedMemory;
+using distribution_lsh::DiskManagerUnlimitedMemory;
 
 // NOLINTNEXTLINE
 TEST(DiskSchedulerTest, ScheduleWriteReadPageTest) {
-  char buf[QALSH_PAGE_SIZE] = {0};
-  char data[QALSH_PAGE_SIZE] = {0};
+  char buf[DISTRIBUTION_LSH_PAGE_SIZE] = {0};
+  char data[DISTRIBUTION_LSH_PAGE_SIZE] = {0};
 
   auto dm = std::make_unique<DiskManagerUnlimitedMemory>();
   auto disk_scheduler = std::make_unique<DiskScheduler>(dm.get());
@@ -45,4 +45,4 @@ TEST(DiskSchedulerTest, ScheduleWriteReadPageTest) {
   dm->ShutDown();
 }
 
-} // namespace qalsh
+} // namespace distribution_lsh

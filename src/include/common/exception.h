@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/11/25.
 // src/include/common/exception.h
 //
@@ -14,7 +14,7 @@
 #include <string>
 #include <iostream>
 
-namespace qalsh {
+namespace distribution_lsh {
 enum class ExceptionType {
   /** Invalid exception type.*/
   INVALID = 0,
@@ -109,4 +109,4 @@ class ExecutionException : public Exception {
   explicit ExecutionException(const std::string &msg) : Exception(ExceptionType::EXECUTION, msg, false) {}
 };
 
-}  // namespace qalsh
+}  // namespace distribution_lsh

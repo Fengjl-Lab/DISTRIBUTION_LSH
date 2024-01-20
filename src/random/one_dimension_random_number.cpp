@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2023/12/25.
 // src/random/one_dimension_random_number.cpp
 //
@@ -7,7 +7,7 @@
 
 #include <random/one_dimension_random_number.h>
 
-namespace qalsh {
+namespace distribution_lsh {
     template<typename T>
     auto OneDimensionRandomNumber<T>::GenerateUnitDistribution(int min, int max) -> T {
         auto lower_bound = std::numeric_limits<T>::min();
@@ -17,4 +17,4 @@ namespace qalsh {
         std::random_device rd;
         std::mt19937 gen(rd());
    }
-} // namespace qalsh
+} // namespace distribution_lsh

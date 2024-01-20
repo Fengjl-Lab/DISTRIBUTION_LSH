@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/2.
 // src/buffer/lru_k_replacer.cpp
 //
@@ -8,7 +8,7 @@
 #include <buffer/lru_k_replacer.h>
 #include <common/exception.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 
 auto LRUKNode::CalKDistance(size_t current_timestamp) -> size_t {
   return history_.size() < k_ ? \
@@ -63,7 +63,7 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
 void LRUKReplacer::RecordAccess(frame_id_t frame_id, [[maybe_unused]] AccessType access_type) {
   std::unique_lock<std::mutex> frame(latch_);
 
-  QALSH_ASSERT(frame_id >= 0 && frame_id <= static_cast<int>(num_frames_), "Invalid frame id");
+  DISTRIBUTION_LSH_ASSERT(frame_id >= 0 && frame_id <= static_cast<int>(num_frames_), "Invalid frame id");
   auto target_frame_iterator = node_store_.find(frame_id);
   if (target_frame_iterator != node_store_.end()) {
     node_store_.find(frame_id)->second->Access(this->current_timestamp_);
@@ -117,4 +117,4 @@ auto LRUKReplacer::Size() -> size_t {
   return this->replacer_size_;
 }
 
-} // namespace qalsh
+} // namespace distribution_lsh

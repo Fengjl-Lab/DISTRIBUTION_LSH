@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/11/25.
 // src/include/common/macro.h
 //
@@ -11,13 +11,13 @@
 #include <exception>
 #include <stdexcept>
 
-namespace qalsh {
+namespace distribution_lsh {
 
-#define QALSH_ASSERT(expr, message)  assert((expr) && (message))
+#define DISTRIBUTION_LSH_ASSERT(expr, message)  assert((expr) && (message))
 
 #define UNIMPLEMENTED(message) throw std::logic_error(message)
 
-#define QALSH_ENSURE(expr, message)                  \
+#define DISTRIBUTION_LSH_ENSURE(expr, message)                  \
   if (!(expr)) {                                      \
     std::cerr << "ERROR: " << (message) << "\n"; \
     std::terminate();                                 \
@@ -38,5 +38,5 @@ namespace qalsh {
     DISALLOW_COPY(cname);             \
     DISALLOW_MOVE(cname);
 
-}  // namespace qalsh
+}  // namespace distribution_lsh
 

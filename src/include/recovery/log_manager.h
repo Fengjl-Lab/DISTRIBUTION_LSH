@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/3.
 // src/include/recovery/log_manager.h
 //
@@ -15,7 +15,7 @@
 #include <storage/disk/disk_manager.h>
 #include <recovery/log_record.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 /**
  * LogManager maintains a separate thread that is awakened whenever the log buffer is full or whenever a timeout
  * happens. When the thread is awakened, the log buffer's content is written into the disk log file.
@@ -62,4 +62,4 @@ class LogManager {
 
   DiskManager *disk_manager_ __attribute__((__unused__));
 };
-} // namespace qalsh
+} // namespace distribution_lsh

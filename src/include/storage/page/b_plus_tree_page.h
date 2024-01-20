@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2023/11/17.
 // src/include/storage/page/b_plus_tree_page.h
 //
@@ -14,11 +14,11 @@
 
 #include <buffer/buffer_pool_manager.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 
 #define MappingType std::pair<KeyType, ValueType>
 
-#define INDEX_TEMPLATE_ARGUMENTS template <typename KeyType, typename ValueType, typename KeyComparator>
+#define INDEX_TEMPLATE_ARGUMENTS template <typename KeyType, typename ValueType>
 
 // define page type enum
 enum class IndexPageType { INVALID_ID_INDEX_PAGE = 0, LEAF_PAGE, INTERNAL_PAGE};
@@ -44,11 +44,11 @@ class BPlusTreePage {
 
  private:
   // Member variables, attributes that both internal and leaf page share
-  IndexPageType page_type_ __attribute__((__unused__));
-  int size_ __attribute__((__unused__));
-  int max_size_ __attribute__((__unused__));
+  IndexPageType page_type_;
+  int size_;
+  int max_size_;
 };
 
-}// namespace qalsh
+}// namespace distribution_lsh
 
 

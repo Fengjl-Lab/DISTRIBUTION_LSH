@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/4.
 // src/buffer/buffer_pool_manager.cpp
 //
@@ -12,11 +12,11 @@
 #include <common/logger.h>
 #include <storage/page/page_guard.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 BufferPoolManager::BufferPoolManager(size_t pool_size,
-                                     qalsh::DiskManager *disk_manager,
+                                     distribution_lsh::DiskManager *disk_manager,
                                      size_t replacer_k,
-                                     qalsh::LogManager *log_manager)
+                                     distribution_lsh::LogManager *log_manager)
     : pool_size_(pool_size), disk_scheduler_(std::make_unique<DiskScheduler>(disk_manager)), log_manager_(log_manager) {
   pages_ = new Page[pool_size_];
   replacer_ = std::make_unique<LRUKReplacer>(pool_size, replacer_k);
@@ -50,7 +50,7 @@ auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {
       std::optional<DiskRequest> disk_request
           ({true, reinterpret_cast<char *>(replaced_page->data_), replaced_page->page_id_, std::move(promise)});
       disk_scheduler_->request_queue_.Put(std::move(disk_request));
-      QALSH_ENSURE(future.get(), "Write Back Failure.")
+      DISTRIBUTION_LSH_ENSURE(future.get(), "Write Back Failure.")
     }
 
     page_table_.erase(replaced_page->page_id_);
@@ -98,7 +98,7 @@ auto BufferPoolManager::FetchPage(page_id_t page_id, [[maybe_unused]] AccessType
       std::optional<DiskRequest> disk_request
           ({true, reinterpret_cast<char *>(replaced_page->data_), replaced_page->page_id_, std::move(promise)});
       disk_scheduler_->request_queue_.Put(std::move(disk_request));
-      QALSH_ENSURE(future.get(), "Write Back Failure.")
+      DISTRIBUTION_LSH_ENSURE(future.get(), "Write Back Failure.")
     }
 
     page_table_.erase(replaced_page->page_id_);
@@ -111,7 +111,7 @@ auto BufferPoolManager::FetchPage(page_id_t page_id, [[maybe_unused]] AccessType
       disk_request({false, reinterpret_cast<char *>(pages_[target_frame].data_), page_id, std::move(promise)});
   disk_scheduler_->request_queue_.Put(std::move(disk_request));
   // Wait for read in process
-  QALSH_ENSURE(future.get(), "Read In Failure.")
+  DISTRIBUTION_LSH_ENSURE(future.get(), "Read In Failure.")
 
   // Set page information
   pages_[target_frame].page_id_ = page_id;
@@ -126,7 +126,7 @@ auto BufferPoolManager::FetchPage(page_id_t page_id, [[maybe_unused]] AccessType
   return &pages_[target_frame];
 }
 
-auto BufferPoolManager::UnpinPage(qalsh::page_id_t page_id, bool is_dirty, [[maybe_unused]] qalsh::AccessType access_type) -> bool {
+auto BufferPoolManager::UnpinPage(distribution_lsh::page_id_t page_id, bool is_dirty, [[maybe_unused]] distribution_lsh::AccessType access_type) -> bool {
   std::unique_lock<std::mutex> page(latch_);
   // page_id is not in the buffer pool or its pin count is already 0
   if (page_table_.find(page_id) == page_table_.end() || pages_[page_table_[page_id]].pin_count_ == 0) {
@@ -211,4 +211,4 @@ auto BufferPoolManager::FetchPageWrite(page_id_t page_id) -> WritePageGuard { re
 
 auto BufferPoolManager::NewPageGuarded(page_id_t *page_id) -> BasicPageGuard { return {this, NewPage(page_id)}; }
 
-}// namespace qalsh
+}// namespace distribution_lsh

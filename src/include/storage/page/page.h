@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2023/12/31.
 // src/include/storage/page/page.h
 //
@@ -13,9 +13,9 @@
 #include <common/config.h>
 #include <common/rwlatch.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 /**
- * Page is the basic unit of storage within the QALSH algorithm.
+ * Page is the basic unit of storage within the DISTRIBUTION_LSH algorithm.
  * Page provides a wrapper for actual data pages being held in
  * main memory.
  * Page contains information that is used by the buffer pool manager.
@@ -27,7 +27,7 @@ class Page {
  public:
   /** Constructor. Zeros out the page data */
   Page() {
-    data_ = new char[QALSH_PAGE_SIZE];
+    data_ = new char[DISTRIBUTION_LSH_PAGE_SIZE];
     ResetMemory();
   }
 
@@ -74,7 +74,7 @@ class Page {
 
  private:
   /**  Zeros out the data that is held within the page. */
-  inline void ResetMemory() { memset(data_, OFFSET_PAGE_START, QALSH_PAGE_SIZE); }
+  inline void ResetMemory() { memset(data_, OFFSET_PAGE_START, DISTRIBUTION_LSH_PAGE_SIZE); }
 
   /** The actual data that is stored within a page. */
   // Use ASAN to detect page overflow
@@ -89,5 +89,5 @@ class Page {
   ReaderWriterLatch rwlatch_;
 };
 
-}// namespace qalsh
+}// namespace distribution_lsh
 

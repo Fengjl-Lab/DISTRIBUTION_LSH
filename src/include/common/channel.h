@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/2.
 // src/include/common/channel.h
 //
@@ -13,7 +13,7 @@
 #include <queue>
 #include <utility>
 
-namespace qalsh {
+namespace distribution_lsh {
 /**
  * Channels allow for safe sharing of data between threads. This is a multi-producer multi-consumer channel.
  */
@@ -52,4 +52,4 @@ class Channel {
   std::queue<T> q_;
 };
 
-}// namespace qalsh
+}// namespace distribution_lsh

@@ -1,7 +1,7 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2023/11/25.
-// src/include/algorithm/qalsh.h
+// src/include/algorithm/distribution_lsh.h
 //
 //===-----------------------------------------------------
 #pragma once
@@ -13,12 +13,12 @@
 #include <common/exception.h>
 #include <common/config.h>
 
-namespace QALSH {
+namespace DISTRIBUTION_LSH {
 
 template<class DType>
-class QALSH {
+class DISTRIBUTION_LSH {
  public:
-    QALSH() = delete;
+    DISTRIBUTION_LSH() = delete;
  private:
     /** point data */
     int32_t n_pts;          // number of points

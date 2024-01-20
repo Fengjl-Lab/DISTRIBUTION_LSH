@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/3.
 // src/include/recovery/log_record.h
 //
@@ -12,7 +12,7 @@
 
 #include <common/config.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 /** The type of the log record. */
 enum class LogRecordType {
   INVALID = 0,
@@ -30,4 +30,4 @@ enum class LogRecordType {
 class LogRecord {
   friend class LogManager;
 };
-}// namespace qalsh
+}// namespace distribution_lsh

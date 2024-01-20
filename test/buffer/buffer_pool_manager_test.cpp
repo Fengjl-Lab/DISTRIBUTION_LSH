@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/5.
 // test/buffer/buffer_pool_manager_test.cpp
 //
@@ -14,7 +14,7 @@
 
 #include <gtest/gtest.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 // NOLINTNEXTLINE
 // Check whether pages containing terminal characters can be recovered
 TEST(BufferPoolManagerTest, BinaryDataTest) {
@@ -41,19 +41,19 @@ TEST(BufferPoolManagerTest, BinaryDataTest) {
   ASSERT_NE(nullptr, page0);
   EXPECT_EQ(0, page_id_temp);
 
-  char random_binary_data[QALSH_PAGE_SIZE];
+  char random_binary_data[DISTRIBUTION_LSH_PAGE_SIZE];
   // Generate random binary data
   for (char &i : random_binary_data) {
     i = static_cast<char>(uniform_dist(rng));
   }
 
   // Insert terminal characters both in the middle and at end
-  random_binary_data[QALSH_PAGE_SIZE / 2] = '\0';
-  random_binary_data[QALSH_PAGE_SIZE - 1] = '\0';
+  random_binary_data[DISTRIBUTION_LSH_PAGE_SIZE / 2] = '\0';
+  random_binary_data[DISTRIBUTION_LSH_PAGE_SIZE - 1] = '\0';
 
   // Scenario: Once we have a page, we should be able to read and write content.
-  std::memcpy(page0->GetData(), random_binary_data, QALSH_PAGE_SIZE);
-  EXPECT_EQ(0, std::memcmp(page0->GetData(), random_binary_data, QALSH_PAGE_SIZE));
+  std::memcpy(page0->GetData(), random_binary_data, DISTRIBUTION_LSH_PAGE_SIZE);
+  EXPECT_EQ(0, std::memcmp(page0->GetData(), random_binary_data, DISTRIBUTION_LSH_PAGE_SIZE));
 
   // Scenario: We should be able to create new pages until we fill up the buffer pool.
   for (size_t i = 1; i < buffer_pool_size; ++i) {
@@ -79,7 +79,7 @@ TEST(BufferPoolManagerTest, BinaryDataTest) {
   // Scenario: We should be able to fetch the data we wrote a while ago.
   page0 = bpm->FetchPage(0);
   ASSERT_NE(nullptr, page0);
-  EXPECT_EQ(0, memcmp(page0->GetData(), random_binary_data, QALSH_PAGE_SIZE));
+  EXPECT_EQ(0, memcmp(page0->GetData(), random_binary_data, DISTRIBUTION_LSH_PAGE_SIZE));
   EXPECT_EQ(true, bpm->UnpinPage(0, true));
 
   // Shutdown the disk manager and remove the temporary file we created.
@@ -107,7 +107,7 @@ TEST(BufferPoolManagerTest, SampleTest) {
   EXPECT_EQ(0, page_id_temp);
 
   // Scenario: Once we have a page, we should be able to read and write content.
-  snprintf(page0->GetData(), QALSH_PAGE_SIZE, "Hello");
+  snprintf(page0->GetData(), DISTRIBUTION_LSH_PAGE_SIZE, "Hello");
   EXPECT_EQ(0, strcmp(page0->GetData(), "Hello"));
 
   // Scenario: We should be able to create new pages until we fill up the buffer pool.
@@ -147,4 +147,4 @@ TEST(BufferPoolManagerTest, SampleTest) {
   delete bpm;
   delete disk_manager;
 }
-} // namespace qalsh
+} // namespace distribution_lsh

@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/5.
 // tools/bpm_bench/bpm_bench.cpp
 //
@@ -142,12 +142,12 @@ void CheckPageConsistent(const char *data, size_t page_idx, uint64_t seed) {
 
 // NOLINTNEXTLINE
 auto main(int argc, char** argv) -> int {
-  using qalsh::AccessType;
-  using qalsh::BufferPoolManager;
-  using qalsh::DiskManagerUnlimitedMemory;
-  using qalsh::page_id_t;
+  using distribution_lsh::AccessType;
+  using distribution_lsh::BufferPoolManager;
+  using distribution_lsh::DiskManagerUnlimitedMemory;
+  using distribution_lsh::page_id_t;
   
-  argparse::ArgumentParser program("qalsh-bpm-bench");
+  argparse::ArgumentParser program("distribution_lsh-bpm-bench");
   program.add_argument("--duration").help("run bpm bench for n milliseconds");
   program.add_argument("--latency").help("enable disk latency");
   program.add_argument("--scan-thread-n").help("number of scan threads");
@@ -184,14 +184,14 @@ auto main(int argc, char** argv) -> int {
     get_thread_n = std::stoi(program.get("--get-thread-n"));
   }
 
-  uint64_t qalsh_page_cnt = 6400;
+  uint64_t distribution_lsh_page_cnt = 6400;
   if (program.present("--db-size")) {
-    qalsh_page_cnt = std::stoi(program.get("--db-size"));
+    distribution_lsh_page_cnt = std::stoi(program.get("--db-size"));
   }
 
-  uint64_t qalsh_bpm_size = 64;
+  uint64_t distribution_lsh_bpm_size = 64;
   if (program.present("--bpm-size")) {
-    qalsh_bpm_size = std::stoi(program.get("--bpm-size"));
+    distribution_lsh_bpm_size = std::stoi(program.get("--bpm-size"));
   }
 
   uint64_t lru_k_size = 16;
@@ -200,15 +200,15 @@ auto main(int argc, char** argv) -> int {
   }
   
   auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto bpm = std::make_unique<BufferPoolManager>(qalsh_bpm_size, disk_manager.get(), lru_k_size);
+  auto bpm = std::make_unique<BufferPoolManager>(distribution_lsh_bpm_size, disk_manager.get(), lru_k_size);
   std::vector<page_id_t> page_ids;
 
   fmt::print(stderr,
              "[info] total_page={}, duration_ms={}, latency={}, lru_k_size={}, bpm_size={}, scan_thread_cnt={}, "
              "get_thread_cnt={}\n",
-             qalsh_page_cnt, duration_ms, enable_latency, lru_k_size, qalsh_bpm_size, scan_thread_n, get_thread_n);
+             distribution_lsh_page_cnt, duration_ms, enable_latency, lru_k_size, distribution_lsh_bpm_size, scan_thread_n, get_thread_n);
 
-  for (size_t i = 0; i < qalsh_page_cnt; ++i) {
+  for (size_t i = 0; i < distribution_lsh_page_cnt; ++i) {
     page_id_t page_id;
     auto *page = bpm->NewPage(&page_id);
     if (page == nullptr) {
@@ -233,14 +233,14 @@ auto main(int argc, char** argv) -> int {
   using ModifyRecord = std::unordered_map<page_id_t ,uint64_t>;
 
   for (size_t thread_id = 0; thread_id < scan_thread_n ; ++thread_id) {
-    threads.emplace_back([qalsh_page_cnt, scan_thread_n, thread_id, &page_ids, &bpm, duration_ms, &total_metrics] {
+    threads.emplace_back([distribution_lsh_page_cnt, scan_thread_n, thread_id, &page_ids, &bpm, duration_ms, &total_metrics] {
       ModifyRecord records;
 
       BpmMetrics metrics(fmt::format("scan {:>2}", thread_id), duration_ms);
       metrics.Begin();
 
-      size_t page_idx_start = qalsh_page_cnt * thread_id / scan_thread_n;
-      size_t page_idx_end = qalsh_page_cnt * (thread_id + 1) / scan_thread_n;
+      size_t page_idx_start = distribution_lsh_page_cnt * thread_id / scan_thread_n;
+      size_t page_idx_end = distribution_lsh_page_cnt * (thread_id + 1) / scan_thread_n;
       size_t page_idx = page_idx_start;
 
       while (!metrics.ShouldFinish()) {
@@ -270,10 +270,10 @@ auto main(int argc, char** argv) -> int {
   }
 
   for (size_t thread_id = 0; thread_id < get_thread_n; thread_id++) {
-    threads.emplace_back([thread_id, &page_ids, &bpm, qalsh_page_cnt, duration_ms, &total_metrics] {
+    threads.emplace_back([thread_id, &page_ids, &bpm, distribution_lsh_page_cnt, duration_ms, &total_metrics] {
       std::random_device r;
       std::default_random_engine gen(r());
-      zipfian_int_distribution<size_t> dist(0, qalsh_page_cnt - 1, 0.8);
+      zipfian_int_distribution<size_t> dist(0, distribution_lsh_page_cnt - 1, 0.8);
 
       BpmMetrics metrics(fmt::format("get  {:>2}", thread_id), duration_ms);
       metrics.Begin();

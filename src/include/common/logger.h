@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/12/12.
 // src/include/common/logger.h
 //
@@ -10,7 +10,7 @@
 #include <ctime>
 #include <string>
 
-namespace qalsh {
+namespace distribution_lsh {
 // https://blog.galowicz.de/2016/02/20/short_file_macro/
 using cstr = const char *;
 
@@ -163,4 +163,4 @@ inline void OutputLogHeader(const char *file, int line, const char *func, int le
   // PAVLO: DO NOT CHANGE THIS
   ::fprintf(LOG_OUTPUT_STREAM, "%s [%s:%d:%s] %s - ", time_str, file, line, func, type);
 }
-}  // namespace qalsh
+}  // namespace distribution_lsh

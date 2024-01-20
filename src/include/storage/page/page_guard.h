@@ -1,5 +1,5 @@
 //===----------------------------------------------------
-//                          QALSH
+//                          DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/1/3.
 // src/include/storage/page/page_guard.h
 //
@@ -9,7 +9,7 @@
 
 #include <storage/page/page.h>
 
-namespace qalsh {
+namespace distribution_lsh {
 
 class BufferPoolManager;
 class ReadPageGuard;
@@ -88,7 +88,7 @@ class BasicPageGuard {
 class ReadPageGuard {
  public:
   ReadPageGuard() = default;
-  ReadPageGuard(BufferPoolManager *bpm, Page *page) : guard_(bpm, page) {}
+  ReadPageGuard(BufferPoolManager *bpm, Page *page) : guard_(bpm, page) { guard_.page_->RLatch(); }
   ReadPageGuard(const ReadPageGuard &) = delete;
   auto operator=(const ReadPageGuard &) -> ReadPageGuard & = delete;
 
@@ -128,7 +128,7 @@ class ReadPageGuard {
 class WritePageGuard {
  public:
   WritePageGuard() = default;
-  WritePageGuard(BufferPoolManager *bpm, Page *page) : guard_(bpm, page) {}
+  WritePageGuard(BufferPoolManager *bpm, Page *page) : guard_(bpm, page) { guard_.page_->WLatch(); }
   WritePageGuard(const WritePageGuard &) = delete;
   auto operator=(const WritePageGuard &) -> WritePageGuard & = delete;
 
@@ -163,7 +163,12 @@ class WritePageGuard {
 
   auto GetDataMut() -> char * { return guard_.GetDataMut(); }
 
+  template <class T>
+  auto AsMut() -> T * {
+    return guard_.AsMut<T>();
+  }
+
  private:
   BasicPageGuard guard_;
 };
-}// namespace qalsh
+}// namespace distribution_lsh
