@@ -2,6 +2,8 @@ add_library(
         distribution_lsh_random
         OBJECT
         one_dimension_random_number.cpp
+        random_line_generator.cpp
+        random_line_manager.cpp
 )
 
 set(ALL_OBJECT_FILES

@@ -80,9 +80,14 @@ class BPlusTree {
   // Insert value to the B+ tree
   auto Insert(KeyType &key, ValueType &value) -> bool;
 
+  // Delete value to the B+ tree
   auto Delete(KeyType &key) -> bool;
 
+  // Update value to the B+ tree
   auto UpDate(KeyType &key, ValueType &value) -> bool;
+
+  // Range read for c-ANN
+  auto RangeRead(KeyType &lkey, KeyType &rkey, std::vector<ValueType> *result) -> bool;
 
   void PrintTree(page_id_t page_id, const BPlusTreePage *page);
 
@@ -95,6 +100,5 @@ class BPlusTree {
   int internal_max_size_;
   page_id_t header_page_id_;
   constexpr static float TEMP_SLOT_VACANCY = -1;
-
 };
 }

@@ -3,7 +3,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(DISTRIBUTION_LSH_refactor_version
+project(DISTRIBUTION_LSH
         VERSION 2024.1
         DESCRIPTION "distribution_lsh c-ANNs algorithm"
         LANGUAGES C CXX

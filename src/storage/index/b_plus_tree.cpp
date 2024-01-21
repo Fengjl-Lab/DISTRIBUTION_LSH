@@ -465,7 +465,8 @@ auto B_PLUS_TREE_TYPE::Delete(KeyType &key) -> bool {
         memcpy(reinterpret_cast<char *>(&left_sibling_internal_page->array_[left_sibling_internal_page->GetSize() + 2]),
                reinterpret_cast<char *>(&current_internal_page->array_[1]),
                sizeof(std::pair<KeyType, page_id_t>) * current_internal_page->GetSize());
-        left_sibling_internal_page->array_[left_sibling_internal_page->GetSize() + 1] = {parent_page->array_[trace.back()].first, current_internal_page->array_[0].second};
+        left_sibling_internal_page->array_[left_sibling_internal_page->GetSize() + 1] =
+            {parent_page->array_[trace.back()].first, current_internal_page->array_[0].second};
         left_sibling_internal_page->IncreaseSize(current_internal_page->GetSize() + 1);
 
         bpm_->DeletePage(parent_page->array_[trace.back()].second);
@@ -616,6 +617,91 @@ auto B_PLUS_TREE_TYPE::UpDate(KeyType &key, ValueType &value) -> bool {
 
   return false;
 }
+
+INDEX_TEMPLATE_ARGUMENTS
+auto B_PLUS_TREE_TYPE::RangeRead(KeyType &lkey, KeyType &rkey, std::vector<ValueType> *result) -> bool {
+  if (lkey >= rkey || IsEmpty()) {
+    return false;
+  }
+
+  Context ctx;
+
+  auto header_page_guard = bpm_->FetchPageRead(header_page_id_);
+  auto header_page = header_page_guard.template As<BPlusTreeHeaderPage>();
+
+  auto root_page_guard = bpm_->FetchPageRead(header_page->root_page_id_);
+  ctx.read_set_.emplace_back(std::move(root_page_guard));
+  auto current_page = ctx.read_set_.back().template As<BPlusTreePage>();
+
+  // left key search
+  while (!current_page->IsLeafPage()) {
+    const InternalPage *internal_page = reinterpret_cast<const InternalPage*>(current_page);
+    auto pos = 0;
+    while (pos < internal_page->GetSize() && internal_page->KeyAt(pos + 1) < lkey) { pos++; }
+    // Obtain correct number
+    pos = pos != internal_page->GetSize() && fabsf(lkey - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
+
+    // Traverse to the leaf child
+    ctx.read_set_.emplace_back(std::move(bpm_->FetchPageRead(internal_page->ValueAt(pos))));
+    current_page = ctx.read_set_.back().template As<BPlusTreePage>();
+  }
+
+  const auto left_leaf_page = reinterpret_cast<const LeafPage *>(current_page);
+  auto left_start_page_id =  ctx.read_set_.back().PageId();
+  auto left_start_page_slot = left_leaf_page->GetSize();
+  for (int i = 0; i < left_leaf_page->GetSize(); ++i) {
+    if (lkey < left_leaf_page->array_[i].first || fabsf(lkey - left_leaf_page->array_[i].first) <= 1E-10) {
+      left_start_page_slot = i;
+      break;
+    }
+  }
+
+  // right key search
+  current_page = ctx.read_set_.begin()->template As<BPlusTreePage>();
+  while (!current_page->IsLeafPage()) {
+    const InternalPage *internal_page = reinterpret_cast<const InternalPage*>(current_page);
+    auto pos = 0;
+    while (pos < internal_page->GetSize() && internal_page->KeyAt(pos + 1) < rkey) { pos++; }
+    // Obtain correct number
+    pos = pos != internal_page->GetSize() && fabsf(rkey - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
+
+    // Traverse to the leaf child
+    ctx.read_set_.emplace_back(std::move(bpm_->FetchPageRead(internal_page->ValueAt(pos))));
+    current_page = ctx.read_set_.back().template As<BPlusTreePage>();
+  }
+
+  const auto right_leaf_page = reinterpret_cast<const LeafPage *>(current_page);
+  auto right_back_page_slot = right_leaf_page->GetSize();
+  auto right_back_page_id = ctx.read_set_.back().PageId();
+  auto right_end_page_id = right_leaf_page->GetNextPageId();
+  for (int i = 0; i < right_leaf_page->GetSize(); ++i) {
+    if (rkey < right_leaf_page->array_[i].first) {
+      right_back_page_slot = fabsf(rkey - right_leaf_page->array_[i].first) <= 1E-10 ? i + 1 : i;
+      break;
+    }
+  }
+
+  auto current_search_page_id = left_start_page_id;
+  while (current_search_page_id != right_end_page_id) {
+    auto current_search_page_guard = bpm_->FetchPageRead(current_search_page_id);
+    ctx.read_set_.emplace_back(std::move(current_search_page_guard));
+    const LeafPage *current_search_page = ctx.read_set_.back().template As<LeafPage>();
+    auto current_search_page_start_slot = current_search_page_id == left_start_page_id ? left_start_page_slot : 0;
+    auto current_search_page_end_slot = current_search_page_id == right_back_page_id ? right_back_page_slot : current_search_page->GetSize();
+
+    for (int i = current_search_page_start_slot; i < current_search_page_end_slot; ++i) {
+      result->emplace_back(current_search_page->array_[i].second);
+    }
+
+    current_search_page_id = current_search_page->GetNextPageId();
+  }
+   // for debug
+//  auto root_page_basic_guard = bpm_->FetchPageBasic(header_page->root_page_id_);
+//  this->PrintTree(root_page_basic_guard.PageId(), root_page_basic_guard.template As<BPlusTreePage>());
+//  std::cout << "-------------------------------------------\n";
+  return !result->empty();
+}
+
 
 INDEX_TEMPLATE_ARGUMENTS
 void B_PLUS_TREE_TYPE::PrintTree(page_id_t page_id, const BPlusTreePage *page) {

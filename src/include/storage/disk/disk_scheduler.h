@@ -59,7 +59,6 @@ class DiskScheduler {
   void Schedule(DiskRequest r);
 
   /**
-   * TODO(P1): Add implementation
    *
    * @brief Background worker thread function that processes scheduled requests.
    *
