@@ -20,7 +20,10 @@ namespace distribution_lsh {
 class RandomLineManager {
   using FloatRandomLinePage = RandomLinePage<float>;
  public:
+  RandomLineManager(std::string manager_name, BufferPoolManager bpm, page_id_t  header_page_id);
+  ~RandomLineManager() = delete;
 
+  
  private:
   std::string manager_name_;
   BufferPoolManager *bpm_;
