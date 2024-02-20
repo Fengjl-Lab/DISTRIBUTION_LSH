@@ -35,6 +35,7 @@ auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {
   // search in the free frame
   frame_id_t target_frame = !free_list_.empty() ? free_list_.front() : -1;
   if (target_frame == -1 && !replacer_->Evict(&target_frame)) {
+    *page_id = INVALID_PAGE_ID;
     return nullptr;
   }
 

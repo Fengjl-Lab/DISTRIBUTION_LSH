@@ -6,25 +6,23 @@
 //===-----------------------------------------------------
 
 #pragma once
-#include <fstream>
-#include <mutex>
+
+#include <common/config.h>
+#include <buffer/buffer_pool_manager.h>
+#include <storage/page/distribution_dataset_header_page.h>
+#include <storage/page/distribution_dataset_page.h>
 
 namespace distribution_lsh {
 
-template<typename type>
 class DistributionDataSetManager {
  public:
   DistributionDataSetManager() = delete;
 
  private:
-  // Dimension of the data
-  size_t dimension_;
-  // Number of data
-  size_t n_;
-  // File to write-in
-  std::fstream data_file_;
-  std::string file_name_;
-  // Protect data access
-  std::mutex data_latch_;
+  std::string manager_name_;
+  BufferPoolManager *bpm_;
+  page_id_t header_page_id_;
+  int dimension_;
+  float epsilon_{EPSILON};
 };
 } // namespace distribution_lsh

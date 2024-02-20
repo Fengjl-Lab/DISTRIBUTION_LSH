@@ -101,4 +101,4 @@ class BPlusTree {
   page_id_t header_page_id_;
   constexpr static float TEMP_SLOT_VACANCY = -1;
 };
-}
+} // namespace distribution_lsh

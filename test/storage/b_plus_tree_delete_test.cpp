@@ -24,7 +24,7 @@ TEST(BPlusTreeTests, DeleteTest1) {
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
   // create b+ tree
-  BPlusTree<float, RID > tree("foo_pk", header_page->GetPageId(), bpm, 3, 3);
+  BPlusTree<float, RID> tree("foo_pk", header_page->GetPageId(), bpm, 3, 3);
   float index_key;
   RID rid;
 
@@ -32,26 +32,26 @@ TEST(BPlusTreeTests, DeleteTest1) {
   float empty_key = 0;
   EXPECT_EQ(tree.Delete(empty_key), false);
 
-  std::vector<int64_t > keys = {1, 2, 3, 4, 5};
+  std::vector<int64_t> keys = {1, 2, 3, 4, 5};
   for (auto key : keys) {
     int64_t value = key & 0xFFFFFFFF;
     rid.Set(static_cast<int32_t>(key >> 32), value);
-    index_key = (float)key;
+    index_key = (float) key;
     tree.Insert(index_key, rid);
   }
 
   // Test for delete unexists keys
-  std::vector<int64_t > unexist_keys = {6, 7, 8, 9, 10};
+  std::vector<int64_t> unexist_keys = {6, 7, 8, 9, 10};
   EXPECT_EQ(tree.Delete(empty_key), false);
   for (auto key : unexist_keys) {
-    index_key = (float)key;
+    index_key = (float) key;
     EXPECT_EQ(tree.Delete(index_key), false);
   }
 
   std::vector<RID> rids;
   for (auto key : keys) {
     rids.clear();
-    index_key = (float)key;
+    index_key = (float) key;
     tree.Get(index_key, &rids);
     EXPECT_EQ(rids.size(), 1);
 
@@ -74,7 +74,7 @@ TEST(BPlusTreeTests, DeleteTest2) {
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
   // create b+ tree
-  BPlusTree<float, RID > tree("foo_pk", header_page->GetPageId(), bpm, 3, 3);
+  BPlusTree<float, RID> tree("foo_pk", header_page->GetPageId(), bpm, 3, 3);
   float index_key;
   RID rid;
 
@@ -82,19 +82,19 @@ TEST(BPlusTreeTests, DeleteTest2) {
   float empty_key = 0;
   EXPECT_EQ(tree.Delete(empty_key), false);
 
-  std::vector<int64_t > keys = {1, 2, 3, 4, 5};
+  std::vector<int64_t> keys = {1, 2, 3, 4, 5};
   for (auto key : keys) {
     int64_t value = key & 0xFFFFFFFF;
     rid.Set(static_cast<int32_t>(key >> 32), value);
-    index_key = (float)key;
+    index_key = (float) key;
     tree.Insert(index_key, rid);
   }
 
   // Test for delete unexists keys
-  std::vector<int64_t > unexist_keys = {6, 7, 8, 9, 10};
+  std::vector<int64_t> unexist_keys = {6, 7, 8, 9, 10};
   EXPECT_EQ(tree.Delete(empty_key), false);
   for (auto key : unexist_keys) {
-    index_key = (float)key;
+    index_key = (float) key;
     EXPECT_EQ(tree.Delete(index_key), false);
   }
 
@@ -102,7 +102,7 @@ TEST(BPlusTreeTests, DeleteTest2) {
   std::reverse(keys.begin(), keys.end());
   for (auto key : keys) {
     rids.clear();
-    index_key = (float)key;
+    index_key = (float) key;
     tree.Get(index_key, &rids);
     EXPECT_EQ(rids.size(), 1);
 
@@ -125,7 +125,7 @@ TEST(BPlusTreeTests, DeleteTest3) {
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
   // create b+ tree
-  BPlusTree<float, RID > tree("foo_pk", header_page->GetPageId(), bpm, 3, 3);
+  BPlusTree<float, RID> tree("foo_pk", header_page->GetPageId(), bpm, 3, 3);
   float index_key;
   RID rid;
 
@@ -133,18 +133,17 @@ TEST(BPlusTreeTests, DeleteTest3) {
   float empty_key = 0;
   EXPECT_EQ(tree.Delete(empty_key), false);
 
-  std::vector<int64_t > keys = {1, 2, 3, 4, 5};
+  std::vector<int64_t> keys = {1, 2, 3, 4, 5};
   for (auto key : keys) {
     int64_t value = key & 0xFFFFFFFF;
     rid.Set(static_cast<int32_t>(key >> 32), value);
-    index_key = (float)key;
+    index_key = (float) key;
     tree.Insert(index_key, rid);
   }
 
-
   std::vector<RID> rids;
   // Test for random delete
-  auto key = (float)3;
+  auto key = (float) 3;
   tree.Delete(key);
   tree.Get(key, &rids);
   EXPECT_EQ(rids.size(), 0);

@@ -1,1 +1,2 @@
 add_subdirectory(bpm_bench)
+add_subdirectory(extension)

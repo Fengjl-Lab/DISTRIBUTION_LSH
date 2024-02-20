@@ -12,14 +12,14 @@
 auto main() -> int {
   using namespace indicators;
   ProgressBar bar{
-      option::BarWidth{50},
+      option::BarWidth{100},
       option::Start{"["},
       option::Fill{"="},
       option::Lead{">"},
       option::Remainder{" "},
       option::End{"]"},
       option::PostfixText{"Extracting Archive"},
-      option::ForegroundColor{Color::green},
+      option::ForegroundColor{Color::red},
       option::FontStyles{std::vector<FontStyle>{FontStyle::bold}}
   };
 

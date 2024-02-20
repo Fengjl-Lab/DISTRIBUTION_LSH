@@ -1,7 +1,8 @@
 add_library(
         distribution_lsh_dataset_distribution
         OBJECT
-        gen_distribution.cpp
+        distribution_dataset_manager.cpp
+        distribution_dataset_generator.cpp
 )
 
 set(ALL_OBJECT_FILES

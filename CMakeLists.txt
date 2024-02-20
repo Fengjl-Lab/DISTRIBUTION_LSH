@@ -61,6 +61,8 @@ set(DISTRIBUTION_LSH_THIRD_PARTY_INCLUDE_DIR
         ${PROJECT_SOURCE_DIR}/third_party/argparse/include
         ${PROJECT_SOURCE_DIR}/third_party/cpp_random_distributions
         ${PROJECT_SOURCE_DIR}/third_party/backward-cpp/include
+        ${PROJECT_SOURCE_DIR}/third_party/indicators/include
+        ${PROJECT_SOURCE_DIR}/third_party/tabulate/include
 )
 
 include_directories(${DISTRIBUTION_LSH_SRC_INCLUDE_DIR} ${DISTRIBUTION_LSH_TEST_INCLUDE_DIR} ${DISTRIBUTION_LSH_THIRD_PARTY_INCLUDE_DIR})

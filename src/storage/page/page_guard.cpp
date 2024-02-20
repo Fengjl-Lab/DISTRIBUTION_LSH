@@ -27,10 +27,11 @@ void BasicPageGuard::Drop() {
 }
 
 auto BasicPageGuard::operator=(BasicPageGuard &&that) noexcept -> BasicPageGuard & {
-  Drop();
+  this->bpm_ = that.bpm_;
   this->page_ = that.page_;
   this->is_dirty_ = that.is_dirty_;
 
+  that.bpm_ = nullptr;
   that.page_ = nullptr;
   that.is_dirty_ = false;
 
@@ -68,9 +69,7 @@ ReadPageGuard::~ReadPageGuard() {
   Drop();
 }  // NOLINT
 
-WritePageGuard::WritePageGuard(WritePageGuard &&that) noexcept : guard_(std::move(that.guard_)){
-  that.guard_.Drop();
-}
+WritePageGuard::WritePageGuard(WritePageGuard &&that) noexcept : guard_(std::move(that.guard_)) {}
 
 auto WritePageGuard::operator=(WritePageGuard &&that) noexcept -> WritePageGuard & {
   this->guard_ = std::move(that.guard_);
@@ -81,6 +80,7 @@ void WritePageGuard::Drop() {
   if (this->guard_.page_ != nullptr && this->guard_.PageId() != INVALID_PAGE_ID) {
     this->guard_.page_->WUnlatch();
   }
+  guard_.is_dirty_ = true;
   guard_.Drop();
 }
 
