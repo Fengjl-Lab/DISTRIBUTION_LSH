@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <fmt/core.h>
+#include <common/exception.h>
 #include <storage/index/random_line_manager.h>
 
 
@@ -21,9 +22,9 @@ RandomLineManager::RandomLineManager(std::string manager_name,
 
     bpm_(bpm),
     header_page_id_(header_page_id),
-    rlg_(rlg),
     dimension_(dimension),
-    epsilon_(epsilon) {}
+    epsilon_(epsilon),
+    rlg_(rlg) {}
 
 auto RandomLineManager::IsEmpty() -> bool {
   if (header_page_id_ == INVALID_PAGE_ID) {
@@ -53,7 +54,7 @@ auto RandomLineManager::GenerateRandomLineGroup(int group_size) -> bool {
   auto header_page = header_page_guard.AsMut<RandomLineHeaderPage>();
   // Create a new page to store average random line
   if (header_page->GetAverageRandomLinePageId() == INVALID_PAGE_ID || header_page->GetAverageRandomLinePageId() == HEADER_PAGE_ID) {
-    std::unique_ptr<float> average_array(new float[dimension_]);
+    std::unique_ptr<float[]> average_array(new float[dimension_]);
     memset(reinterpret_cast<void *>(average_array.get()), 0, sizeof(float) * dimension_);
     if (!StoreAverageRandomLine(average_array.get(), header_page)) {
       return false;
@@ -63,8 +64,8 @@ auto RandomLineManager::GenerateRandomLineGroup(int group_size) -> bool {
   // Generate random line group
   auto current_size = 0;
   while (current_size < group_size) {
-    std::unique_ptr<float> new_array = std::move(rlg_->GenerateRandomLine(dimension_));
-    if (fabsf(InnerProduct(header_page->GetAverageRandomLinePageId(), new_array.get())) > epsilon_) {
+    std::unique_ptr<float[]> new_array = rlg_->GenerateRandomLine(dimension_);
+    if (fabsf(InnerProductByPageId(header_page->GetAverageRandomLinePageId(), new_array.get())) > epsilon_) {
       continue;
     }
     if (!Store(new_array.get(), header_page)) {
@@ -205,7 +206,20 @@ auto RandomLineManager::Store(float *array, RandomLineHeaderPage *header_page) -
   return true;
 }
 
-auto RandomLineManager::InnerProduct(page_id_t random_line_page_id, const float* outer_array) -> float {
+auto RandomLineManager::InnerProduct(distribution_lsh::page_id_t header_page_id, int slot, const float *outer_array) -> float {
+  if (slot < 0) {
+    throw Exception(ExceptionType::INVALID, "Slot number must bigger than zero");
+  }
+
+  RandomLineContext ctx;
+  auto header_page_guard  = bpm_->FetchPageRead(header_page_id);
+  auto header_page = header_page_guard.As<RandomLineHeaderPage>();
+  auto target_random_line_page_id = header_page->random_line_pages_start_[slot];
+
+  return InnerProductByPageId(target_random_line_page_id, outer_array);
+}
+
+auto RandomLineManager::InnerProductByPageId(page_id_t random_line_page_id, const float* outer_array) -> float {
   RandomLineContext ctx;
   float result = 0;
   auto current_size = 0;

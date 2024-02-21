@@ -37,21 +37,11 @@ class RandomLineManager {
   /** Obtain the new random line group */
   auto GenerateRandomLineGroup(int group_size) -> bool;
 
-  /** Store a random line with needed page*/
-  auto StoreAverageRandomLine(float *array, RandomLineHeaderPage *header_page) -> bool;
+  /** Compute inner product by header page id and slot number */
+  auto InnerProduct(page_id_t header_page_id, int slot, const float* outer_array) -> float;
 
-  /** Store a random line with called page*/
-  auto Store(float *array, RandomLineHeaderPage *header_page) -> bool;
-
-  /** Print a random line with called page*/
-  void PrintRandomLine(page_id_t random_line_page_id);
+  /** Print random line group */
   void PrintRandomLineGroup();
-
-  /** Calculate the inner product of two random line*/
-  auto InnerProduct(page_id_t random_line_page_id, const float* outer_array) -> float;
-
-  /** Update average random line */
-  void UpdateAverageRandomLine(page_id_t average_random_line_page_id, page_id_t new_random_line_page_id, RandomLineHeaderPage *header_page);
 
   /* Getter and Setter method for size and max size */
   auto GetSize() -> int  {
@@ -77,12 +67,28 @@ class RandomLineManager {
   }
 
  private:
+
+  /** Calculate the inner product of two random line*/
+  auto InnerProductByPageId(page_id_t random_line_page_id, const float* outer_array) -> float;
+
+  /** Store a random line with needed page*/
+  auto StoreAverageRandomLine(float *array, RandomLineHeaderPage *header_page) -> bool;
+
+  /** Store a random line with called page*/
+  auto Store(float *array, RandomLineHeaderPage *header_page) -> bool;
+
+  /** Update average random line */
+  void UpdateAverageRandomLine(page_id_t average_random_line_page_id, page_id_t new_random_line_page_id, RandomLineHeaderPage *header_page);
+
+  /** Print a random line with called page*/
+  void PrintRandomLine(page_id_t random_line_page_id);
+
   std::string manager_name_;
   BufferPoolManager *bpm_;
   page_id_t header_page_id_;
   int dimension_;
   float epsilon_{EPSILON};
-  RandomLineGenerator *rlg_;
+  RandomLineGenerator *rlg_{nullptr};
 };
 
 } // namespace distribution_lsh

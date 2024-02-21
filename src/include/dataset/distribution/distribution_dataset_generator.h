@@ -9,6 +9,7 @@
 
 #include <random>
 #include <vector>
+#include <memory>
 
 #include <common/config.h>
 

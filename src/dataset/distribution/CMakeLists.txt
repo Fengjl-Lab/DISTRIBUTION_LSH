@@ -1,7 +1,7 @@
 add_library(
         distribution_lsh_dataset_distribution
         OBJECT
-        distribution_dataset_manager.cpp
+        # distribution_dataset_manager.cpp
         distribution_dataset_generator.cpp
 )
 

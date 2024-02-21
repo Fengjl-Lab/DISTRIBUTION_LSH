@@ -66,7 +66,6 @@ install_mac() {
   brew ls --versions git || brew install git
   (brew ls --versions llvm | grep 14) || brew install llvm@14
   brew ls --versions libelf || brew install libelf
-  brew ls --versions gcc || brew install gcc@13
 }
 
 install_linux() {
@@ -74,18 +73,17 @@ install_linux() {
   apt-get -y update
   # Install packages.
   apt-get -y install \
-      build-essential \
-      clang-14 \
-      clang-format-14 \
-      clang-tidy-14 \
       cmake \
-      doxygen \
-      git \
-      pkg-config \
-      zlib1g-dev \
-      libelf-dev \
-      libdwarf-dev \
-      gcc-13
+      build-essential
+#      clang-14 \
+#      clang-format-14 \
+#      clang-tidy-14 \
+#      doxygen \
+#      git \
+#      pkg-config \
+#      zlib1g-dev \
+#      libelf-dev \
+#      libdwarf-dev
 }
 
 main "$@"

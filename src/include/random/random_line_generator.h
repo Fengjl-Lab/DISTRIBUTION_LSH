@@ -8,6 +8,7 @@
 #pragma once
 
 #include <common/config.h>
+#include <memory>
 
 namespace distribution_lsh {
 
@@ -17,7 +18,7 @@ namespace distribution_lsh {
 class RandomLineGenerator {
  public:
   // Generate a random line based on average_random_line and epsilon
-  auto GenerateRandomLine(int dimension) -> std::unique_ptr<float>;
+  auto GenerateRandomLine(int dimension) -> std::unique_ptr<float[]>;
 };
 } // namespace distribution_lsh
 

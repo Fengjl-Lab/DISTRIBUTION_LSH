@@ -34,5 +34,5 @@ TEST(ReinterpretTest, DataTransferTest) {
   auto data_class = reinterpret_cast<TestDataClass*>(data_pointer);
 
   data_class->PrintVector();
-  free(data_structure);
+  delete data_structure;
 }

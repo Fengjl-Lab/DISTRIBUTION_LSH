@@ -12,6 +12,7 @@
 #include <mutex>
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 #include <common/config.h>
 #include <common/macro.h>

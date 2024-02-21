@@ -38,14 +38,14 @@ TEST(BPlusTreeTests, RangeTest1) {
   }
 
   std::vector<RID> rids;
-  for (int i = 0; i < keys.size() - 2; ++i) {
+  for (size_t i = 0; i < keys.size() - 2; ++i) {
     float lkey  = (float)keys[i];
     float rkey = (float)keys[i + 2];
     rids.clear();
     EXPECT_EQ(tree.RangeRead(lkey, rkey, &rids), true);
     EXPECT_EQ(rids.size(), 3);
 
-    for (int j = 0;  j < rids.size(); j++) {
+    for (size_t j = 0;  j < rids.size(); j++) {
       EXPECT_TRUE(rids[j].GetSlotNum() == keys[i + j]);
     }
   }

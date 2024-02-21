@@ -48,4 +48,4 @@ TEST(PageGuardTest, SampleTest) {
   disk_manager->ShutDown();
 }
 
-}// namedspace distribution_lsh
+}// namespace distribution_lsh

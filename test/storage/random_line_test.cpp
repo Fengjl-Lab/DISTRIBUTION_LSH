@@ -31,9 +31,6 @@ TEST(RandomLineManagerTest, GenerationTest1) {
   // Test generation process
   ASSERT_TRUE(rlm->GenerateRandomLineGroup(10));
   ASSERT_EQ(rlm->GetSize(), 10);
-  for (int i = 1; i <= 10; ++i) {
-    rlm->PrintRandomLine(i);
-  }
 
   delete rlm;
   delete bpm;

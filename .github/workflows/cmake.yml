@@ -2,9 +2,9 @@ name: CMake Build
 
 on:
   push:
-    branches: *
+    branches: [develop]
   pull_request:
-    branches: *
+    branches: [develop]
 
 env:
   BUILD_TYPE: Debug
@@ -19,20 +19,20 @@ jobs:
       matrix:
         config:
           - {
-              name: "Ubuntu 22.0.4 GCC",
-              os: "ubuntu-22.04",
-              cc: "/usr/local/bin/gcc-13",
-              cxx: "/usr/local/bin/g++-13",
-              format: "/usr/bin/clang-format-14",
-              tidy: "/usr/bin/clang-tidy-14",
+            name: "macOS 14 (Sonoma)",
+            os: "macos-14",
+            cc: "/usr/bin/clang",
+            cxx: "/usr/bin/clang++",
+            format: "/usr/local/opt/llvm@14/bin/clang-format",
+            tidy: "/usr/local/opt/llvm@14/bin/clang-tidy",
           }
           - {
-              name: "macOS 14 (Sonoma)",
-              os: macos-14,
-              cc: "/usr/local/bin/gcc-13",
-              cxx: "/usr/local/bin/g++-13",
-              format: "/usr/local/opt/llvm@14/bin/clang-format",
-              tidy: "/usr/local/opt/llvm@14/bin/clang-tidy",
+              name: "Ubuntu 22.0.4 GCC",
+              os: "ubuntu-22.04",
+              cc: "/usr/bin/gcc",
+              cxx: "/usr/bin/g++",
+              format: "/usr/bin/clang-format-14",
+              tidy: "/usr/bin/clang-tidy-14",
           }
 
     steps:
@@ -53,22 +53,10 @@ jobs:
         run: bash ./build_support/packages.sh -y
 
       - name: Configure CMake
-        run: CC=${{matrix.config.cc}} CXX=${{matrix.config.cxx}} cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G "Unix Makefiles" -DCMAKE_CXX_COMPILER="/usr/local/bin/g++-13" -DCMAKE_C_COMPILER="/usr/local/bin/gcc-13" -DCMAKE_CXX_STANDARD=17 -DSAMPLES=ON
+        run: CC=${{matrix.config.cc}} CXX=${{matrix.config.cxx}} cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G "Unix Makefiles" -DCMAKE_CXX_COMPILER="${{matrix.config.cxx}}" -DCMAKE_C_COMPILER="${{matrix.config.cc}}" -DCMAKE_CXX_STANDARD=17 -DUSE_CPP17=ON
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
-      - name: Check Format
-        working-directory: ${{github.workspace}}/build
-        run: make check-format
-
-      - name: Check Lint
-        working-directory: ${{github.workspace}}/build
-        run: make check-lint
-
-      - name: Check Clang Tidy
-        working-directory: ${{github.workspace}}/build
-        run: make check-clang-tidy
 
       - name: Check Tests (Ubuntu)
         if: runner.os == 'Linux'

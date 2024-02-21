@@ -67,7 +67,6 @@ void InsertHelperSplit(BPlusTree<float, RID> *tree, const std::vector<int64_t> &
 void DeleteHelper(BPlusTree<float, RID> *tree, const std::vector<int64_t> &keys,
                   __attribute__((unused)) uint64_t thread_itr = 0) {
   float index_key;
-  RID rid;
 
   for (auto key : keys) {
     index_key = static_cast<float>(key);
@@ -79,7 +78,6 @@ void DeleteHelper(BPlusTree<float, RID> *tree, const std::vector<int64_t> &keys,
 void DeleteHelperSplit(BPlusTree<float, RID> *tree, const std::vector<int64_t> &keys,
                        int total_threads, __attribute__((unused)) uint64_t thread_itr = 0) {
   float index_key;
-  RID rid;
 
   for (auto key : keys) {
     if (static_cast<uint64_t>(key) % total_threads == thread_itr) {
@@ -302,7 +300,6 @@ TEST(BPlusTreeConcurrentTest, MixTest2) {
   }
   InsertHelper(&tree, perserved_keys, 1);
   // Check there are 1000 keys in there
-  size_t size;
 
   auto insert_task = [&](int tid) { InsertHelper(&tree, dynamic_keys, tid); };
   auto delete_task = [&](int tid) { DeleteHelper(&tree, dynamic_keys, tid); };

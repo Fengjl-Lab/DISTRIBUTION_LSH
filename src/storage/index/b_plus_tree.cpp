@@ -22,8 +22,8 @@ B_PLUS_TREE_TYPE::BPlusTree(std::string name,
                             distribution_lsh::BufferPoolManager *buffer_pool_manager,
                             int leaf_max_size,
                             int internal_max_size) : \
-                            index_name_(std::move(name)), header_page_id_(header_page_id), bpm_(buffer_pool_manager), \
-                            leaf_max_size_(leaf_max_size), internal_max_size_(internal_max_size) {}
+                            index_name_(std::move(name)), bpm_(buffer_pool_manager), leaf_max_size_(leaf_max_size), \
+                            internal_max_size_(internal_max_size), header_page_id_(header_page_id) {}
 
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_TYPE::IsEmpty() -> bool {
@@ -542,6 +542,9 @@ auto B_PLUS_TREE_TYPE::Delete(KeyType &key) -> bool {
 
     // Update current_page, ctx and trace
     current_page = parent_page;
+    if (current_page == root_page) {
+      break;
+    }
     ctx.write_set_.pop_back();
     trace.pop_back();
   }
@@ -551,7 +554,6 @@ auto B_PLUS_TREE_TYPE::Delete(KeyType &key) -> bool {
     auto current_internal_page = ctx.write_set_.back().template AsMut<InternalPage>();
     if (fabsf(current_internal_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
       current_internal_page->array_[trace.back()].first = replace_key;
-      twice_delete_key = false;
     }
 
     trace.pop_back();
@@ -593,7 +595,6 @@ auto B_PLUS_TREE_TYPE::UpDate(KeyType &key, ValueType &value) -> bool {
   auto current_page = root_page;
   ctx.write_set_.emplace_back(std::move(root_page_guard));
 
-  page_id_t target_page_id = header_page->root_page_id_;
   while (!current_page->IsLeafPage()) {
     InternalPage *internal_page = ctx.write_set_.back().template AsMut<InternalPage>();
     auto pos = 0;
@@ -603,7 +604,6 @@ auto B_PLUS_TREE_TYPE::UpDate(KeyType &key, ValueType &value) -> bool {
 
     // Traverse to the leaf child
     ctx.write_set_.emplace_back(std::move(bpm_->FetchPageWrite(internal_page->ValueAt(pos))));
-    target_page_id = internal_page->ValueAt(pos);
     current_page = ctx.write_set_.back().template AsMut<BPlusTreePage>();
   }
 

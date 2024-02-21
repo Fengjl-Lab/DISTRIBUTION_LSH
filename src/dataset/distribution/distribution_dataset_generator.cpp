@@ -9,10 +9,10 @@
 
 namespace distribution_lsh {
 
-auto DistributionDatasetGenerator::GenerateDistributionDataset(int dimension,
-                                                               int size,
-                                                               distribution_lsh::DistributionType type) -> std::vector<
-    std::unique_ptr<float *>> {
-  std::vector<std::unique_ptr<float *>> result;
-}
+//auto DistributionDatasetGenerator::GenerateDistributionDataset(int dimension,
+//                                                               int size,
+//                                                               distribution_lsh::DistributionType type) -> std::vector<
+//    std::unique_ptr<float *>> {
+//  std::vector<std::unique_ptr<float *>> result;
+//}
 } // namespace distribution_lsh
