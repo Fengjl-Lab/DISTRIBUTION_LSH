@@ -15,6 +15,7 @@
 #include <iostream>
 
 namespace distribution_lsh {
+
 enum class ExceptionType {
   /** Invalid exception type.*/
   INVALID = 0,
@@ -38,6 +39,12 @@ enum class ExceptionType {
   NOT_IMPLEMENTED = 11,
   /** Execution exception*/
   EXECUTION = 12,
+  /** Invalid argument. */
+  INVALID_ARGUMENT = 13,
+  /** Null slot. */
+  NULL_SLOT = 14,
+  /** Invalid next page. */
+  INVALID_NEXT_PAGE = 15,
 };
 
 class Exception : public std::runtime_error {
@@ -89,6 +96,9 @@ class Exception : public std::runtime_error {
       case ExceptionType::OUT_OF_MEMORY:return "Out of Memory";
       case ExceptionType::NOT_IMPLEMENTED:return "Not implemented";
       case ExceptionType::EXECUTION:return "Execution";
+      case ExceptionType::INVALID_ARGUMENT:return "Invalid argument";
+      case ExceptionType::NULL_SLOT:return "Null slot";
+      case ExceptionType::INVALID_NEXT_PAGE:return "Invalid next page";
       default:return "Unknown";
     }
   }

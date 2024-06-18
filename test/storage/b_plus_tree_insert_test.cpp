@@ -19,8 +19,8 @@ using distribution_lsh::DiskManagerUnlimitedMemory;
 
 TEST(BPlusTreeTests, InsertTest1) {
 
-  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto *bpm = new BufferPoolManager(50, disk_manager.get());
+  auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto bpm = std::make_shared<BufferPoolManager>(50, disk_manager);
   // create and fetch header_page
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
@@ -43,16 +43,12 @@ TEST(BPlusTreeTests, InsertTest1) {
 
   auto root_as_leaf = reinterpret_cast<BPlusTreeLeafPage<float, RID> *>(root_page);
   ASSERT_EQ(root_as_leaf->GetSize(), 1);
-
-  bpm->UnpinPage(root_page_id, false);
-  bpm->UnpinPage(HEADER_PAGE_ID, true);
-  delete bpm;
 }
 
 
 TEST(BPlusTreeTests, InsertTest2) {
-  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto *bpm = new BufferPoolManager(50, disk_manager.get());
+  auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto bpm = std::make_shared<BufferPoolManager>(50, disk_manager);
   // create and fetch header_page
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
@@ -95,9 +91,6 @@ TEST(BPlusTreeTests, InsertTest2) {
   }
 
   EXPECT_EQ(size, keys.size());
-
-  bpm->UnpinPage(HEADER_PAGE_ID, true);
-  delete bpm;
 }
 
 

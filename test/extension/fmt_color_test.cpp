@@ -6,6 +6,8 @@
 //===-----------------------------------------------------
 
 #include <fmt/core.h>
+#include <fmt/color.h>
+#include <fmt/format.h>
 #include <gtest/gtest.h>
 
 TEST(FmtTest, ColorTest) {
@@ -17,4 +19,8 @@ TEST(FmtTest, ColorTest) {
   fmt::print("\033[36mThis is cyan text.\033[0m\n");      // 青色文本
   fmt::print("\033[1mThis is bold text.\033[0m\n");       // 粗体文本
   fmt::print("\033[4mThis is underlined text.\033[0m\n"); // 下划线文本
+
+  auto result = fmt::format("The sky is {}\n", fmt::format(fg(fmt::color::royal_blue), "blue"));
+  fmt::print("{}", result);
+  fmt::print("Bold style is {}\n", fmt::format(fmt::emphasis::bold, "bold"));
 }

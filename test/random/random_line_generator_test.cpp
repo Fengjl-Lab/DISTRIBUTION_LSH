@@ -9,13 +9,18 @@
 #include <fmt/format.h>
 #include <gtest/gtest.h>
 
-using namespace distribution_lsh;
+namespace distribution_lsh {
 
 TEST(RandomLineGeneratorTest, RandomLineGeneration) {
-  RandomLineGenerator random_line_generator;
+  RandomLineGenerator<float> random_line_generator;
   int dimension = 1000;
-  std::unique_ptr<float[]> data = random_line_generator.GenerateRandomLine(dimension);
+  std::shared_ptr<float[]> data =
+      random_line_generator.GenerateRandomLine(distribution_lsh::RandomLineDistributionType::GAUSSIAN,
+                                               distribution_lsh::RandomLineNormalizationType::NONE,
+                                               dimension);
   for (int i = 0; i < dimension; ++i) {
-    fmt::print("value at {} is : {:.5f}\n", i, data.get()[i]);
+    fmt::print("value at {} is : {:.10f}\n", i, data.get()[i]);
   }
 }
+
+} // namespace distribution_lsh

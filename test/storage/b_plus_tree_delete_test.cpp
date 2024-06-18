@@ -18,8 +18,8 @@ namespace distribution_lsh {
 using distribution_lsh::DiskManagerUnlimitedMemory;
 
 TEST(BPlusTreeTests, DeleteTest1) {
-  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto *bpm = new BufferPoolManager(50, disk_manager.get());
+  auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto bpm = std::make_shared<BufferPoolManager>(50, disk_manager);
   // create and fetch header_page
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
@@ -64,12 +64,12 @@ TEST(BPlusTreeTests, DeleteTest1) {
   }
 
   bpm->UnpinPage(HEADER_PAGE_ID, true);
-  delete bpm;
 }
 
 TEST(BPlusTreeTests, DeleteTest2) {
-  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto *bpm = new BufferPoolManager(50, disk_manager.get());
+  auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto bpm = std::make_shared<BufferPoolManager>(50, disk_manager);
+
   // create and fetch header_page
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
@@ -115,12 +115,12 @@ TEST(BPlusTreeTests, DeleteTest2) {
   }
 
   bpm->UnpinPage(HEADER_PAGE_ID, true);
-  delete bpm;
 }
 
 TEST(BPlusTreeTests, DeleteTest3) {
-  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto *bpm = new BufferPoolManager(50, disk_manager.get());
+  auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto bpm = std::make_shared<BufferPoolManager>(50, disk_manager);
+
   // create and fetch header_page
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
@@ -149,6 +149,5 @@ TEST(BPlusTreeTests, DeleteTest3) {
   EXPECT_EQ(rids.size(), 0);
 
   bpm->UnpinPage(HEADER_PAGE_ID, true);
-  delete bpm;
 }
 } // namespace distribution_lsh

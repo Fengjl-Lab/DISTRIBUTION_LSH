@@ -9,6 +9,7 @@
 
 #include <cstring>
 #include <iostream>
+#include <memory>
 
 #include <common/config.h>
 #include <common/rwlatch.h>

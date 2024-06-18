@@ -10,6 +10,7 @@
 
 #include <future> //NOLINT
 #include <optional>
+#include <memory>
 #include <thread> //NOLINT
 
 #include <common/channel.h>
@@ -47,7 +48,7 @@ struct DiskRequest {
 class DiskScheduler {
   friend class BufferPoolManager;
  public:
-  explicit DiskScheduler(DiskManager *disk_manager);
+  explicit DiskScheduler(std::shared_ptr<DiskManager> disk_manager);
   ~DiskScheduler();
 
   /**
@@ -78,8 +79,8 @@ class DiskScheduler {
   auto CreatePromise() -> DiskSchedulerPromise { return {}; };
 
  private:
-  /** Pointer to the disk manager. */
-  DiskManager *disk_manager_ __attribute__((__unused__));
+  /** Shared Pointer to the disk manager. */
+  std::shared_ptr<DiskManager> disk_manager_ __attribute__((__unused__));
   /** A shared queue to concurrently schedule and process requests. When the DiskScheduler's destructor is called,
    * `std::nullopt` is put into the queue to signal to the background thread to stop execution. */
   Channel<std::optional<DiskRequest>> request_queue_;

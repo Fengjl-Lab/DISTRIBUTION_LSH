@@ -14,11 +14,11 @@
 
 namespace distribution_lsh {
 BufferPoolManager::BufferPoolManager(size_t pool_size,
-                                     distribution_lsh::DiskManager *disk_manager,
+                                     std::shared_ptr<distribution_lsh::DiskManager> disk_manager,
                                      size_t replacer_k,
-                                     distribution_lsh::LogManager *log_manager)
-    : pool_size_(pool_size), disk_scheduler_(std::make_unique<DiskScheduler>(disk_manager)), log_manager_(log_manager) {
-  pages_ = new Page[pool_size_];
+                                     distribution_lsh::LogManager *log_manager,
+                                     page_id_t next_page_id)
+    : pool_size_(pool_size), pages_(new Page[pool_size_]), disk_scheduler_(std::make_unique<DiskScheduler>(std::move(disk_manager))), log_manager_(log_manager), next_page_id_(next_page_id){
   replacer_ = std::make_unique<LRUKReplacer>(pool_size, replacer_k);
 
   // Initially, every page is in the free list.
@@ -27,9 +27,12 @@ BufferPoolManager::BufferPoolManager(size_t pool_size,
   }
 }
 
-BufferPoolManager::~BufferPoolManager() { delete[] pages_; }
+BufferPoolManager::~BufferPoolManager() {
+  FlushAllPages();
+  disk_scheduler_->request_queue_.Put(std::nullopt);
+}
 
-auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {
+auto BufferPoolManager::NewPage(page_id_t *page_id) -> std::shared_ptr<Page> {
   std::unique_lock<std::mutex> page(latch_);
 
   // search in the free frame
@@ -69,16 +72,18 @@ auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {
   replacer_->RecordAccess(target_frame);
   replacer_->SetEvictable(target_frame, false);
 
-  return &pages_[target_frame];
+  return {pages_, pages_.get() + target_frame};
 }
 
-auto BufferPoolManager::FetchPage(page_id_t page_id, [[maybe_unused]] AccessType access_type) -> Page * {
+auto BufferPoolManager::FetchPage(page_id_t page_id, [[maybe_unused]] AccessType access_type) -> std::shared_ptr<Page> {
   std::unique_lock<std::mutex> page(latch_);
 
   // Page in the buffer
   if (page_table_.find(page_id) != page_table_.end()) {
     pages_[page_table_[page_id]].pin_count_ += 1;
-    return &pages_[page_table_[page_id]];
+    replacer_->RecordAccess(page_table_[page_id]);
+    replacer_->SetEvictable(page_table_[page_id], false);
+    return {pages_, pages_.get() + page_table_[page_id]};
   }
 
   // Page need to replace
@@ -124,7 +129,7 @@ auto BufferPoolManager::FetchPage(page_id_t page_id, [[maybe_unused]] AccessType
   replacer_->RecordAccess(target_frame);
   replacer_->SetEvictable(target_frame, false);
 
-  return &pages_[target_frame];
+  return {pages_, pages_.get() + target_frame};
 }
 
 auto BufferPoolManager::UnpinPage(distribution_lsh::page_id_t page_id, bool is_dirty, [[maybe_unused]] distribution_lsh::AccessType access_type) -> bool {
@@ -165,12 +170,15 @@ void BufferPoolManager::FlushAllPages() {
 
   for (size_t i = 0; i < pool_size_; i++) {
     // Write into disk(non-block)
-    if (pages_[i].page_id_ != INVALID_PAGE_ID) {
+    if (pages_[static_cast<int64_t>(i)].page_id_ != INVALID_PAGE_ID) {
       auto promise = disk_scheduler_->CreatePromise();
       auto future = promise.get_future();
       std::optional<DiskRequest>
-          disk_request({true, reinterpret_cast<char *>(pages_[i].data_), pages_[i].page_id_, std::move(promise)});
+          disk_request({true, reinterpret_cast<char *>(pages_[static_cast<int64_t>(i)].data_), pages_[static_cast<int64_t>(i)].page_id_, std::move(promise)});
       disk_scheduler_->request_queue_.Put(std::move(disk_request));
+      if (!future.get()) {
+        LOG_DEBUG("Flush page failed.");
+      }
     }
   }
 }

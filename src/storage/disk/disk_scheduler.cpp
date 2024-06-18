@@ -11,7 +11,7 @@
 
 namespace distribution_lsh {
 
-DiskScheduler::DiskScheduler(distribution_lsh::DiskManager *disk_manager) : disk_manager_(disk_manager) {
+DiskScheduler::DiskScheduler(std::shared_ptr<distribution_lsh::DiskManager> disk_manager) : disk_manager_(std::move(disk_manager)) {
   // Spawn the background thread
   background_thread_.emplace([&]{ StartWorkerThread(); });
 }
@@ -21,6 +21,8 @@ DiskScheduler::~DiskScheduler() {
   if (background_thread_.has_value()) {
     background_thread_->join();
   }
+
+  disk_manager_->ShutDown();
 }
 
 void DiskScheduler::Schedule(distribution_lsh::DiskRequest r) {

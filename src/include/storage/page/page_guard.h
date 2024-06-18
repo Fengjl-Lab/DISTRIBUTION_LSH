@@ -8,6 +8,7 @@
 #pragma once
 
 #include <storage/page/page.h>
+#include <memory>
 
 namespace distribution_lsh {
 
@@ -19,7 +20,7 @@ class BasicPageGuard {
  public:
   BasicPageGuard() = default;
 
-  BasicPageGuard(BufferPoolManager *bpm, Page *page) : bpm_(bpm), page_(page) {}
+  BasicPageGuard(BufferPoolManager *bpm, std::shared_ptr<Page> page) : bpm_(bpm), page_(std::move(page)) {}
 
   BasicPageGuard(const BasicPageGuard &) = delete;
   auto operator=(const BasicPageGuard &) = delete;
@@ -81,14 +82,14 @@ class BasicPageGuard {
   friend class WritePageGuard;
 
   BufferPoolManager *bpm_{nullptr};
-  Page *page_{nullptr};
+  std::shared_ptr<Page> page_{nullptr};
   bool is_dirty_{false};
 };
 
 class ReadPageGuard {
  public:
   ReadPageGuard() = default;
-  ReadPageGuard(BufferPoolManager *bpm, Page *page) : guard_(bpm, page) { guard_.page_->RLatch(); }
+  ReadPageGuard(BufferPoolManager *bpm, std::shared_ptr<Page> page) : guard_(bpm, std::move(page)) { guard_.page_->RLatch(); }
   ReadPageGuard(const ReadPageGuard &) = delete;
   auto operator=(const ReadPageGuard &) -> ReadPageGuard & = delete;
 
@@ -128,7 +129,7 @@ class ReadPageGuard {
 class WritePageGuard {
  public:
   WritePageGuard() = default;
-  WritePageGuard(BufferPoolManager *bpm, Page *page) : guard_(bpm, page) { guard_.page_->WLatch(); }
+  WritePageGuard(BufferPoolManager *bpm, std::shared_ptr<Page> page) : guard_(bpm, std::move(page)) { guard_.page_->WLatch(); }
   WritePageGuard(const WritePageGuard &) = delete;
   auto operator=(const WritePageGuard &) -> WritePageGuard & = delete;
 

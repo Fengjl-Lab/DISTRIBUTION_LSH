@@ -20,10 +20,10 @@
 #include <common/macro.h>
 #include <common/rid.h>
 #include <buffer/buffer_pool_manager.h>
-#include <storage/page/b_plus_tree_page.h>
-#include <storage/page/b_plus_tree_leaf_page.h>
-#include <storage/page/b_plus_tree_internal_page.h>
-#include <storage/page/b_plus_tree_header_page.h>
+#include "include/storage/page/b_plus_tree/b_plus_tree_page.h"
+#include "include/storage/page/b_plus_tree/b_plus_tree_leaf_page.h"
+#include "include/storage/page/b_plus_tree/b_plus_tree_internal_page.h"
+#include "include/storage/page/b_plus_tree/b_plus_tree_header_page.h"
 
 namespace distribution_lsh {
 
@@ -64,7 +64,7 @@ class BPlusTree {
   using LeafPage = BPlusTreeLeafPage<KeyType, ValueType>;
 
  public:
-  explicit BPlusTree(std::string name, page_id_t header_page_id, BufferPoolManager *buffer_pool_manager,
+  explicit BPlusTree(std::string name, page_id_t header_page_id, std::shared_ptr<BufferPoolManager> buffer_pool_manager,
                      int leaf_max_size = LEAF_PAGE_SIZE,
                      int internal_max_size = INTERNAL_PAGE_SIZE);
 
@@ -94,7 +94,7 @@ class BPlusTree {
  private:
   // member variable
   std::string index_name_;
-  BufferPoolManager *bpm_;
+  std::shared_ptr<BufferPoolManager> bpm_;
   std::vector<std::string> log;  // NOLINT
   int leaf_max_size_;
   int internal_max_size_;

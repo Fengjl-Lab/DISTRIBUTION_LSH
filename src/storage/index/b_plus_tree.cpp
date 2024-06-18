@@ -19,11 +19,16 @@ namespace distribution_lsh {
 INDEX_TEMPLATE_ARGUMENTS
 B_PLUS_TREE_TYPE::BPlusTree(std::string name,
                             distribution_lsh::page_id_t header_page_id,
-                            distribution_lsh::BufferPoolManager *buffer_pool_manager,
+                            std::shared_ptr<distribution_lsh::BufferPoolManager> buffer_pool_manager,
                             int leaf_max_size,
                             int internal_max_size) : \
-                            index_name_(std::move(name)), bpm_(buffer_pool_manager), leaf_max_size_(leaf_max_size), \
-                            internal_max_size_(internal_max_size), header_page_id_(header_page_id) {}
+                            index_name_(std::move(name)), bpm_(std::move(buffer_pool_manager)), leaf_max_size_(leaf_max_size), \
+                            internal_max_size_(internal_max_size), header_page_id_(header_page_id) {
+  // We need allocate the header_page
+  if (IsEmpty()) {
+    auto new_header_page_guard = bpm_->NewPageGuarded(&header_page_id_);
+  }
+}
 
 INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_TYPE::IsEmpty() -> bool {
@@ -67,7 +72,7 @@ auto B_PLUS_TREE_TYPE::Get(KeyType &key, std::vector<ValueType> *result) -> bool
     auto pos = 0;
     while (pos < internal_page->GetSize() && internal_page->KeyAt(pos + 1) < key) { pos++; }
     // Obtain correct number
-    pos = pos != internal_page->GetSize() && fabsf(key - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
+    pos = pos != internal_page->GetSize() && std::abs(key - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
 
     // Traverse to the leaf child
     ctx.read_set_.emplace_back(std::move(bpm_->FetchPageRead(internal_page->ValueAt(pos))));
@@ -76,7 +81,7 @@ auto B_PLUS_TREE_TYPE::Get(KeyType &key, std::vector<ValueType> *result) -> bool
 
   const auto leaf_page = reinterpret_cast<const LeafPage *>(current_page);
   for (int i = 0; i < leaf_page->GetSize(); ++i) {
-    if (fabsf(key - leaf_page->array_[i].first) <= 1E-10) {
+    if (std::abs(key - leaf_page->array_[i].first) <= 1E-10) {
       result->emplace_back(leaf_page->array_[i].second);
       return true;
     }
@@ -118,7 +123,7 @@ auto B_PLUS_TREE_TYPE::Insert(KeyType &key, ValueType &value) -> bool {
     auto pos = 0;
     while (pos < internal_page->GetSize() && internal_page->KeyAt(pos + 1) < key) { pos++; }
     // Obtain correct number
-    pos = pos != internal_page->GetSize() && fabsf(key - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
+    pos = pos != internal_page->GetSize() && std::abs(key - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
 
     // Traverse to the leaf child
     ctx.write_set_.emplace_back(std::move(bpm_->FetchPageWrite(internal_page->ValueAt(pos))));
@@ -129,7 +134,7 @@ auto B_PLUS_TREE_TYPE::Insert(KeyType &key, ValueType &value) -> bool {
   auto target_position = leaf_page->GetSize();
   auto end_position = leaf_page->GetSize();
   for (int i = 0; i < leaf_page->GetSize(); ++i) {
-    if (fabsf(key - leaf_page->array_[i].first) <= 1E-10) {
+    if (std::abs(key - leaf_page->array_[i].first) <= 1E-10) {
       LOG_DEBUG("Need unique key value");
       return false;
     }
@@ -283,11 +288,11 @@ auto B_PLUS_TREE_TYPE::Delete(KeyType &key) -> bool {
     auto pos = 0;
     while (pos < internal_page->GetSize() && internal_page->KeyAt(pos + 1) < key) { pos++; }
     // Obtain correct number
-    pos = pos != internal_page->GetSize() && fabsf(key - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
+    pos = pos != internal_page->GetSize() && std::abs(key - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
     trace.emplace_back(pos);
 
     // Trace the position need to be deleted
-    if (fabsf(key - internal_page->KeyAt(pos)) <= 1E-10) {
+    if (std::abs(key - internal_page->KeyAt(pos)) <= 1E-10) {
       internal_page->array_[pos].first = TEMP_SLOT_VACANCY;
       twice_delete_key = true;
     }
@@ -301,7 +306,7 @@ auto B_PLUS_TREE_TYPE::Delete(KeyType &key) -> bool {
   auto target_position = leaf_page->GetSize();
   auto end_position = leaf_page->GetSize();
   for (int i = 0; i < leaf_page->GetSize(); ++i) {
-    if (fabsf(key - leaf_page->array_[i].first) <= 1E-10) {
+    if (std::abs(key - leaf_page->array_[i].first) <= 1E-10) {
       target_position = i;
       break;
     }
@@ -351,7 +356,7 @@ auto B_PLUS_TREE_TYPE::Delete(KeyType &key) -> bool {
           current_leaf_page->IncreaseSize(1);
           replace_key = replacer_element.first;
 
-          if (fabsf(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
+          if (std::abs(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
             twice_delete_key = false;
           }
           parent_page->array_[trace.back()].first = replacer_element.first;
@@ -367,7 +372,7 @@ auto B_PLUS_TREE_TYPE::Delete(KeyType &key) -> bool {
             end_position--;
           }
 
-          if (fabsf(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
+          if (std::abs(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
             current_internal_page->array_[1] = {replace_key, current_internal_page->array_[0].second};
             twice_delete_key = false;
           } else {
@@ -414,7 +419,7 @@ auto B_PLUS_TREE_TYPE::Delete(KeyType &key) -> bool {
           }
           right_sibling_internal_page->IncreaseSize(-1);
 
-          if (fabsf(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
+          if (std::abs(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
             current_internal_page->array_[current_internal_page->GetSize() + 1] =
                 {replace_key, right_sibling_internal_page->array_[0].second};
             twice_delete_key = false;
@@ -448,7 +453,7 @@ auto B_PLUS_TREE_TYPE::Delete(KeyType &key) -> bool {
         left_sibling_leaf_page->SetNextPageId(current_leaf_page->GetNextPageId());
 
         bpm_->DeletePage(parent_page->array_[trace.back()].second);
-        if (fabsf(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
+        if (std::abs(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
           twice_delete_key = false;
         }
 
@@ -470,7 +475,7 @@ auto B_PLUS_TREE_TYPE::Delete(KeyType &key) -> bool {
         left_sibling_internal_page->IncreaseSize(current_internal_page->GetSize() + 1);
 
         bpm_->DeletePage(parent_page->array_[trace.back()].second);
-        if (fabsf(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
+        if (std::abs(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
           twice_delete_key = false;
         }
 
@@ -502,7 +507,7 @@ auto B_PLUS_TREE_TYPE::Delete(KeyType &key) -> bool {
         current_leaf_page->SetNextPageId(right_sibling_leaf_page->GetNextPageId());
 
         bpm_->DeletePage(parent_page->array_[trace.back() + 1].second);
-        if (fabsf(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
+        if (std::abs(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
           parent_page->array_[trace.back()].first = replace_key;
           twice_delete_key = false;
         }
@@ -525,7 +530,7 @@ auto B_PLUS_TREE_TYPE::Delete(KeyType &key) -> bool {
         current_internal_page->IncreaseSize(right_sibling_internal_page->GetSize() + 1);
         bpm_->DeletePage(parent_page->array_[trace.back() + 1].second);
 
-        if (fabsf(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
+        if (std::abs(parent_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
           parent_page->array_[trace.back()].first = replace_key;
           twice_delete_key = false;
         }
@@ -552,7 +557,7 @@ auto B_PLUS_TREE_TYPE::Delete(KeyType &key) -> bool {
   // If the target index is appeared in the index
   while (twice_delete_key && !trace.empty() && !ctx.write_set_.empty()) {
     auto current_internal_page = ctx.write_set_.back().template AsMut<InternalPage>();
-    if (fabsf(current_internal_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
+    if (std::abs(current_internal_page->array_[trace.back()].first - TEMP_SLOT_VACANCY) < 1E-10) {
       current_internal_page->array_[trace.back()].first = replace_key;
     }
 
@@ -600,7 +605,7 @@ auto B_PLUS_TREE_TYPE::UpDate(KeyType &key, ValueType &value) -> bool {
     auto pos = 0;
     while (pos < internal_page->GetSize() && internal_page->KeyAt(pos + 1) < key) { pos++; }
     // Obtain correct number
-    pos = pos != internal_page->GetSize() && fabsf(key - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
+    pos = pos != internal_page->GetSize() && std::abs(key - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
 
     // Traverse to the leaf child
     ctx.write_set_.emplace_back(std::move(bpm_->FetchPageWrite(internal_page->ValueAt(pos))));
@@ -609,7 +614,7 @@ auto B_PLUS_TREE_TYPE::UpDate(KeyType &key, ValueType &value) -> bool {
 
   LeafPage *leaf_page = reinterpret_cast<LeafPage *>(current_page);
   for (int i = 0; i < leaf_page->GetSize(); ++i) {
-    if (fabsf(key - leaf_page->array_[i].first) <= 1E-10) {
+    if (std::abs(key - leaf_page->array_[i].first) <= 1E-10) {
       leaf_page->array_[i].second = value;
       return true;
     }
@@ -639,7 +644,7 @@ auto B_PLUS_TREE_TYPE::RangeRead(KeyType &lkey, KeyType &rkey, std::vector<Value
     auto pos = 0;
     while (pos < internal_page->GetSize() && internal_page->KeyAt(pos + 1) < lkey) { pos++; }
     // Obtain correct number
-    pos = pos != internal_page->GetSize() && fabsf(lkey - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
+    pos = pos != internal_page->GetSize() && std::abs(lkey - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
 
     // Traverse to the leaf child
     ctx.read_set_.emplace_back(std::move(bpm_->FetchPageRead(internal_page->ValueAt(pos))));
@@ -650,7 +655,7 @@ auto B_PLUS_TREE_TYPE::RangeRead(KeyType &lkey, KeyType &rkey, std::vector<Value
   auto left_start_page_id =  ctx.read_set_.back().PageId();
   auto left_start_page_slot = left_leaf_page->GetSize();
   for (int i = 0; i < left_leaf_page->GetSize(); ++i) {
-    if (lkey < left_leaf_page->array_[i].first || fabsf(lkey - left_leaf_page->array_[i].first) <= 1E-10) {
+    if (lkey < left_leaf_page->array_[i].first || std::abs(lkey - left_leaf_page->array_[i].first) <= 1E-10) {
       left_start_page_slot = i;
       break;
     }
@@ -663,7 +668,7 @@ auto B_PLUS_TREE_TYPE::RangeRead(KeyType &lkey, KeyType &rkey, std::vector<Value
     auto pos = 0;
     while (pos < internal_page->GetSize() && internal_page->KeyAt(pos + 1) < rkey) { pos++; }
     // Obtain correct number
-    pos = pos != internal_page->GetSize() && fabsf(rkey - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
+    pos = pos != internal_page->GetSize() && std::abs(rkey - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
 
     // Traverse to the leaf child
     ctx.read_set_.emplace_back(std::move(bpm_->FetchPageRead(internal_page->ValueAt(pos))));
@@ -676,7 +681,7 @@ auto B_PLUS_TREE_TYPE::RangeRead(KeyType &lkey, KeyType &rkey, std::vector<Value
   auto right_end_page_id = right_leaf_page->GetNextPageId();
   for (int i = 0; i < right_leaf_page->GetSize(); ++i) {
     if (rkey < right_leaf_page->array_[i].first) {
-      right_back_page_slot = fabsf(rkey - right_leaf_page->array_[i].first) <= 1E-10 ? i + 1 : i;
+      right_back_page_slot = std::abs(rkey - right_leaf_page->array_[i].first) <= 1E-10 ? i + 1 : i;
       break;
     }
   }

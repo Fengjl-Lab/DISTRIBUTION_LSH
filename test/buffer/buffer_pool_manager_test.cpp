@@ -31,11 +31,11 @@ TEST(BufferPoolManagerTest, BinaryDataTest) {
   static_assert(upper_bound - lower_bound == 255);
   std::uniform_int_distribution<int> uniform_dist(lower_bound, upper_bound);
 
-  auto *disk_manager = new DiskManager(db_name);
+  auto disk_manager = std::make_shared<DiskManager>(db_name);
   auto *bpm = new BufferPoolManager(buffer_pool_size, disk_manager, k);
 
   page_id_t page_id_temp;
-  auto *page0 = bpm->NewPage(&page_id_temp);
+  auto page0 = bpm->NewPage(&page_id_temp);
 
   // Scenario: The buffer pool is empty. We should be able to create a new page.
   ASSERT_NE(nullptr, page0);
@@ -83,11 +83,10 @@ TEST(BufferPoolManagerTest, BinaryDataTest) {
   EXPECT_EQ(true, bpm->UnpinPage(0, true));
 
   // Shutdown the disk manager and remove the temporary file we created.
-  disk_manager->ShutDown();
+  // disk_manager->ShutDown();
   remove("test.db");
 
   delete bpm;
-  delete disk_manager;
 }
 
 // NOLINTNEXTLINE
@@ -96,11 +95,11 @@ TEST(BufferPoolManagerTest, SampleTest) {
   const size_t buffer_pool_size = 10;
   const size_t k = 5;
 
-  auto *disk_manager = new DiskManager(db_name);
+  auto disk_manager = std::make_shared<DiskManager>(db_name);
   auto *bpm = new BufferPoolManager(buffer_pool_size, disk_manager, k);
 
   page_id_t page_id_temp;
-  auto *page0 = bpm->NewPage(&page_id_temp);
+  auto page0 = bpm->NewPage(&page_id_temp);
 
   // Scenario: The buffer pool is empty. We should be able to create a new page.
   ASSERT_NE(nullptr, page0);
@@ -141,10 +140,9 @@ TEST(BufferPoolManagerTest, SampleTest) {
   EXPECT_EQ(nullptr, bpm->FetchPage(0));
 
   // Shutdown the disk manager and remove the temporary file we created.
-  disk_manager->ShutDown();
+  // disk_manager->ShutDown();
   remove("test.db");
 
   delete bpm;
-  delete disk_manager;
 }
 } // namespace distribution_lsh

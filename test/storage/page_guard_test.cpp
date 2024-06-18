@@ -26,7 +26,7 @@ TEST(PageGuardTest, SampleTest) {
   auto bpm = std::make_shared<BufferPoolManager>(buffer_pool_size, disk_manager.get(), k);
 
   page_id_t page_id_temp;
-  auto *page0 = bpm->NewPage(&page_id_temp);
+  auto page0 = bpm->NewPage(&page_id_temp);
 
   auto guarded_page = BasicPageGuard(bpm.get(), page0);
 
@@ -39,7 +39,7 @@ TEST(PageGuardTest, SampleTest) {
   EXPECT_EQ(0, page0->GetPinCount());
 
   {
-    auto *page2 = bpm->NewPage(&page_id_temp);
+    auto page2 = bpm->NewPage(&page_id_temp);
     page2->RLatch();
     auto guard2 = ReadPageGuard(bpm.get(), page2);
   }

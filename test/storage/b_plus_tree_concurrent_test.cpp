@@ -106,8 +106,9 @@ void LookupHelper(BPlusTree<float, RID> *tree, const std::vector<int64_t> &keys,
 }
 
 TEST(BPlusTreeConcurrentTest, InsertTest1) {
-  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto *bpm = new BufferPoolManager(50, disk_manager.get());
+  auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto bpm = std::make_shared<BufferPoolManager>(50, disk_manager);
+
   // create and fetch header_page
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
@@ -133,12 +134,12 @@ TEST(BPlusTreeConcurrentTest, InsertTest1) {
   }
 
   bpm->UnpinPage(HEADER_PAGE_ID, true);
-  delete bpm;
 }
 
 TEST(BPlusTreeConcurrentTest, InsertTest2) {
-  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto *bpm = new BufferPoolManager(50, disk_manager.get());
+  auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto bpm = std::make_shared<BufferPoolManager>(50, disk_manager);
+
   // create and fetch header_page
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
@@ -164,12 +165,12 @@ TEST(BPlusTreeConcurrentTest, InsertTest2) {
   }
 
   bpm->UnpinPage(HEADER_PAGE_ID, true);
-  delete bpm;
 }
 
 TEST(BPlusTreeConcurrentTest, DeleteTest1) {
-  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto *bpm = new BufferPoolManager(50, disk_manager.get());
+  auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto bpm = std::make_shared<BufferPoolManager>(50, disk_manager);
+
 
   float index_key;
   // create and fetch header_page
@@ -195,12 +196,12 @@ TEST(BPlusTreeConcurrentTest, DeleteTest1) {
   ASSERT_EQ(tree.Get(index_key, &rids), false);
 
   bpm->UnpinPage(HEADER_PAGE_ID, true);
-  delete bpm;
 }
 
 TEST(BPlusTreeConcurrentTest, DeleteTest2) {
-  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto *bpm = new BufferPoolManager(50, disk_manager.get());
+  auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto bpm = std::make_shared<BufferPoolManager>(50, disk_manager);
+
 
   float index_key;
   // create and fetch header_page
@@ -226,12 +227,12 @@ TEST(BPlusTreeConcurrentTest, DeleteTest2) {
   ASSERT_EQ(tree.Get(index_key, &rids), false);
 
   bpm->UnpinPage(HEADER_PAGE_ID, true);
-  delete bpm;
 }
 
 TEST(BPlusTreeConcurrentTest, MixTest1) {
-  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto *bpm = new BufferPoolManager(50, disk_manager.get());
+  auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto bpm = std::make_shared<BufferPoolManager>(50, disk_manager);
+
 
   // create and fetch header_page
   page_id_t page_id;
@@ -271,16 +272,16 @@ TEST(BPlusTreeConcurrentTest, MixTest1) {
   ASSERT_EQ(tree.Get(index_key, &rids), true);
 
   bpm->UnpinPage(HEADER_PAGE_ID, true);
-  delete bpm;
 }
 
 TEST(BPlusTreeConcurrentTest, MixTest2) {
-  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto *bpm = new BufferPoolManager(50, disk_manager.get());
+  auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto bpm = std::make_shared<BufferPoolManager>(50, disk_manager);
+
 
   // create and fetch header_page
   page_id_t page_id;
-  auto *header_page = bpm->NewPage(&page_id);
+  auto header_page = bpm->NewPage(&page_id);
   (void)header_page;
 
   // create b+ tree
@@ -326,6 +327,6 @@ TEST(BPlusTreeConcurrentTest, MixTest2) {
   EXPECT_TRUE(rids.size() >= 10);
 
   bpm->UnpinPage(HEADER_PAGE_ID, true);
-  delete bpm;
 }
+
 } // namespace distribution_lsh

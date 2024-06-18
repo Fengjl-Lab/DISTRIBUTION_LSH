@@ -32,8 +32,8 @@ class BufferPoolManager {
    * @param replacer_k the LookBack constant k for the LRU-K replacer
    * @param log_manager the log manager (for testing only: nullptr = disable logging). Please ignore this for P1.
    */
-  BufferPoolManager(size_t pool_size, DiskManager *disk_manager, size_t replacer_k = LRUK_REPLACER_K,
-                    LogManager *log_manager = nullptr);
+  BufferPoolManager(size_t pool_size, std::shared_ptr<DiskManager> disk_manager, size_t replacer_k = LRUK_REPLACER_K,
+                    LogManager *log_manager = nullptr, page_id_t next_page_id = HEADER_PAGE_ID);
 
   /**
    * @brief Destroy an existing BufferPoolManager.
@@ -44,7 +44,7 @@ class BufferPoolManager {
   auto GetPoolSize() -> size_t { return pool_size_; }
 
   /** @brief Return the pointer to all the pages in the buffer pool. */
-  auto GetPages() -> Page * { return pages_; }
+  auto GetPages() -> std::shared_ptr<Page[]> { return pages_; }
 
   /**
    * @brief Create a new page in the buffer pool. Set page_id to the new page's id, or nullptr if all frames
@@ -53,7 +53,7 @@ class BufferPoolManager {
    * @param[out] page_id id of created page
    * @return nullptr if no new pages could be created, otherwise pointer to new page
    */
-  auto NewPage(page_id_t *page_id) -> Page *;
+  auto NewPage(page_id_t *page_id) -> std::shared_ptr<Page>;
 
   /**
    * @brief PageGuard wrapper for NewPage
@@ -71,7 +71,7 @@ class BufferPoolManager {
   * @param access_type type of access to the page, only needed for leaderboard test.
   * @return nullptr if page_id cannot be fetched, otherwise pointer to the requested page
   */
-  auto FetchPage(page_id_t page_id, AccessType access_type = AccessType::Unknown) -> Page *;
+  auto FetchPage(page_id_t page_id, AccessType access_type = AccessType::Unknown) -> std::shared_ptr<Page>;
 
   /**
    * @brief PageGuard wrappers for FetchPage
@@ -119,11 +119,9 @@ class BufferPoolManager {
  private:
   /** Numer of pages in the buffer pool. */
   const size_t pool_size_;
-  /** The next page id to be allocated. */
-  std::atomic<page_id_t> next_page_id_ = 0;
 
   /** Array of buffer pool pages. */
-  Page *pages_;
+  std::shared_ptr<Page []> pages_;
   /** Pointer to the disk scheduler. */
   std::unique_ptr<DiskScheduler> disk_scheduler_ __attribute__((__unused__));
   /** Pointer to the log manager. Please ignore this for P1. */
@@ -138,6 +136,8 @@ class BufferPoolManager {
   std::list<page_id_t> free_page_list_;
   /** This latch protects shared data structures. We recommend updating this comment to describe what it protects. */
   std::mutex latch_;
+  /** The next page id to be allocated. */
+  std::atomic<page_id_t> next_page_id_ = 0;
 
   /**
    * @brief Allocate a page on disk. Caller should acquire the latch before calling this function.
