@@ -2,6 +2,7 @@ add_library(
         distribution_lsh_file
         OBJECT
         monitor.cpp
+        random_line_monitor.cpp
 )
 
 set(ALL_OBJECT_FILES
