@@ -16,15 +16,15 @@ namespace distribution_lsh {
 /**
  * @brief random line generator which based on gaussian distribution and epsilon
  */
-template<typename ValueType>
+template<typename RandomLineValueType>
 class RandomLineGenerator {
  public:
   // Generate a random line based on average_random_line and epsilon
   auto GenerateRandomLine(RandomLineDistributionType distribution_type,
                           RandomLineNormalizationType normalization_type,
-                          int dimension) -> std::shared_ptr<ValueType[]>;
+                          int dimension) -> std::shared_ptr<RandomLineValueType[]>;
 
-  auto Normalization(std::shared_ptr<ValueType[]> data, RandomLineNormalizationType normalization_type, int dimension) -> std::shared_ptr<ValueType[]>;
+  auto Normalization(std::shared_ptr<RandomLineValueType[]> data, RandomLineNormalizationType normalization_type, int dimension) -> std::shared_ptr<RandomLineValueType[]>;
 };
 } // namespace distribution_lsh
 
