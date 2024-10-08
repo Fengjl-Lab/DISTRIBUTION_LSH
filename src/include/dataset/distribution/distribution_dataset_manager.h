@@ -29,6 +29,8 @@ namespace distribution_lsh {
 #define DISTRIBUTION_DATASET_MANAGER_TYPE DistributionDataSetManager<ValueType>
 
 struct DistributionDataSetContext {
+  std::optional<WritePageGuard> training_set_header_page_{std::nullopt};
+  std::optional<WritePageGuard> testing_set_header_page_{std::nullopt};
   std::deque<ReadPageGuard> read_set_;    // read set for distribution dataset
   std::deque<WritePageGuard> write_set_;  // write set for distribution dataset
 };
@@ -59,7 +61,7 @@ class DistributionDataSetManager {
                              int data_page_max_size = DISTRIBUTION_DATASET_DATA_PAGE_SIZE);
 
   /** Judge if the distribution dataset is empty*/
-  auto IsEmpty() -> bool;
+  auto IsEmpty(DistributionDataSetContext *ctx = nullptr, bool is_read = true) -> bool;
 
   /**
    * @brief Assert that test set and training set are complement, which means they can be a pair.
@@ -75,13 +77,16 @@ class DistributionDataSetManager {
   auto GetNormalizationType() -> NormalizationType { return normalization_type_; };
   auto GetDimension() -> int { return dimension_; };
   auto GetSize(bool is_training_set) -> int;
+  auto GetTrainingSetFileID() -> file_id_t { return training_set_file_id_; }
+  auto GetTestingSetFileID() -> file_id_t { return testing_set_file_id_; }
+
 
   /** Get single distribution data
    * @brief get data by directory page id and its logical slot
    * */
   auto GetDistributionData(bool is_training_set, page_id_t directory_page_id, int index) -> std::shared_ptr<ValueType[]>;
 
-  /**
+  /**3
    * @param is_training_set set type
    * @param index total index of the data
    * @return distribution data
@@ -100,7 +105,7 @@ class DistributionDataSetManager {
   auto ToString() -> std::string;
 
   /** Store a distribution data into page */
-  auto Store(bool is_training_set, ValueType *distribution) -> RID;
+  auto Store(bool is_training_set, ValueType *distribution, DistributionDataSetContext *ctx = nullptr) -> RID;
 
  private:
 
@@ -123,8 +128,6 @@ class DistributionDataSetManager {
 
   file_id_t training_set_file_id_;
   file_id_t testing_set_file_id_;
-
-  std::mutex empty_mutex_;
 };
 
 } // namespace distribution_lsh
