@@ -27,9 +27,9 @@ inline auto FileFullExTension(const std::string &file_name) -> std::string {
 
 inline auto GetHashValue(const std::string& input) -> file_id_t {
   std::hash<std::string> hasher;
-  size_t origin_hash_value = hasher(input);
+  auto origin_hash_value = hasher(input); // 64-bit 8byte
 
-  file_id_t hash_value = origin_hash_value & 0x3FFF;
+  file_id_t hash_value = HEADER_PAGE_IDENTIFICATION << 32 | (origin_hash_value >> 32 & 0x3FFF'FFFFUL);
 
   return hash_value;
 }
