@@ -31,15 +31,15 @@ auto Monitor::GenerateFileIdentification(const std::string &directory_name, File
         break;
       }
       case FileType::B_PLUS_TREE_FILE: {
-        file_identification = hash_value | 0x4000;
+        file_identification = hash_value | 0x0000'0000'4000'0000UL;
         break;
       }
       case FileType::DISTRIBUTION_DATASET_FILE: {
-        file_identification = hash_value | 0x8000;
+        file_identification = hash_value | 0x0000'0000'8000'0000UL;
         break;
       }
       case FileType::RELATION_FILE: {
-        file_identification = hash_value | 0xC000;
+        file_identification = hash_value | 0x0000'0000'C000'0000UL;
         break;
       }
       default: throw Exception("Unsupported file type");
