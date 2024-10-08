@@ -55,14 +55,16 @@ class DistributionDataSetMonitor : public Monitor {
    * @param ratio training set and testing set ratio
    * @return the index target dataset manager corresponding to the input constriant
    */
-  auto GetDataSetIndex(DataSetType data_set_type,
-                       DistributionType distribution_type,
-                       NormalizationType normalization_type,
-                       int dimension,
-                       float param1,
-                       float param2,
-                       int size,
-                       float ratio) -> int;
+  auto GetDataSetIndex(
+      DataSetType data_set_type,
+      DistributionType distribution_type,
+      NormalizationType normalization_type,
+      int dimension,
+      float param1,
+      float param2,
+      int size,
+      float ratio,
+      file_id_t *training_set_file_id_ptr = nullptr) -> int;
 
   /**
    * Get specific data by directory page id and index
@@ -112,7 +114,8 @@ class DistributionDataSetMonitor : public Monitor {
                        float param1,
                        float param2,
                        int size,
-                       float ratio) -> int;
+                       float ratio,
+                       file_id_t *training_set_file_id_ptr = nullptr ) -> int;
 
   std::string raw_data_directory_name_;
   std::string training_set_directory_name_;
