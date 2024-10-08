@@ -11,6 +11,7 @@
 #include <mutex>
 
 #include <common/config.h>
+#include <common/rid.h>
 #include <common/logger.h>
 #include <common/exception.h>
 #include <buffer/buffer_pool_manager.h>
@@ -27,7 +28,7 @@
 
 namespace distribution_lsh {
 
-#define RANDOM_LINE_MANAGER_TYPE RandomLineManager<ValueType>
+#define RANDOM_LINE_MANAGER_TYPE RandomLineManager<RandomLineValueType>
 
 class RandomLineContext {
  public:
@@ -48,35 +49,38 @@ class RandomLineManager {
   explicit RandomLineManager(std::string manager_name,
                              file_id_t file_id,
                              std::shared_ptr<BufferPoolManager> bpm,
-                             std::shared_ptr<RandomLineGenerator<ValueType>> rlg,
+                             std::shared_ptr<RandomLineGenerator<RandomLineValueType>> rlg,
                              page_id_t header_page_id,
-                             int dimension_,
-                             int directory_page_max_size,
-                             int data_page_max_size,
-                             RandomLineDistributionType distribution_type,
-                             RandomLineNormalizationType normalization_type,
+                             int dimension,
+                             int directory_page_max_size = GetRandomLineDirectoryPageSize(),
+                             int data_page_max_size = GetRandomLineDataPageSize<RandomLineValueType>(),
+                             RandomLineDistributionType distribution_type = RandomLineDistributionType::GAUSSIAN,
+                             RandomLineNormalizationType normalization_type = RandomLineNormalizationType::NONE,
                              float epsilon = EPSILON);
 
   /** Judge if the random line group is empty*/
-  auto IsEmpty(RandomLineContext *ctx = nullptr) -> bool;
+  auto IsEmpty(RandomLineContext *ctx = nullptr, bool is_read = true) -> bool;
 
   /** Obtain the new random line group */
   auto GenerateRandomLineGroup(int group_size) -> bool;
 
   /** Compute inner product by header page id and slot number */
-  auto InnerProduct(int index, page_id_t *directory_page_id, int *slot, std::shared_ptr<ValueType[]> outer_array) -> ValueType;
+  auto InnerProduct(int index, page_id_t *directory_page_id, int *slot, std::shared_ptr<RandomLineValueType[]> outer_array) -> RandomLineValueType;
+
+  auto InnerProduct(page_id_t directory_page_id, int slot, std::shared_ptr<RandomLineValueType[]> outer_array) -> RandomLineValueType;
 
   /** random line group information*/
   auto RandomLineGroupInformation() -> std::string;
 
   /** Getter and Setter method for attribution */
+  auto GetFileId() -> file_id_t;
   auto GetEpsilon() -> float;
   auto GetDimension() -> int;
   auto GetDirectoryPageMaxSize() -> int;
   auto GetDataPageMaxSize() -> int;
   auto GetDistributionType() -> RandomLineDistributionType;
   auto GetNormalizationType() -> RandomLineNormalizationType;
-  auto GetSize(RandomLineContext *ctx = nullptr) -> int;
+  auto GetSize(RandomLineContext *ctx = nullptr, std::shared_ptr<std::vector<RID>> random_line_rids = nullptr) -> int;
 
   /** Information of the random line manager */
   auto ToString() -> std::string;
@@ -92,16 +96,16 @@ class RandomLineManager {
  private:
 
   /** Calculate the inner product of two random line */
-  auto InnerProduct(page_id_t random_line_page_start_id, std::shared_ptr<ValueType[]> outer_array) -> ValueType;
+  auto InnerProduct(page_id_t random_line_page_start_id, std::shared_ptr<RandomLineValueType[]> outer_array) -> RandomLineValueType;
 
   /** Store a random line with needed page*/
-  auto StoreAverageRandomLine(std::shared_ptr<ValueType[]> array, RandomLineContext *ctx = nullptr) -> bool;
+  auto StoreAverageRandomLine(std::shared_ptr<RandomLineValueType[]> array, RandomLineContext *ctx = nullptr) -> bool;
 
   /** Store a random line with called page*/
-  auto Store(std::shared_ptr<ValueType[]> array, RandomLineContext *ctx = nullptr) -> bool;
+  auto Store(std::shared_ptr<RandomLineValueType[]> array, RandomLineContext *ctx = nullptr) -> bool;
 
   /** Update average random line */
-  void UpdateAverageRandomLine(std::shared_ptr<ValueType[]> array, RandomLineContext *ctx = nullptr);
+  void UpdateAverageRandomLine(std::shared_ptr<RandomLineValueType[]> array, RandomLineContext *ctx = nullptr);
 
   /** A random line with called page*/
   auto RandomLineInformation(page_id_t random_line_page_id) -> std::string;
@@ -109,7 +113,7 @@ class RandomLineManager {
   std::string manager_name_;
   file_id_t file_id_{INVALID_FILE_ID};
   std::shared_ptr<BufferPoolManager> bpm_{nullptr};
-  std::shared_ptr<RandomLineGenerator<ValueType>> rlg_{nullptr};
+  std::shared_ptr<RandomLineGenerator<RandomLineValueType>> rlg_{nullptr};
   page_id_t header_page_id_{INVALID_PAGE_ID};
   int dimension_;
   int directory_page_max_size_{RANDOM_LINE_DIRECTORY_PAGE_SIZE};
@@ -117,7 +121,6 @@ class RandomLineManager {
   RandomLineDistributionType distribution_type_{RandomLineDistributionType::INVALID_DISTRIBUTION_TYPE};
   RandomLineNormalizationType normalization_type_{RandomLineNormalizationType::INVALID_NORMALIZATION_TYPE};
   float epsilon_{EPSILON};
-  std::mutex latch_;     // for empty page verification
 };
 
 } // namespace distribution_lsh
