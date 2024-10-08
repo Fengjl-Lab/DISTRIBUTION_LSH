@@ -10,13 +10,14 @@
 namespace distribution_lsh {
 
 RELATION_TEMPLATE
-RELATION_MANAGER_TYPE::RelationManager(std::string manager_name,
-                                       std::string directory_name,
-                                       std::shared_ptr<BufferPoolManager> bpm,
-                                       RelationFileType type,
-                                       distribution_lsh::file_id_t file_id,
-                                       page_id_t header_page_id,
-                                       int data_max_size) :
+RELATION_MANAGER_TYPE::RelationManager(
+    std::string manager_name,
+    std::string directory_name,
+    std::shared_ptr<BufferPoolManager> bpm,
+    RelationFileType type,
+    distribution_lsh::file_id_t file_id,
+    page_id_t header_page_id,
+    int data_max_size) :
     manager_name_(std::move(manager_name)),
     directory_name_(std::move(directory_name)),
     bpm_(std::move(bpm)),
@@ -41,38 +42,46 @@ RELATION_MANAGER_TYPE::RelationManager(std::string manager_name,
 }
 
 RELATION_TEMPLATE
-auto RELATION_MANAGER_TYPE::IsEmpty() -> bool {
+auto RELATION_MANAGER_TYPE::IsEmpty(RelationContext *ctx, bool is_read) -> bool {
   if (header_page_id_ == INVALID_PAGE_ID) {
     return true;
   }
 
-  auto header_page_guard = bpm_->FetchPageRead(header_page_id_);
-  auto header_page = header_page_guard.template As<RelationHeaderPage>();
+  auto header_page = ctx != nullptr && !is_read ? [&]() {
+    if (ctx->header_page_.has_value()) {
+      return ctx->header_page_.value().template As<RelationHeaderPage>();
+    }
+    ctx->header_page_ = bpm_->FetchPageWrite(header_page_id_);
+    return ctx->header_page_.value().template As<RelationHeaderPage>();
+  }() : [&]() {
+    return ctx != nullptr && ctx->header_page_.has_value() ?
+           ctx->header_page_.value().template As<RelationHeaderPage>()
+           : bpm_->FetchPageRead(header_page_id_).template As<RelationHeaderPage>();
+  }();
   return header_page->IsEmpty();
 }
 
 RELATION_TEMPLATE
 auto RELATION_MANAGER_TYPE::Insert(ValueType value, int *index) -> bool {
-  {
-    std::scoped_lock empty_latch(lock_);
-
-    if (IsEmpty()) {
-      auto header_page_guard = bpm_->FetchPageWrite(header_page_id_);
-      auto header_page = header_page_guard.template AsMut<RelationHeaderPage>();
-      auto data_page_guard = bpm_->NewPageGuarded(&header_page->data_page_start_id_);
-      if (header_page->data_page_start_id_ == INVALID_PAGE_ID) {
-        LOG_DEBUG("Allocate data page failed.");
-        return false;
-      }
-      DataPage* data_page = data_page_guard.template AsMut<DataPage>();
-      data_page->Init(data_page_max_size_);
+  RelationContext ctx;
+  if (IsEmpty(&ctx, false)) {
+    auto header_page = ctx.header_page_.value().template AsMut<RelationHeaderPage>();
+    auto data_page_guard = bpm_->NewPageGuarded(&header_page->data_page_start_id_);
+    if (header_page->data_page_start_id_ == INVALID_PAGE_ID) {
+      LOG_DEBUG("Allocate data page failed.");
+      return false;
     }
+    DataPage* data_page = data_page_guard.template AsMut<DataPage>();
+    data_page->Init(data_page_max_size_);
   }
 
   // Locate data page
-  RelationContext ctx;
-  auto header_page_guard = bpm_->FetchPageWrite(header_page_id_);
-  auto header_page = header_page_guard.template AsMut<RelationHeaderPage>();
+  auto header_page = ctx.header_page_.has_value() ?
+      ctx.header_page_.value().template As<RelationHeaderPage>()
+      : [&]() {
+        ctx.header_page_ = bpm_->FetchPageWrite(header_page_id_);
+        return ctx.header_page_.value().template As<RelationHeaderPage>();
+      }();
   auto data_page_guard = bpm_->FetchPageWrite(header_page->data_page_start_id_);
   DataPage* data_page = data_page_guard.template AsMut<DataPage>();
   ctx.write_set_.emplace_back(std::move(data_page_guard));
