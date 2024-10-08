@@ -50,7 +50,7 @@ inline auto RandomLineNormalizationTypeToString(RandomLineNormalizationType norm
 * @breif page that contain the start page of each random line
 */
 class RandomLineHeaderPage : HeaderPage {
-  template<typename ValueType>
+  template<typename RandomLineValueType>
   friend class RandomLineManager;
  public:
   RandomLineHeaderPage() = delete;
@@ -58,24 +58,24 @@ class RandomLineHeaderPage : HeaderPage {
 
   void Init(file_id_t file_id, int dimension, RandomLineDistributionType distribution_type, RandomLineNormalizationType normalization_type, float epsilon, page_id_t average_random_line_page_id, page_id_t data_page_start_id);
 
-  auto IsEmpty() const -> bool;
+  [[nodiscard]] auto IsEmpty() const -> bool;
 
-  auto GetDistributionType() const -> RandomLineDistributionType;
+  [[nodiscard]] auto GetDistributionType() const -> RandomLineDistributionType;
   void SetDistributionType(RandomLineDistributionType distribution_type);
 
-  auto GetNormalizationType() const -> RandomLineNormalizationType;
+  [[nodiscard]] auto GetNormalizationType() const -> RandomLineNormalizationType;
   void SetNormalizationType(RandomLineNormalizationType normalization_type);
 
-  auto GetDimension() const -> int;
+  [[nodiscard]] auto GetDimension() const -> int;
   void SetDimension(int dimension);
 
-  auto GetEpsilon() const -> float;
+  [[nodiscard]] auto GetEpsilon() const -> float;
   void SetEpsilon(float epsilon);
 
-  auto GetAverageRandomLinePageId() const -> page_id_t;
+  [[nodiscard]] auto GetAverageRandomLinePageId() const -> page_id_t;
   void SetAverageRandomLinePageId(page_id_t average_random_line_page_id);
 
-  auto GetDirectoryPageStartPageId() const -> page_id_t;
+  [[nodiscard]] auto GetDirectoryPageStartPageId() const -> page_id_t;
   void SetDirectoryPageStartPageId(page_id_t directory_page_start_page_id);
 
  private:

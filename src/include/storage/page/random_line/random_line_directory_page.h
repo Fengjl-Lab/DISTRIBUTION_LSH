@@ -16,8 +16,12 @@ namespace distribution_lsh {
 #define RANDOM_LINE_DIRECTORY_PAGE_HEADER_SIZE (8 + RANDOM_LINE_PAGE_HEADER_SIZE)
 #define RANDOM_LINE_DIRECTORY_PAGE_SIZE ((DISTRIBUTION_LSH_PAGE_SIZE - RANDOM_LINE_DIRECTORY_PAGE_HEADER_SIZE)/ sizeof(page_id_t))
 
-class RandomLineDirectoryPage : public RandomLinePage{
-  template<class ValueType>
+auto constexpr GetRandomLineDirectoryPageSize() {
+  return static_cast<int>((DISTRIBUTION_LSH_PAGE_SIZE - RANDOM_LINE_DIRECTORY_PAGE_HEADER_SIZE) / sizeof(page_id_t));
+}
+
+class RandomLineDirectoryPage : public RandomLinePage {
+  template<class RandomLineValueType>
   friend class RandomLineManager;
  public:
   RandomLineDirectoryPage() = delete;
@@ -27,7 +31,7 @@ class RandomLineDirectoryPage : public RandomLinePage{
   * Init the directory page
   * @param max_size data the page can max hold
   */
-  void Init(int max_size = RANDOM_LINE_DIRECTORY_PAGE_SIZE);
+  void Init(int max_size = GetRandomLineDirectoryPageSize());
 
   /**
    * Insert an entry into the page
