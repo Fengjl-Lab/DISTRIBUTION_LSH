@@ -25,7 +25,7 @@ namespace distribution_lsh {
  */
 class Monitor {
  public:
-  explicit Monitor() {}
+  explicit Monitor() = default;
 
   /**
    * @brief list target files in target directory and print their information
@@ -49,7 +49,7 @@ class Monitor {
    * @param file_name target file path
    * @return
    */
-  auto GetNextPageId(DiskManager *manager, const std::string &file_name) -> page_id_t {
+  static auto GetNextPageId(DiskManager *manager, const std::string &file_name) -> page_id_t {
     return manager->GetFileSize(file_name) %  DISTRIBUTION_LSH_PAGE_SIZE == 0 ?  manager->GetFileSize(file_name) /  DISTRIBUTION_LSH_PAGE_SIZE : manager->GetFileSize(file_name) / DISTRIBUTION_LSH_PAGE_SIZE + 1;
   }
 };
