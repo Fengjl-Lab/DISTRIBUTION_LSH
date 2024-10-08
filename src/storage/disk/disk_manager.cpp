@@ -26,6 +26,7 @@ DiskManager::DiskManager(const std::string &db_file) : file_name_(db_file) {
     LOG_DEBUG("Wrong file format");
     return;
   }
+#ifdef LOG_FILE_NEEDED
   log_name_ = file_name_.substr(0, n) + ".log";
   
   log_io_.open(log_name_, std::ios::binary | std::ios::in | std::ios::app | std::ios::out);
@@ -38,6 +39,7 @@ DiskManager::DiskManager(const std::string &db_file) : file_name_(db_file) {
       throw Exception("can't open dblog file");
     }
   }
+#endif
 
   std::scoped_lock scoped_data_io_latch(data_io_latch_);
   data_io_.open(db_file, std::ios::binary | std::ios::in | std::ios::out);
