@@ -8,6 +8,7 @@
 #pragma once
 
 #include <mutex>
+#include <optional>
 
 #include <common/config.h>
 #include <common/logger.h>
@@ -21,6 +22,7 @@ namespace distribution_lsh {
 #define RELATION_MANAGER_TYPE RelationManager<ValueType>
 
 struct RelationContext {
+  std::optional<WritePageGuard> header_page_{std::nullopt};
   std::deque<ReadPageGuard> read_set_;
   std::deque<WritePageGuard> write_set_;
 };
@@ -36,7 +38,7 @@ class RelationManager {
    *
    * @return relation file is empty or not
    */
-  auto IsEmpty() -> bool;
+  auto IsEmpty(RelationContext *ctx = nullptr, bool is_read = true) -> bool;
 
   /**
    *
@@ -70,7 +72,7 @@ class RelationManager {
    */
   auto Get(int index, page_id_t *data_page_id, int *slot) -> ValueType;
 
-  auto GetType() const -> RelationFileType { return type_; }
+  [[nodiscard]] auto GetType() const -> RelationFileType { return type_; }
 
  private:
   std::string manager_name_;
