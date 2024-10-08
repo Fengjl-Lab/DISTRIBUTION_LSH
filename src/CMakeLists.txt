@@ -1,14 +1,27 @@
 # judge the system
-if (UNIX)
-    if(APPLE)
-        add_definitions(-D__APPLE__)
-    elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
-        add_definitions(-D__LINUX__)
-    else ()
-        message(FATAL_ERROR "Unsupported operating system")
-    endif ()
-else()
-    message(FATAL_ERROR "Unsupported operating system")
+#if (UNIX)
+#    if(APPLE)
+#        add_definitions(-D__APPLE__)
+#    elseif (CMAKE_SYSTEM_NAME MATCHES "Linux")
+#        add_definitions(-D__LINUX__)
+#    else ()
+#        message(FATAL_ERROR "Unsupported operating system")
+#    endif ()
+#else()
+#    message(FATAL_ERROR "Unsupported operating system")
+#endif ()
+
+if (RESOURCE_REUSE)
+    add_definitions(-DRESOURCE_REUSE)
+endif ()
+
+if (LOG_FILE_NEEDED)
+    add_definitions(-DLOG_FILE_NEEDED)
+endif ()
+
+
+if (BY_PASS_ACCESS_RANDOM_LINE_MANAGER)
+    add_definitions(-DBY_PASS_ACCESS_RANDOM_LINE_MANAGER)
 endif ()
 
 add_subdirectory(algorithm)
