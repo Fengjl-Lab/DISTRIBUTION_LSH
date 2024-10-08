@@ -20,7 +20,7 @@ TEST(RelationManagerTest, InsertTest) {
   std::string directory_name("fake directory");
   auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
   auto bpm = std::make_shared<BufferPoolManager>(10, disk_manager);
-  auto file_id = 0xC0 | GetHashValue("relation manager");
+  auto file_id = 0xC000'0000UL | GetHashValue("relation manager");
   auto relation_manager = std::make_shared<RelationManager<TrainingSetToTestingSetUnion>>(manager_name,
                                                                                           directory_name,
                                                                                           bpm,
