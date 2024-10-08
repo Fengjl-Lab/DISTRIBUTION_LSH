@@ -27,8 +27,8 @@ class RelationHeaderPage : public HeaderPage {
   /**
    * Getter and Setter methods
    */
-   auto GetRelationFileType() const -> RelationFileType;
-   auto IsEmpty() const -> bool;
+   [[nodiscard]] auto GetRelationFileType() const -> RelationFileType;
+   [[nodiscard]] auto IsEmpty() const -> bool;
 
    void SetRelationFileType(RelationFileType type);
 

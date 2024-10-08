@@ -8,10 +8,11 @@
 #pragma once
 
 #include <common/config.h>
+#include <storage/page/data_page.h>
 
 namespace distribution_lsh {
 
-#define RELATION_DATA_PAGE_HEADER_SIZE 12
+#define RELATION_DATA_PAGE_HEADER_SIZE (12 + COMMON_DATA_PAGE_HEADER_SIZE)
 #define RELATION_TEMPLATE template<typename ValueType>
 #define RELATION_TYPE RelationDataPage<ValueType>
 #define RELATION_DATA_PAGE_SIZE ((DISTRIBUTION_LSH_PAGE_SIZE - RELATION_DATA_PAGE_HEADER_SIZE) / sizeof(ValueType))
@@ -26,6 +27,7 @@ using RandomLineFileToBPlusTreeFileMap = struct RandomLineFileToBPlusTreeFileMap
   page_id_t random_line_directory_page_id_{INVALID_PAGE_ID};
   int random_line_slot_{INVALID_SLOT};
   file_id_t b_plus_tree_file_id_{INVALID_FILE_ID};
+  file_id_t data_set_file_id_{INVALID_FILE_ID};
 };
 
 /**
@@ -47,7 +49,7 @@ union TrainingSetToTestingSetUnion {
 };
 
 RELATION_TEMPLATE
-class RelationDataPage {
+class RelationDataPage : public DataPage {
   friend class RelationManager<ValueType>;
  public:
   RelationDataPage() = delete;
@@ -55,19 +57,19 @@ class RelationDataPage {
 
   void Init(int max_size = RELATION_DATA_PAGE_SIZE);
 
-  auto GetSize() const -> int;
+  [[nodiscard]] auto GetSize() const -> int;
   void SetSize(int size);
 
-  auto GetMaxSize() const -> int;
+  [[nodiscard]] auto GetMaxSize() const -> int;
   void SetMaxSize(int max_size);
 
-  auto GetNextPageId() const -> page_id_t;
+  [[nodiscard]] auto GetNextPageId() const -> page_id_t;
   void SetNextPageId(page_id_t next_page_id);
 
-  auto GetNullSlotStart() const -> int;
+  [[nodiscard]] auto GetNullSlotStart() const -> int;
   void  SetNullSlotStart(int null_slot_start);
 
-  auto GetEndOfArray() const -> int;
+  [[nodiscard]] auto GetEndOfArray() const -> int;
   void SetEndOfArray(int end_of_array);
 
   void IncreaseSize(int amount);
