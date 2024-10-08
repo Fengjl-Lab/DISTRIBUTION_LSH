@@ -6,8 +6,10 @@
 //===-----------------------------------------------------
 
 #include <buffer/buffer_pool_manager.h>
+#include <storage/page/header_page.h>
 
 #include <cstdio>
+#include <sys/stat.h>
 #include <limits>
 #include <random>
 #include <string>
@@ -31,11 +33,11 @@ TEST(BufferPoolManagerTest, BinaryDataTest) {
   static_assert(upper_bound - lower_bound == 255);
   std::uniform_int_distribution<int> uniform_dist(lower_bound, upper_bound);
 
-  auto *disk_manager = new DiskManager(db_name);
+  auto disk_manager = std::make_shared<DiskManager>(db_name);
   auto *bpm = new BufferPoolManager(buffer_pool_size, disk_manager, k);
 
   page_id_t page_id_temp;
-  auto *page0 = bpm->NewPage(&page_id_temp);
+  auto page0 = bpm->NewPage(&page_id_temp);
 
   // Scenario: The buffer pool is empty. We should be able to create a new page.
   ASSERT_NE(nullptr, page0);
@@ -83,11 +85,10 @@ TEST(BufferPoolManagerTest, BinaryDataTest) {
   EXPECT_EQ(true, bpm->UnpinPage(0, true));
 
   // Shutdown the disk manager and remove the temporary file we created.
-  disk_manager->ShutDown();
+  // disk_manager->ShutDown();
   remove("test.db");
 
   delete bpm;
-  delete disk_manager;
 }
 
 // NOLINTNEXTLINE
@@ -96,11 +97,11 @@ TEST(BufferPoolManagerTest, SampleTest) {
   const size_t buffer_pool_size = 10;
   const size_t k = 5;
 
-  auto *disk_manager = new DiskManager(db_name);
+  auto disk_manager = std::make_shared<DiskManager>(db_name);
   auto *bpm = new BufferPoolManager(buffer_pool_size, disk_manager, k);
 
   page_id_t page_id_temp;
-  auto *page0 = bpm->NewPage(&page_id_temp);
+  auto page0 = bpm->NewPage(&page_id_temp);
 
   // Scenario: The buffer pool is empty. We should be able to create a new page.
   ASSERT_NE(nullptr, page0);
@@ -141,10 +142,69 @@ TEST(BufferPoolManagerTest, SampleTest) {
   EXPECT_EQ(nullptr, bpm->FetchPage(0));
 
   // Shutdown the disk manager and remove the temporary file we created.
-  disk_manager->ShutDown();
+  // disk_manager->ShutDown();
   remove("test.db");
 
   delete bpm;
-  delete disk_manager;
+}
+
+TEST(BufferPoolManagerTest, DeleteTest) {
+  const std::string db_name = "test.db";
+  const size_t buffer_pool_size = 10;
+  const size_t k = 5;
+
+  auto disk_manager = std::make_shared<DiskManager>(db_name);
+  auto *bpm = new BufferPoolManager(buffer_pool_size, disk_manager, k);
+
+  page_id_t page_id_temp;
+  auto page0 = bpm->NewPage(&page_id_temp);
+
+  // Scenario: The buffer pool is empty. We should be able to create a new page.
+  ASSERT_NE(nullptr, page0);
+  EXPECT_EQ(0, page_id_temp);
+
+  // Scenario: Once we have a page, we should be able to read and write content.
+  snprintf(page0->GetData(), DISTRIBUTION_LSH_PAGE_SIZE, "World");
+  EXPECT_EQ(0, strcmp(page0->GetData(), "World"));
+  memset(page0->GetData(), '\0', DISTRIBUTION_LSH_PAGE_SIZE);
+  // Set header page data
+  auto header_page = reinterpret_cast<HeaderPage *>(page0->GetData());
+  header_page->SetFileIdentification(FileType::RANDOM_LINE_FILE, 100000);
+
+  // Scenario: We should be able to create new pages until we fill up the buffer pool.
+  for (size_t i = 1; i < buffer_pool_size; ++i) {
+    EXPECT_NE(nullptr, bpm->NewPage(&page_id_temp));
+  }
+
+  // Scenario: Once the buffer pool is full, we should not be able to create any new pages.
+  for (size_t i = buffer_pool_size; i < buffer_pool_size * 2; ++i) {
+    EXPECT_EQ(nullptr, bpm->NewPage(&page_id_temp));
+  }
+
+  // Scenario: Delete page and add it to the free page list
+  for (size_t i = 1;  i < buffer_pool_size / 2; i++) {
+    EXPECT_TRUE(bpm->UnpinPage(i, true));
+    EXPECT_TRUE(bpm->DeletePage(i));
+  }
+
+  // Shutdown the disk manager and remove the temporary file we created.
+  delete bpm;
+
+  disk_manager = std::make_shared<DiskManager>(db_name);
+  struct stat stat_buf;
+  int rc = stat(db_name.c_str(), &stat_buf);
+  auto file_size = rc == 0 ? static_cast<int>(stat_buf.st_size) : -1;
+  auto next_page_id = file_size % DISTRIBUTION_LSH_PAGE_SIZE == 0 ?
+      file_size / DISTRIBUTION_LSH_PAGE_SIZE :
+      file_size / DISTRIBUTION_LSH_PAGE_SIZE + 1;
+  bpm = new BufferPoolManager(buffer_pool_size, disk_manager, k, nullptr, next_page_id);
+  EXPECT_EQ(next_page_id, buffer_pool_size);
+  for (size_t i = 1;  i < buffer_pool_size / 2; i++) {
+    EXPECT_NE(nullptr, bpm->NewPage(&page_id_temp));
+    EXPECT_EQ(i, page_id_temp);
+  }
+
+  remove("test.db");
+  delete bpm;
 }
 } // namespace distribution_lsh

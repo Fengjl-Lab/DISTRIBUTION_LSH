@@ -1,8 +1,12 @@
 # build folder
 cmake-build-debug/
 build/
+build-release/
 
 # system folder
 .idea/
 .vscode/
 .DS_Store
+
+# dataset folder
+raw_dataset/

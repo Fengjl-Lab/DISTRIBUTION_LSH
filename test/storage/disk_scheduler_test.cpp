@@ -24,8 +24,8 @@ TEST(DiskSchedulerTest, ScheduleWriteReadPageTest) {
   char buf[DISTRIBUTION_LSH_PAGE_SIZE] = {0};
   char data[DISTRIBUTION_LSH_PAGE_SIZE] = {0};
 
-  auto dm = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto disk_scheduler = std::make_unique<DiskScheduler>(dm.get());
+  auto dm = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto disk_scheduler = std::make_unique<DiskScheduler>(dm);
 
   std::strncpy(data, "A test string.", sizeof(data));
 

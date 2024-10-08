@@ -34,7 +34,7 @@ foreach (distribution_lsh_test_source ${DISTRIBUTION_LSH_TEST_SOURCES})
             TIMEOUT 120
     )
 
-    target_link_libraries(${distribution_lsh_test_name} distribution_lsh gtest gmock_main)
+    target_link_libraries(${distribution_lsh_test_name} distribution_lsh gtest gmock_main hwy)
 
     # Set test target properties and dependencies.
     set_target_properties(${distribution_lsh_test_name}

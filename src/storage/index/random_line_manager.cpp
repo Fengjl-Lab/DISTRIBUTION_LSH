@@ -6,122 +6,226 @@
 //===-----------------------------------------------------
 
 #include <cmath>
+#include <sstream>
+#include <numeric>
+#include <omp.h>
+
 #include <fmt/core.h>
+#include <fmt/format.h>
+#include <fmt/color.h>
+
 #include <common/exception.h>
 #include <storage/index/random_line_manager.h>
 
-
 namespace distribution_lsh {
-RandomLineManager::RandomLineManager(std::string manager_name,
-                                     distribution_lsh::BufferPoolManager *bpm,
-                                     distribution_lsh::RandomLineGenerator *rlg,
-                                     distribution_lsh::page_id_t header_page_id,
-                                     int dimension,
-                                     float epsilon) :
-    manager_name_(std::move(manager_name)), \
 
-    bpm_(bpm),
+RANDOM_LINE_TEMPLATE
+RANDOM_LINE_MANAGER_TYPE::RandomLineManager(
+    std::string manager_name,
+    file_id_t file_id,
+    std::shared_ptr<distribution_lsh::BufferPoolManager> bpm,
+    std::shared_ptr<distribution_lsh::RandomLineGenerator<RandomLineValueType>> rlg,
+    distribution_lsh::page_id_t header_page_id,
+    int dimension,
+    int directory_page_max_size,
+    int data_page_max_size,
+    RandomLineDistributionType distribution_type,
+    RandomLineNormalizationType normalization_type,
+    float epsilon) :
+    manager_name_(std::move(manager_name)),
+    file_id_(file_id),
+    bpm_(std::move(bpm)),
+    rlg_(std::move(rlg)),
     header_page_id_(header_page_id),
     dimension_(dimension),
-    epsilon_(epsilon),
-    rlg_(rlg) {}
+    directory_page_max_size_(directory_page_max_size),
+    data_page_max_size_(data_page_max_size),
+    distribution_type_(distribution_type),
+    normalization_type_(normalization_type),
+    epsilon_(epsilon) {
+  // Check if there has exists an epsilon
+  if (!IsEmpty()) {
+    LOG_INFO("%s", fmt::format("use parameters in existing header page, header page id: {}", header_page_id_).data());
+    auto header_page_guard = bpm_->FetchPageRead(header_page_id_);
+    auto header_page = header_page_guard.As<RandomLineHeaderPage>();
+    file_id_ = header_page->GetFileIdentification();
+    dimension_ = header_page->GetDimension();
+    distribution_type_ = header_page->GetDistributionType();
+    normalization_type_ = header_page->GetNormalizationType();
+    epsilon_ = header_page->GetEpsilon();
+  } else {
+    auto header_page_basic_guard = bpm_->NewPageGuarded(&header_page_id_);
+    if (header_page_id_ == INVALID_PAGE_ID || header_page_id_ != HEADER_PAGE_ID) {
+      throw Exception("Allocate header page failed.");
+    }
 
-auto RandomLineManager::IsEmpty() -> bool {
+    auto header_page_guard = header_page_basic_guard.UpgradeWrite();
+    auto header_page = header_page_guard.template AsMut<RandomLineHeaderPage>();
+    header_page->Init(file_id_,
+                      dimension_,
+                      distribution_type,
+                      normalization_type,
+                      epsilon_,
+                      INVALID_PAGE_ID,
+                      INVALID_PAGE_ID);
+  }
+}
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::IsEmpty(RandomLineContext *ctx, bool is_read) -> bool {
   if (header_page_id_ == INVALID_PAGE_ID) {
     return true;
   }
 
-  auto header_page_guard = bpm_->FetchPageRead(header_page_id_);
-  auto header_page = header_page_guard.As<RandomLineHeaderPage>();
-  return header_page->GetSize() == 0;
-}
-
-auto RandomLineManager::GenerateRandomLineGroup(int group_size) -> bool {
-  if (IsEmpty()) {
-    page_id_t new_header_page_id;
-    auto new_header_page_basic_guard = bpm_->NewPageGuarded(&new_header_page_id);
-    if (new_header_page_id == INVALID_PAGE_ID) {
-      return false;
-    }
-    auto new_header_page_guard = new_header_page_basic_guard.UpgradeWrite();
-    auto new_header_page = new_header_page_basic_guard.template AsMut<RandomLineHeaderPage>();
-    new_header_page->Init(dimension_, epsilon_);
-    header_page_id_ = new_header_page_id;
+  if (header_page_id_ != HEADER_PAGE_ID) {
+    throw Exception(fmt::format(fg(fmt::color::red), "[ERROR] RANDOM LINE MANAGER: header page id is not valid, current header page id is: {}.", header_page_id_));
   }
 
+  auto header_page = ctx != nullptr && !is_read ? [&]() {
+    if (ctx->header_page_.has_value()) {
+      return ctx->header_page_.value().template As<RandomLineHeaderPage>();
+    }
+    ctx->header_page_ = bpm_->FetchPageWrite(header_page_id_);
+    return ctx->header_page_.value().template As<RandomLineHeaderPage>();
+  }() : [&]() {
+    return ctx != nullptr && ctx->header_page_.has_value() ?
+    ctx->header_page_.value().template As<RandomLineHeaderPage>()
+    : bpm_->FetchPageRead(header_page_id_).template As<RandomLineHeaderPage>();
+  }();
+
+  return header_page->IsEmpty();
+}
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::GenerateRandomLineGroup(int group_size) -> bool {
   RandomLineContext ctx;
-  auto header_page_guard = bpm_->FetchPageWrite(header_page_id_);
-  auto header_page = header_page_guard.AsMut<RandomLineHeaderPage>();
-  // Create a new page to store average random line
-  if (header_page->GetAverageRandomLinePageId() == INVALID_PAGE_ID || header_page->GetAverageRandomLinePageId() == HEADER_PAGE_ID) {
-    std::unique_ptr<float[]> average_array(new float[dimension_]);
-    memset(reinterpret_cast<void *>(average_array.get()), 0, sizeof(float) * dimension_);
-    if (!StoreAverageRandomLine(average_array.get(), header_page)) {
+  if (IsEmpty(&ctx, false)) {
+    auto header_page = ctx.header_page_.value().AsMut<RandomLineHeaderPage>();
+    auto directory_page_guard = bpm_->NewPageGuarded(&header_page->directory_page_start_page_id_);
+
+    if (header_page->GetDirectoryPageStartPageId() == INVALID_PAGE_ID) {
+      LOG_DEBUG("create new directory page failed");
       return false;
+    }
+
+    auto directory_page = directory_page_guard.template AsMut<RandomLineDirectoryPage>();
+    directory_page->Init(directory_page_max_size_);
+
+    // Use average random line
+    if (epsilon_ > 0) {
+      std::shared_ptr<RandomLineValueType[]> average_array(new RandomLineValueType[dimension_]);
+      memset(reinterpret_cast<void *>(average_array.get()), 0, sizeof(RandomLineValueType) * dimension_);
+      if (!StoreAverageRandomLine(average_array, &ctx)) {
+        LOG_DEBUG("store average random line failed");
+        return false;
+      }
     }
   }
 
   // Generate random line group
   auto current_size = 0;
   while (current_size < group_size) {
-    std::unique_ptr<float[]> new_array = rlg_->GenerateRandomLine(dimension_);
-    if (fabsf(InnerProductByPageId(header_page->GetAverageRandomLinePageId(), new_array.get())) > epsilon_) {
-      continue;
-    }
-    if (!Store(new_array.get(), header_page)) {
+    std::shared_ptr<RandomLineValueType[]> array = rlg_->GenerateRandomLine(distribution_type_, normalization_type_, dimension_);
+    if (array == nullptr) {
+      LOG_DEBUG("generate new array failed.");
       return false;
     }
-    UpdateAverageRandomLine(header_page->GetAverageRandomLinePageId(), header_page->random_line_pages_start_[header_page->GetSize() - 1], header_page);
-    current_size ++;
+
+    if (epsilon_ > 0) {
+      auto header_page = ctx.header_page_.has_value()?
+          ctx.header_page_.value().template As<RandomLineHeaderPage>()
+              : bpm_->FetchPageRead(header_page_id_).template As<RandomLineHeaderPage>();
+      if (static_cast<float>(std::abs(InnerProduct(header_page->average_random_line_page_id_, array))) > epsilon_) {
+        continue;
+      }
+    }
+
+
+    // Store the random line
+    if (!Store(array, &ctx)) {
+      return false;
+    }
+
+    if (epsilon_ > 0) {
+      //  Update average random line
+      UpdateAverageRandomLine(array, &ctx);
+    }
+
+    current_size++;
   }
 
   return true;
 }
 
-auto RandomLineManager::StoreAverageRandomLine(float *array,
-                                               distribution_lsh::RandomLineHeaderPage *header_page) -> bool {
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::StoreAverageRandomLine(std::shared_ptr<RandomLineValueType[]> array, RandomLineContext *ctx) -> bool {
   RandomLineContext random_line_ctx;
-  auto new_random_line_page_id = INVALID_PAGE_ID;
-  auto new_random_line_page_basic_guard = bpm_->NewPageGuarded(&new_random_line_page_id);
-  if (new_random_line_page_id == INVALID_PAGE_ID) {
-    LOG_DEBUG("Allocate new page for random line failed.");
+
+  RandomLineHeaderPage* header_page = ctx != nullptr && ctx->header_page_.has_value()?
+      ctx->header_page_.value().AsMut<RandomLineHeaderPage>()
+      : [&]() {
+    random_line_ctx.header_page_ = bpm_->FetchPageWrite(header_page_id_);
+    return random_line_ctx.header_page_.value().AsMut<RandomLineHeaderPage>(); }();
+
+  auto average_random_line_page_basic_guard = bpm_->NewPageGuarded(&header_page->average_random_line_page_id_);
+  if (header_page->GetAverageRandomLinePageId() == INVALID_PAGE_ID) {
+    LOG_DEBUG("create new average random line page failed.");
     return false;
   }
 
-  auto new_random_line_page_guard = new_random_line_page_basic_guard.UpgradeWrite();
-  random_line_ctx.write_set_.emplace_back(std::move(new_random_line_page_guard));
+  random_line_ctx.write_set_.emplace_back(average_random_line_page_basic_guard.UpgradeWrite());
 
-  auto new_random_line_page = random_line_ctx.write_set_.back().AsMut<FloatRandomLinePage>();
-  new_random_line_page->Init();
-  auto current_random_line_page = new_random_line_page;
+  auto average_random_line_page_id = header_page->average_random_line_page_id_;
+  auto current_average_random_line_page_id = average_random_line_page_id;
+  AverageRandomLinePage<RandomLineValueType> *average_random_line_page =
+      random_line_ctx.write_set_.back().template AsMut<AverageRandomLinePage<RandomLineValueType>>();
+  average_random_line_page->Init(data_page_max_size_);
+  std::list<page_id_t > page_id_list;
 
-  // Update header page index
-  header_page->average_random_line_page_id_ = new_random_line_page_id;
+  auto current_average_random_line_page = average_random_line_page;
+  page_id_list.emplace_back(header_page->average_random_line_page_id_);
 
-  for (int current_size = 0; current_size < dimension_; current_size += current_random_line_page->GetMaxSize()) {
-    if (dimension_ - current_size > current_random_line_page->GetMaxSize()) {
-      memcpy(reinterpret_cast<char*>(current_random_line_page->array_), reinterpret_cast<char*>(&array[current_size]),
-             sizeof(float) * current_random_line_page->GetMaxSize());
-      current_random_line_page->SetSize(current_random_line_page->GetMaxSize());
+  for (int current_size = 0; current_size < dimension_;
+       current_size += current_average_random_line_page->GetMaxSize()) {
+    if (dimension_ - current_size > current_average_random_line_page->GetMaxSize()) {
+      memcpy(reinterpret_cast<char *>(current_average_random_line_page->array_),
+             reinterpret_cast<char *>(&array[current_size]),
+             sizeof(RandomLineValueType) * current_average_random_line_page->GetMaxSize());
+      current_average_random_line_page->SetSize(current_average_random_line_page->GetMaxSize());
 
       // Allocate new page and update data
-      new_random_line_page_basic_guard = bpm_->NewPageGuarded(&new_random_line_page_id);
-      if (new_random_line_page_id == INVALID_PAGE_ID) {
-        // roll back
+      average_random_line_page_basic_guard = bpm_->NewPageGuarded(&average_random_line_page_id);
+      if (average_random_line_page_id == INVALID_PAGE_ID) {
+        // Roll back
         header_page->average_random_line_page_id_ = INVALID_PAGE_ID;
-        LOG_DEBUG("Allocate new page for random line failed.");
+
+        // Delete page allocate before
+        while (!page_id_list.empty()) {
+          if (page_id_list.front() == current_average_random_line_page_id) {
+            random_line_ctx.write_set_.pop_front();
+          }
+
+          bpm_->DeletePage(page_id_list.front());
+          page_id_list.pop_front();
+        }
+
+        LOG_DEBUG("allocate new page for random line failed.");
         return false;
       }
-      new_random_line_page_guard = new_random_line_page_basic_guard.UpgradeWrite();
-      random_line_ctx.write_set_.emplace_back(std::move(new_random_line_page_guard));
-      new_random_line_page = random_line_ctx.write_set_.back().AsMut<FloatRandomLinePage>();
-      new_random_line_page->Init();
-      current_random_line_page->SetNextPageId(new_random_line_page_id);
-      current_random_line_page = new_random_line_page;
+
+      random_line_ctx.write_set_.emplace_back(average_random_line_page_basic_guard.UpgradeWrite());
+      current_average_random_line_page->SetNextPageId(average_random_line_page_id);
+      page_id_list.emplace_back(average_random_line_page_id);
+
+      current_average_random_line_page_id = average_random_line_page_id;
+      current_average_random_line_page = random_line_ctx.write_set_.back().AsMut<AverageRandomLinePage<RandomLineValueType>>();
+      current_average_random_line_page->Init(data_page_max_size_);
+
+      random_line_ctx.write_set_.pop_front();
     } else {
-      memcpy(reinterpret_cast<char*>(current_random_line_page->array_), reinterpret_cast<char*>(&array[current_size]),
-             sizeof(float) * (dimension_ - current_size));
-      current_random_line_page->SetSize(dimension_ - current_size);
+      memcpy(reinterpret_cast<char *>(current_average_random_line_page->array_), reinterpret_cast<char *>(&array[current_size]),
+             sizeof(RandomLineValueType) * (dimension_ - current_size));
+      current_average_random_line_page->SetSize(dimension_ - current_size);
     }
   }
 
@@ -129,76 +233,108 @@ auto RandomLineManager::StoreAverageRandomLine(float *array,
 
 }
 
-
-auto RandomLineManager::Store(float *array, RandomLineHeaderPage *header_page) -> bool {
-  // Locate the latest header_page
-  RandomLineContext header_page_ctx;
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::Store(std::shared_ptr<RandomLineValueType[]> array, RandomLineContext *ctx) -> bool {
   RandomLineContext random_line_ctx;
-  while (header_page->GetNextPageId() != INVALID_PAGE_ID) {
-    auto next_header_page_guard = bpm_->FetchPageWrite(header_page->GetNextPageId());
-    header_page_ctx.write_set_.emplace_back(std::move(next_header_page_guard));
-    header_page = header_page_ctx.write_set_.back().AsMut<RandomLineHeaderPage>();
+  // Get header page
+  RandomLineHeaderPage* header_page =
+      ctx != nullptr && ctx->header_page_.has_value()?
+              ctx->header_page_.value().AsMut<RandomLineHeaderPage>()
+              : [&]() {
+        random_line_ctx.header_page_ = bpm_->FetchPageWrite(header_page_id_);
+        return random_line_ctx.header_page_.value().AsMut<RandomLineHeaderPage>(); }();
+
+  // Locate the latest header_page
+  RandomLineContext directory_page_ctx;
+  RandomLineContext data_page_ctx;
+
+  auto directory_page_guard = bpm_->FetchPageWrite(header_page->directory_page_start_page_id_);
+  directory_page_ctx.write_set_.emplace_back(std::move(directory_page_guard));
+  auto directory_page = directory_page_ctx.write_set_.back().AsMut<RandomLineDirectoryPage>();
+  while (directory_page->GetNextPageId() != INVALID_PAGE_ID) {
+    directory_page_guard = bpm_->FetchPageWrite(directory_page->GetNextPageId());
+    directory_page_ctx.write_set_.emplace_back(std::move(directory_page_guard));
+    directory_page = directory_page_ctx.write_set_.back().AsMut<RandomLineDirectoryPage>();
+    directory_page_ctx.write_set_.pop_front();
   }
 
-  if (header_page->GetSize() ==  header_page->GetMaxSize()) {
-    auto next_header_page_id = INVALID_PAGE_ID;
-    auto next_header_page_basic_guard = bpm_->NewPageGuarded(&next_header_page_id);
-    if (next_header_page_id == INVALID_PAGE_ID) {
-      LOG_DEBUG("Allocate new page for random line failed.");
+  if (directory_page->GetSize() == directory_page->GetMaxSize()) {
+    auto next_directory_page_id = INVALID_PAGE_ID;
+    auto next_directory_page_basic_guard = bpm_->NewPageGuarded(&next_directory_page_id);
+    if (next_directory_page_id == INVALID_PAGE_ID) {
+      LOG_DEBUG("allocate new page for random line failed.");
       return false;
     }
 
-    auto next_header_page_guard = next_header_page_basic_guard.UpgradeWrite();
-    header_page_ctx.write_set_.emplace_back(std::move(next_header_page_guard));
-    auto next_header_page = header_page_ctx.write_set_.back().AsMut<RandomLineHeaderPage>();
-    next_header_page->Init(dimension_);
-    next_header_page->SetEpsilon(epsilon_);
-    next_header_page->SetAverageRandomLinePageId(header_page->GetAverageRandomLinePageId());
-    header_page->SetNextPageId(next_header_page_id);
-    header_page = next_header_page;
+    directory_page_ctx.write_set_.emplace_back(next_directory_page_basic_guard.UpgradeWrite());
+    auto next_directory_page = directory_page_ctx.write_set_.back().AsMut<RandomLineDirectoryPage>();
+    next_directory_page->Init(directory_page_max_size_);
+    directory_page->SetNextPageId(next_directory_page_id);
+    directory_page = next_directory_page;
   }
 
-  auto new_random_line_page_id = INVALID_PAGE_ID;
-  auto new_random_line_page_basic_guard = bpm_->NewPageGuarded(&new_random_line_page_id);
-  if (new_random_line_page_id == INVALID_PAGE_ID) {
-    LOG_DEBUG("Allocate new page for random line failed.");
+  auto random_line_page_id = INVALID_PAGE_ID;
+  auto random_line_page_basic_guard = bpm_->NewPageGuarded(&random_line_page_id);
+  if (random_line_page_id == INVALID_PAGE_ID) {
+    LOG_DEBUG("allocate new page for random line failed.");
     return false;
   }
 
-  auto new_random_line_page_guard = new_random_line_page_basic_guard.UpgradeWrite();
-  random_line_ctx.write_set_.emplace_back(std::move(new_random_line_page_guard));
-
-  auto new_random_line_page = random_line_ctx.write_set_.back().AsMut<FloatRandomLinePage>();
-  new_random_line_page->Init();
-  auto current_random_line_page = new_random_line_page;
+  auto start_random_line_page_id = random_line_page_id;
+  data_page_ctx.write_set_.emplace_back(random_line_page_basic_guard.UpgradeWrite());
+  RandomLineDataPage<RandomLineValueType>
+      *random_line_page = data_page_ctx.write_set_.back().AsMut<RandomLineDataPage<RandomLineValueType>>();
+  random_line_page->Init(data_page_max_size_);
+  auto current_random_line_page = random_line_page;
+  auto start_random_line_page = random_line_page;
 
   // Update header page index
-  header_page->random_line_pages_start_[header_page->GetSize()] = new_random_line_page_id;
-  header_page->IncreaseSize(1);
+  auto slot = -1;
+  directory_page->Insert(random_line_page_id, &slot);
 
   for (int current_size = 0; current_size < dimension_; current_size += current_random_line_page->GetMaxSize()) {
     if (dimension_ - current_size > current_random_line_page->GetMaxSize()) {
-      memcpy(reinterpret_cast<char*>(current_random_line_page->array_), reinterpret_cast<char*>(&array[current_size]),
-             sizeof(float) * current_random_line_page->GetMaxSize());
+      memcpy(reinterpret_cast<char *>(current_random_line_page->array_), reinterpret_cast<char *>(&array[current_size]),
+             sizeof(RandomLineValueType) * current_random_line_page->GetMaxSize());
       current_random_line_page->SetSize(current_random_line_page->GetMaxSize());
 
       // Allocate new page and update data
-      new_random_line_page_basic_guard = bpm_->NewPageGuarded(&new_random_line_page_id);
-      if (new_random_line_page_id == INVALID_PAGE_ID) {
-        // roll back
-        header_page->IncreaseSize(-1);
-        LOG_DEBUG("Allocate new page for random line failed.");
+      random_line_page_id = INVALID_PAGE_ID;
+      random_line_page_basic_guard = bpm_->NewPageGuarded(&random_line_page_id);
+      if (random_line_page_id == INVALID_PAGE_ID) {
+        // Roll back
+        directory_page->Delete(start_random_line_page_id);
+
+        // Delete page allocate before
+        auto delete_random_line_page = start_random_line_page;
+        auto delete_random_line_page_id = start_random_line_page_id;
+        while (delete_random_line_page->GetNextPageId() != INVALID_PAGE_ID) {
+          data_page_ctx.write_set_.pop_front();
+          bpm_->DeletePage(delete_random_line_page_id);
+          delete_random_line_page_id = delete_random_line_page->GetNextPageId();
+          delete_random_line_page = data_page_ctx.write_set_.front().template AsMut<RandomLineDataPage<RandomLineValueType>>();
+        }
+
+        // Delete last page
+        data_page_ctx.write_set_.pop_front();
+        bpm_->DeletePage(delete_random_line_page_id);
+
+        LOG_DEBUG("allocate new page for random line failed.");
         return false;
       }
-      new_random_line_page_guard = new_random_line_page_basic_guard.UpgradeWrite();
-      random_line_ctx.write_set_.emplace_back(std::move(new_random_line_page_guard));
-      new_random_line_page = random_line_ctx.write_set_.back().AsMut<FloatRandomLinePage>();
-      new_random_line_page->Init();
-      current_random_line_page->SetNextPageId(new_random_line_page_id);
-      current_random_line_page = new_random_line_page;
+
+      data_page_ctx.write_set_.emplace_back(random_line_page_basic_guard.UpgradeWrite());
+
+      random_line_page = data_page_ctx.write_set_.back().AsMut<RandomLineDataPage<RandomLineValueType> >();
+      random_line_page->Init(data_page_max_size_);
+
+      current_random_line_page->SetNextPageId(random_line_page_id);
+      current_random_line_page = random_line_page;
+
+      data_page_ctx.write_set_.pop_front();
     } else {
-      memcpy(reinterpret_cast<char*>(current_random_line_page->array_), reinterpret_cast<char*>(&array[current_size]),
-             sizeof(float) * (dimension_ - current_size));
+      memcpy(reinterpret_cast<char *>(current_random_line_page->array_), reinterpret_cast<char *>(&array[current_size]),
+             sizeof(RandomLineValueType) * (dimension_ - current_size));
       current_random_line_page->SetSize(dimension_ - current_size);
     }
   }
@@ -206,105 +342,378 @@ auto RandomLineManager::Store(float *array, RandomLineHeaderPage *header_page) -
   return true;
 }
 
-auto RandomLineManager::InnerProduct(distribution_lsh::page_id_t header_page_id, int slot, const float *outer_array) -> float {
-  if (slot < 0) {
-    throw Exception(ExceptionType::INVALID, "Slot number must bigger than zero");
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::InnerProduct(
+    int index,
+    distribution_lsh::page_id_t *directory_page_id,
+    int *slot,
+    std::shared_ptr<RandomLineValueType[]> outer_array) -> RandomLineValueType {
+
+  if (index < 0 || IsEmpty()) {
+    throw Exception(ExceptionType::OUT_OF_RANGE, fmt::format(fg(fmt::color::red), "[ERROR] RANDOM LINE MANAGER: current file is empty, invalid index {} input.", index));
   }
 
   RandomLineContext ctx;
-  auto header_page_guard  = bpm_->FetchPageRead(header_page_id);
-  auto header_page = header_page_guard.As<RandomLineHeaderPage>();
-  auto target_random_line_page_id = header_page->random_line_pages_start_[slot];
 
-  return InnerProductByPageId(target_random_line_page_id, outer_array);
-}
+  // Locate the target directory page
+  auto header_page_guard = bpm_->FetchPageRead(header_page_id_);
+  auto header_page = header_page_guard.template As<RandomLineHeaderPage>();
+  ctx.read_set_.emplace_back(bpm_->FetchPageRead(header_page->GetDirectoryPageStartPageId()));
+  auto random_line_page = ctx.read_set_.back().template As<RandomLineDirectoryPage>();
 
-auto RandomLineManager::InnerProductByPageId(page_id_t random_line_page_id, const float* outer_array) -> float {
-  RandomLineContext ctx;
-  float result = 0;
   auto current_size = 0;
-  while (random_line_page_id != INVALID_PAGE_ID) {
-    auto left_random_page_guard = bpm_->FetchPageRead(random_line_page_id);
-    auto left_random_page = left_random_page_guard.As<FloatRandomLinePage>();
-    ctx.read_set_.emplace_back(std::move(left_random_page_guard));
-
-    for (int i = 0; i < left_random_page->GetSize(); ++i) {
-      result += left_random_page->array_[i] * outer_array[i + current_size];
+  while (current_size <= index) {
+    if (random_line_page->GetMaxSize() > index - current_size) {
+      *directory_page_id = ctx.read_set_.back().PageId();
+      *slot = index - current_size;
+      break;
     }
 
-    current_size += left_random_page->GetSize();
-    random_line_page_id = left_random_page->GetNextPageId();
+    if (random_line_page->GetNextPageId() == INVALID_PAGE_ID) {
+      throw Exception(ExceptionType::OUT_OF_RANGE, fmt::format(fg(fmt::color::red), "[ERROR] RANDOM LINE MANAGER: index out of range, invalid index {} input.", index));
+    }
+
+    current_size += random_line_page->GetMaxSize();
+    ctx.read_set_.emplace_back(bpm_->FetchPageRead(random_line_page->GetNextPageId()));
+    ctx.read_set_.pop_front();
+    random_line_page = ctx.read_set_.back().template As<RandomLineDirectoryPage>();
+  }
+
+  auto target_random_line_start_page_id = random_line_page->IndexAt(*slot);
+  if (target_random_line_start_page_id == INVALID_PAGE_ID) {
+    throw Exception(ExceptionType::NULL_SLOT, fmt::format(fg(fmt::color::red), "[ERROR] RANDOM LINE MANAGER: input slot {} is not valid", *slot), false);
+  }
+
+  return InnerProduct(target_random_line_start_page_id, outer_array);
+}
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::InnerProduct(
+    page_id_t directory_page_id,
+    int slot,
+    std::shared_ptr<RandomLineValueType[]> outer_array) -> RandomLineValueType {
+  if (directory_page_id == INVALID_PAGE_ID || slot == INVALID_SLOT) {
+    throw Exception(ExceptionType::INVALID_ARGUMENT, "Input directory page id or slot invalid");
+  }
+
+  // Locate the target directory page
+  auto random_line_page_guard = bpm_->FetchPageRead(directory_page_id);
+  auto random_line_page = random_line_page_guard.template As<RandomLinePage>();
+  if (random_line_page->GetPageType() != RandomLinePageType::DIRECTORY_PAGE) {
+    throw Exception(ExceptionType::INVALID_ARGUMENT, "Input directory page id is not related to a directory page.");
+  }
+
+  auto directory_page = random_line_page_guard.template As<RandomLineDirectoryPage>();
+  auto target_random_line_data_page_id = directory_page->IndexAt(slot);
+
+  if (target_random_line_data_page_id == INVALID_PAGE_ID) {
+    throw Exception(ExceptionType::INVALID_ARGUMENT, "Input slot is not related to a valid data page.");
+  }
+
+  return InnerProduct(target_random_line_data_page_id, outer_array);
+}
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::InnerProduct(page_id_t random_line_page_start_id,
+                                            std::shared_ptr<RandomLineValueType[]> outer_array) -> RandomLineValueType {
+  RandomLineContext ctx;
+  auto result = static_cast<RandomLineValueType>(0.0F);
+  auto current_size = 0;
+  auto random_line_page_id = random_line_page_start_id;
+
+  while (random_line_page_id != INVALID_PAGE_ID) {
+    ctx.read_set_.emplace_back(bpm_->FetchPageRead(random_line_page_id));
+    auto random_page = ctx.read_set_.back().template As<RandomLineDataPage<RandomLineValueType>>();
+
+    // Calculate inner product
+#pragma omp parallel for reduction(+:result) default(none) shared(random_page, outer_array, current_size)
+    for (int i = 0; i < random_page->GetSize(); ++i) {
+      result += random_page->array_[i] * outer_array[i + current_size];
+    }
+
+    current_size += random_page->GetSize();
+    random_line_page_id = random_page->GetNextPageId();
+    ctx.read_set_.pop_front();
   }
 
   return result;
 }
 
-void RandomLineManager::PrintRandomLine(distribution_lsh::page_id_t random_line_page_id) {
-  RandomLineContext ctx;
-  fmt::print("\033[31mRandom line page number starts at: {}\033[0m\n", random_line_page_id);
-  while (random_line_page_id !=  INVALID_PAGE_ID) {
-    auto random_line_page_guard = bpm_->FetchPageRead(random_line_page_id);
-    auto random_line_page = random_line_page_guard.As<FloatRandomLinePage>();
-    ctx.read_set_.emplace_back(std::move(random_line_page_guard));
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::RandomLineInformation(distribution_lsh::page_id_t random_line_page_id) -> std::string {
+  std::stringstream ss;
 
-    fmt::print("\033[33mCurrent page id: {}, random line content:\033[0m\n", random_line_page_id);
-    for (int i = 0; i < random_line_page->GetSize(); ++i) {
-      fmt::print("\033[36m{:.3f}\033[0m\t", random_line_page->array_[i]);
+  ss << fmt::format(fg(fmt::color::orange) | fmt::emphasis::bold, "random line starts at {} [[", random_line_page_id) << "\n";
+  while (random_line_page_id != INVALID_PAGE_ID) {
+    auto random_line_page_guard = bpm_->FetchPageRead(random_line_page_id);
+    auto random_line_page = random_line_page_guard.As<RandomLinePage>();
+    if (random_line_page->GetPageType() != RandomLinePageType::DATA_PAGE) {
+      LOG_DEBUG("%s", fmt::format("invalid page type, expected page type: DATA PAGE, current page type: {}.", RandomLinePageTypeToString(random_line_page->GetPageType())).data());
+      return "";
     }
-    random_line_page_id = random_line_page->GetNextPageId();
-    fmt::print("\n");
+
+    auto random_line_data_page = random_line_page_guard.template As<RandomLineDataPage<RandomLineValueType>>();
+
+    ss << fmt::format("current page id: {}, random line content [ ", random_line_page_id);
+    for (int i = 0; i < random_line_page->GetSize(); ++i) {
+      ss << fmt::format(fg(fmt::color::brown), "{:.3f}\t", random_line_data_page->array_[i]);
+    }
+    ss << "]\n";
+
+    random_line_page_id = random_line_data_page->GetNextPageId();
   }
-  fmt::print("\n\n");
+
+  ss << fmt::format(fg(fmt::color::orange) | fmt::emphasis::bold, "]]\n\n");
+
+  return ss.str();
 }
 
-void RandomLineManager::PrintRandomLineGroup() {
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::RandomLineGroupInformation() -> std::string {
   if (IsEmpty()) {
+    return "";
+  }
+
+  std::stringstream ss;
+  ss << fmt::format(fg(fmt::color::yellow) | fmt::emphasis::bold, "random line group information :") << "\n";
+  auto header_page_guard = bpm_->FetchPageRead(header_page_id_);
+  auto header_page = header_page_guard.As<RandomLineHeaderPage>();
+  auto directory_page_guard = bpm_->FetchPageRead(header_page->GetDirectoryPageStartPageId());
+  auto directory_page = directory_page_guard.As<RandomLineDirectoryPage>();
+
+  // Record random line in each directory page
+  while (directory_page != nullptr) {
+    for (int index = 0; index < directory_page_max_size_; ++index) {
+      try {
+        auto random_line_start_page_id = directory_page->IndexAt(index);
+        if (random_line_start_page_id == INVALID_PAGE_ID) {
+          continue;
+        }
+
+        ss << RandomLineInformation(random_line_start_page_id);
+      } catch (Exception &exception) {
+        break;
+      }
+    }
+
+
+    if (directory_page->GetNextPageId() == INVALID_PAGE_ID) {
+      break;
+    }
+    directory_page_guard.Drop();
+    directory_page_guard = bpm_->FetchPageRead(directory_page->GetNextPageId());
+    directory_page = directory_page_guard.As<RandomLineDirectoryPage>();
+  }
+
+  return ss.str();
+}
+
+RANDOM_LINE_TEMPLATE
+void RANDOM_LINE_MANAGER_TYPE::UpdateAverageRandomLine(std::shared_ptr<RandomLineValueType[]> array, RandomLineContext *ctx) {
+  RandomLineContext random_line_ctx;
+
+  RandomLineHeaderPage* header_page = ctx != nullptr && ctx->header_page_.has_value()?
+                                      ctx->header_page_.value().AsMut<RandomLineHeaderPage>()
+                                                                                         : [&]() {
+        random_line_ctx.header_page_ = bpm_->FetchPageWrite(header_page_id_);
+        return random_line_ctx.header_page_.value().AsMut<RandomLineHeaderPage>(); }();
+
+  auto random_line_page_guard = bpm_->FetchPageWrite(header_page->GetAverageRandomLinePageId());
+  auto random_line_page = random_line_page_guard.AsMut<RandomLinePage>();
+
+  if (random_line_page->GetPageType() != RandomLinePageType::AVERAGE_RANDOM_LINE_PAGE) {
+    LOG_DEBUG("invalid page type.");
     return;
   }
 
-  RandomLineContext header_page_ctx;
-  auto header_page_guard = bpm_->FetchPageRead(header_page_id_);
-  header_page_ctx.read_set_.emplace_back(std::move(header_page_guard));
-  auto header_page = header_page_ctx.read_set_.back().template As<RandomLineHeaderPage>();
-  for (int i = 0; i < header_page->GetSize(); ++i) {
-    PrintRandomLine(header_page->random_line_pages_start_[i]);
-  }
-
-  while (header_page->GetNextPageId() != INVALID_PAGE_ID) {
-    for (int i = 0; i < header_page->GetSize(); ++i) {
-      PrintRandomLine(header_page->random_line_pages_start_[i]);
-    }
-
-    auto next_header_page_guard = bpm_->FetchPageRead(header_page->GetNextPageId());
-    header_page_ctx.read_set_.emplace_back(std::move(next_header_page_guard));
-    header_page = header_page_ctx.read_set_.back().As<RandomLineHeaderPage>();
-  }
-}
-
-void RandomLineManager::UpdateAverageRandomLine(distribution_lsh::page_id_t average_random_line_page_id,
-                                                distribution_lsh::page_id_t new_random_line_page_id,
-                                                distribution_lsh::RandomLineHeaderPage *header_page) {
-  RandomLineContext ctx;
-  auto old_factor = header_page->GetSize() == 1 ? 0 : sqrt(static_cast<double>(header_page->GetSize() - 1));
-  auto new_factor = sqrt(static_cast<double>(header_page->GetSize()));
+  auto average_random_line_page = random_line_page_guard.AsMut<AverageRandomLinePage<RandomLineValueType>>();
+  auto factor = GetSize(ctx != nullptr && ctx->header_page_.has_value() ? ctx : &random_line_ctx) - 1;
 
   // Update average random line
-  while (average_random_line_page_id !=  INVALID_PAGE_ID && new_random_line_page_id != INVALID_PAGE_ID) {
-    auto average_random_page_guard = bpm_->FetchPageWrite(average_random_line_page_id);
-    auto average_random_page = average_random_page_guard.AsMut<FloatRandomLinePage>();
-    ctx.write_set_.emplace_back(std::move(average_random_page_guard));
-
-    auto new_random_page_guard = bpm_->FetchPageRead(new_random_line_page_id);
-    auto new_random_page = new_random_page_guard.As<FloatRandomLinePage>();
-    ctx.read_set_.emplace_back(std::move(new_random_page_guard));
-
-    for (int i = 0; i < average_random_page->GetSize(); ++i) {
-      average_random_page->array_[i] = static_cast<float>((old_factor * average_random_page->array_[i] + new_random_page->array_[i]) / new_factor);
+  for (int current_size = 0; current_size < dimension_; current_size += average_random_line_page->GetSize()) {
+#pragma omp parallel for default(none) shared(average_random_line_page, array, current_size, factor)
+    for (int index = 0; index < average_random_line_page->GetSize(); ++index) {
+      average_random_line_page->array_[index] = (average_random_line_page->array_[index] * factor + array[current_size + index]) / (factor + 1);
     }
 
-    average_random_line_page_id = average_random_page->GetNextPageId();
-    new_random_line_page_id = new_random_page->GetNextPageId();
+    if (average_random_line_page->GetNextPageId() == INVALID_PAGE_ID && dimension_ - current_size > average_random_line_page->GetSize()) {
+      throw Exception(fmt::format(fg(fmt::color::red), "average random line data is not completeness, current page id: {}", random_line_page_guard.PageId()));
+    } else if (average_random_line_page->GetNextPageId() == INVALID_PAGE_ID) {
+      return;
+    }
+
+    random_line_page_guard.Drop();
+    random_line_page_guard = bpm_->FetchPageWrite(average_random_line_page->GetNextPageId());
+    average_random_line_page = random_line_page_guard.AsMut<AverageRandomLinePage<RandomLineValueType>>();
   }
 }
 
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::GetSize(RandomLineContext *ctx, std::shared_ptr<std::vector<RID>> random_line_rids) -> int {
+  if (IsEmpty(ctx)) {
+    return 0;
+  }
+
+  RandomLineContext random_line_ctx;
+  auto size = 0;
+
+  auto header_page = ctx != nullptr && ctx->header_page_.has_value()? ctx->header_page_.value().As<RandomLineHeaderPage>() : [&](){
+    random_line_ctx.read_set_.emplace_back(bpm_->FetchPageRead(header_page_id_));
+    return random_line_ctx.read_set_.back().As<RandomLineHeaderPage>();
+  }();
+
+  auto directory_page_guard = bpm_->FetchPageRead(header_page->GetDirectoryPageStartPageId());
+  auto directory_page = directory_page_guard.template As<RandomLineDirectoryPage>();
+  while (directory_page->GetNextPageId() != INVALID_PAGE_ID) {
+    size += directory_page->GetSize();
+    if (random_line_rids != nullptr) {
+      std::vector<int> ranges(directory_page->GetSize());
+      std::iota(ranges.begin(), ranges.end(), 0);
+      std::for_each(ranges.cbegin(), ranges.cend(), [&random_line_rids, &directory_page_guard, &directory_page](const auto &slot) {
+        if (directory_page->IndexAt(slot) != INVALID_PAGE_ID) {
+          random_line_rids->emplace_back(RID(directory_page_guard.PageId(), slot));
+        }
+      });
+    }
+    directory_page_guard.Drop();
+    directory_page_guard = bpm_->FetchPageRead(directory_page->GetNextPageId());
+    directory_page = directory_page_guard.template As<RandomLineDirectoryPage>();
+  }
+
+  size += directory_page->GetSize();
+  if (random_line_rids != nullptr) {
+    std::vector<int> ranges(directory_page->GetSize());
+    std::iota(ranges.begin(), ranges.end(), 0);
+    std::for_each(ranges.cbegin(), ranges.cend(), [&random_line_rids, &directory_page_guard, &directory_page](const auto &slot) {
+      if (directory_page->IndexAt(slot) != INVALID_PAGE_ID) {
+        random_line_rids->emplace_back(RID(directory_page_guard.PageId(), slot));
+      }
+    });
+  }
+
+  return size;
+}
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::Delete(page_id_t directory_page_id, int slot) -> bool {
+  auto random_line_page_guard = bpm_->FetchPageWrite(directory_page_id);
+  auto random_line_page = random_line_page_guard.AsMut<RandomLinePage>();
+  if (random_line_page->GetPageType() != RandomLinePageType::DIRECTORY_PAGE) {
+    LOG_DEBUG("%s", fmt::format("input page is not directory page, input page type: {}", RandomLinePageTypeToString(random_line_page->GetPageType())).data());
+    return false;
+  }
+
+  auto directory_page = random_line_page_guard.AsMut<RandomLineDirectoryPage>();
+  auto random_line_data_page_id = directory_page->IndexAt(slot);
+  if (random_line_data_page_id == INVALID_PAGE_ID) {
+    LOG_DEBUG("%s", fmt::format("invalid slot {}.", slot).data());
+    return false;
+  }
+
+  // Delete entry in directory page
+  directory_page->Delete(slot);
+
+  // Delete actual data page
+  RandomLineContext data_ctx;
+  data_ctx.write_set_.emplace_back(bpm_->FetchPageWrite(random_line_data_page_id));
+  auto random_line_data_page = data_ctx.write_set_.back().AsMut<RandomLineDataPage<RandomLineValueType>>();
+  while (random_line_data_page->GetNextPageId()!= INVALID_PAGE_ID) {
+    auto next_random_line_data_page_id = random_line_data_page->GetNextPageId();
+    data_ctx.write_set_.pop_front();
+    bpm_->DeletePage(random_line_data_page_id);
+
+    random_line_data_page_id = next_random_line_data_page_id;
+    data_ctx.write_set_.emplace_back(bpm_->FetchPageWrite(random_line_data_page_id));
+    random_line_data_page = data_ctx.write_set_.back().AsMut<RandomLineDataPage<RandomLineValueType>>();
+  }
+
+  // Delete last page
+  data_ctx.write_set_.pop_front();
+  bpm_->DeletePage(random_line_data_page_id);
+
+  // If directory page is empty, delete it
+  if (directory_page->GetSize() == 0) {
+    RandomLineContext directory_ctx;
+    directory_ctx.header_page_ = std::make_optional(bpm_->FetchPageWrite(header_page_id_));
+    auto header_page = directory_ctx.header_page_->AsMut<RandomLineHeaderPage>();
+
+    // Delete directory page is the first directory page
+    if (header_page->GetDirectoryPageStartPageId() == directory_page_id) {
+      header_page->SetDirectoryPageStartPageId(directory_page->GetNextPageId());
+      return true;
+    }
+
+    directory_ctx.write_set_.emplace_back(bpm_->FetchPageWrite(header_page->GetDirectoryPageStartPageId()));
+    auto before_directory_page = directory_ctx.write_set_.back().AsMut<RandomLineDirectoryPage>();
+
+    while (before_directory_page->GetNextPageId() != directory_page_id) {
+      if (before_directory_page->GetNextPageId() == INVALID_PAGE_ID) {
+        LOG_DEBUG("%s", fmt::format("invalid directory page list, current directory page id: {}, the next page is invalid.", directory_ctx.write_set_.back().PageId()).data());
+        return false;
+      }
+
+      directory_ctx.write_set_.emplace_back(bpm_->FetchPageWrite(before_directory_page->GetNextPageId()));
+      before_directory_page = directory_ctx.write_set_.back().AsMut<RandomLineDirectoryPage>();
+      directory_ctx.write_set_.pop_front();
+    }
+
+    before_directory_page->SetNextPageId(directory_page->GetNextPageId());
+    random_line_page_guard.Drop();
+    bpm_->DeletePage(directory_page_id);
+  }
+
+  return true;
+}
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::GetFileId() -> file_id_t { return file_id_; }
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::GetEpsilon() -> float { return epsilon_; }
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::GetDimension() -> int { return dimension_; }
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::GetDirectoryPageMaxSize() -> int { return directory_page_max_size_; }
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::GetDataPageMaxSize() -> int { return data_page_max_size_; }
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::GetDistributionType() -> RandomLineDistributionType { return distribution_type_; }
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::GetNormalizationType() -> RandomLineNormalizationType { return normalization_type_; }
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::ToString() -> std::string {
+  auto info = fmt::format(
+      "Random Line Manager Information:(file id :{})\n"
+      "├─────manager name: {}.\n"
+      "├─────epsilon: {}.\n"
+      "├─────dimension: {}.\n"
+      "├─────directory page max size: {}.\n"
+      "├─────data page max size: {}.\n"
+      "├─────distribution type: {}.\n"
+      "└─────normalization type: {}.\n"
+      ,
+      fmt::format(fg(fmt::color::orange_red) | fmt::emphasis::underline, std::to_string(file_id_)),
+      fmt::format(fg(fmt::color::orange_red) | fmt::emphasis::bold, manager_name_),
+      fmt::format(fg(fmt::color::orange_red) | fmt::emphasis::bold, "{:.3f}", epsilon_),
+      fmt::format(fg(fmt::color::orange_red) | fmt::emphasis::bold, "{}", dimension_),
+      fmt::format(fg(fmt::color::orange_red) | fmt::emphasis::bold, "{}", directory_page_max_size_),
+      fmt::format(fg(fmt::color::orange_red) | fmt::emphasis::bold, "{}", data_page_max_size_),
+      fmt::format(fg(fmt::color::orange_red) | fmt::emphasis::bold, RandomLineDistributionTypeToString(distribution_type_)),
+      fmt::format(fg(fmt::color::orange_red) | fmt::emphasis::bold, RandomLineNormalizationTypeToString(normalization_type_))
+      );
+
+  return info;
+}
+
+template
+class RandomLineManager<float>;
+
+template
+class RandomLineManager<double>;
 } // namespace distribution_lsh

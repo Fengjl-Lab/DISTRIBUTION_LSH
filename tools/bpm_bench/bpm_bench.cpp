@@ -199,8 +199,8 @@ auto main(int argc, char** argv) -> int {
     lru_k_size = std::stoi(program.get("--lru-k-size"));
   }
   
-  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto bpm = std::make_unique<BufferPoolManager>(distribution_lsh_bpm_size, disk_manager.get(), lru_k_size);
+  auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto bpm = std::make_unique<BufferPoolManager>(distribution_lsh_bpm_size, disk_manager, lru_k_size);
   std::vector<page_id_t> page_ids;
 
   fmt::print(stderr,
@@ -210,7 +210,7 @@ auto main(int argc, char** argv) -> int {
 
   for (size_t i = 0; i < distribution_lsh_page_cnt; ++i) {
     page_id_t page_id;
-    auto *page = bpm->NewPage(&page_id);
+    auto page = bpm->NewPage(&page_id);
     if (page == nullptr) {
       throw std::runtime_error("new page failed");
     }
@@ -244,7 +244,7 @@ auto main(int argc, char** argv) -> int {
       size_t page_idx = page_idx_start;
 
       while (!metrics.ShouldFinish()) {
-        auto *page = bpm->FetchPage(page_ids[page_idx], AccessType::Scan);
+        auto page = bpm->FetchPage(page_ids[page_idx], AccessType::Scan);
         if (page == nullptr) {
           continue;
         }
@@ -280,7 +280,7 @@ auto main(int argc, char** argv) -> int {
 
       while (!metrics.ShouldFinish()) {
         auto page_idx = dist(gen);
-        auto *page = bpm->FetchPage(page_ids[page_idx], AccessType::Lookup);
+        auto page = bpm->FetchPage(page_ids[page_idx], AccessType::Lookup);
         if (page == nullptr) {
           fmt::println(stderr, "cannot fetch page");
           std::terminate();

@@ -1,7 +1,7 @@
 add_library(
         distribution_lsh_storage_disk
         OBJECT
-        data_manager.cpp
+        disk_manager.cpp
         disk_manager_memory.cpp
         disk_scheduler.cpp
 )

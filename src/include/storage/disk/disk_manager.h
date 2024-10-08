@@ -20,6 +20,7 @@ namespace distribution_lsh {
  * DiskManager takes care of the allocation and de-allocation of pages.
  */
 class DiskManager {
+  friend class Monitor;
  public:
   /**
    * Creates a new disk manager that writes to the specified data file.

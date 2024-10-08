@@ -55,8 +55,19 @@ class RID {
 
   auto operator==(const RID &other) const -> bool { return page_id_ == other.page_id_ && slot_num_ == other.slot_num_; }
 
+  auto operator<(const RID &other) const -> bool {
+    return page_id_ < other.page_id_ || (page_id_ == other.page_id_ && slot_num_ < other.slot_num_);
+  }
+
  private:
   page_id_t page_id_{INVALID_PAGE_ID};
   uint32_t slot_num_{0}; // logical offset
 };
+
+template <typename T>
+struct has_rid_feature : std::false_type {};
+
+template <>
+struct has_rid_feature<RID> : std::true_type {};
+
 }// namespace distribution_lsh

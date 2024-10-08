@@ -11,9 +11,8 @@
 namespace distribution_lsh {
 
 BasicPageGuard::BasicPageGuard(BasicPageGuard &&that) noexcept
-    : bpm_(that.bpm_), page_(that.page_), is_dirty_(that.is_dirty_) {
+    : bpm_(that.bpm_), page_(std::move(that.page_)), is_dirty_(that.is_dirty_) {
   that.bpm_ = nullptr;
-  that.page_ = nullptr;
   that.is_dirty_ = false;
 }
 
@@ -44,11 +43,11 @@ BasicPageGuard::~BasicPageGuard(){
 };  // NOLINT
 
 auto BasicPageGuard::UpgradeRead() -> ReadPageGuard {
-  return {this->bpm_, this->page_};
+  return {this->bpm_, std::move(this->page_)};
 }
 
 auto BasicPageGuard::UpgradeWrite() -> WritePageGuard {
-  return {this->bpm_, this->page_};
+  return {this->bpm_, std::move(this->page_)};
 }
 
 ReadPageGuard::ReadPageGuard(ReadPageGuard &&that) noexcept : guard_(std::move(that.guard_)) {}
@@ -60,9 +59,10 @@ auto ReadPageGuard::operator=(ReadPageGuard &&that) noexcept -> ReadPageGuard & 
 
 void ReadPageGuard::Drop() {
   if (this->guard_.page_ != nullptr && this->guard_.PageId() != INVALID_PAGE_ID) {
+    guard_.bpm_->UnpinPage(guard_.page_->GetPageId(), guard_.is_dirty_);
     this->guard_.page_->RUnlatch();
+    guard_.page_ = nullptr;
   }
-  guard_.Drop();
 }
 
 ReadPageGuard::~ReadPageGuard() {
@@ -78,10 +78,10 @@ auto WritePageGuard::operator=(WritePageGuard &&that) noexcept -> WritePageGuard
 
 void WritePageGuard::Drop() {
   if (this->guard_.page_ != nullptr && this->guard_.PageId() != INVALID_PAGE_ID) {
+    guard_.bpm_->UnpinPage(guard_.page_->GetPageId(), guard_.is_dirty_);
     this->guard_.page_->WUnlatch();
+    guard_.page_ = nullptr;
   }
-  guard_.is_dirty_ = true;
-  guard_.Drop();
 }
 
 WritePageGuard::~WritePageGuard() {

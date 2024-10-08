@@ -10,3 +10,9 @@ add_subdirectory(backward-cpp)
 add_subdirectory(indicators)
 
 add_subdirectory(tabulate)
+
+add_subdirectory(highway)
+
+add_subdirectory(libsimdpp)
+
+add_subdirectory(magic_enum)

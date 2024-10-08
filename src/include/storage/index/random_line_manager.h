@@ -8,87 +8,119 @@
 
 #pragma once
 
+#include <mutex>
+
 #include <common/config.h>
+#include <common/rid.h>
+#include <common/logger.h>
+#include <common/exception.h>
 #include <buffer/buffer_pool_manager.h>
-#include <storage/page/random_line_header_page.h>
-#include <storage/page/random_line_page.h>
+#include <storage/page/random_line/random_line_header_page.h>
+#include <storage/page/random_line/random_line_page.h>
+#include <storage/page/random_line/random_line_data_page.h>
+#include <storage/page/random_line/average_random_line_page.h>
+#include <storage/page/random_line/random_line_directory_page.h>
 #include <storage/page/page_guard.h>
 #include <random/random_line_generator.h>
 
+#include <fmt/color.h>
+#include <fmt/format.h>
 
 namespace distribution_lsh {
 
+#define RANDOM_LINE_MANAGER_TYPE RandomLineManager<RandomLineValueType>
+
 class RandomLineContext {
  public:
+  /**
+   * When execute some write operation on the file, it need to contain the header_page
+   */
+  std::optional<WritePageGuard> header_page_{std::nullopt};
   std::deque<ReadPageGuard> read_set_;
   std::deque<WritePageGuard> write_set_;
 };
 
-/** @breif class that controls the random lines
+/**
+ * @breif class that controls the random lines
  */
+RANDOM_LINE_TEMPLATE
 class RandomLineManager {
-  using FloatRandomLinePage = RandomLinePage<float>;
  public:
-  RandomLineManager(std::string manager_name, BufferPoolManager *bpm, RandomLineGenerator *rlg, page_id_t  header_page_id, int dimension_, float epsilon = EPSILON);
+  explicit RandomLineManager(std::string manager_name,
+                             file_id_t file_id,
+                             std::shared_ptr<BufferPoolManager> bpm,
+                             std::shared_ptr<RandomLineGenerator<RandomLineValueType>> rlg,
+                             page_id_t header_page_id,
+                             int dimension,
+                             int directory_page_max_size = GetRandomLineDirectoryPageSize(),
+                             int data_page_max_size = GetRandomLineDataPageSize<RandomLineValueType>(),
+                             RandomLineDistributionType distribution_type = RandomLineDistributionType::GAUSSIAN,
+                             RandomLineNormalizationType normalization_type = RandomLineNormalizationType::NONE,
+                             float epsilon = EPSILON);
 
   /** Judge if the random line group is empty*/
-  auto IsEmpty() -> bool;
+  auto IsEmpty(RandomLineContext *ctx = nullptr, bool is_read = true) -> bool;
 
   /** Obtain the new random line group */
   auto GenerateRandomLineGroup(int group_size) -> bool;
 
   /** Compute inner product by header page id and slot number */
-  auto InnerProduct(page_id_t header_page_id, int slot, const float* outer_array) -> float;
+  auto InnerProduct(int index, page_id_t *directory_page_id, int *slot, std::shared_ptr<RandomLineValueType[]> outer_array) -> RandomLineValueType;
 
-  /** Print random line group */
-  void PrintRandomLineGroup();
+  auto InnerProduct(page_id_t directory_page_id, int slot, std::shared_ptr<RandomLineValueType[]> outer_array) -> RandomLineValueType;
 
-  /* Getter and Setter method for size and max size */
-  auto GetSize() -> int  {
-    if (IsEmpty()) {
-      return 0;
-    }
+  /** random line group information*/
+  auto RandomLineGroupInformation() -> std::string;
 
-    auto size = 0;
-    RandomLineContext header_page_ctx;
-    auto header_page_guard = bpm_->FetchPageRead(header_page_id_);
-    header_page_ctx.read_set_.emplace_back(std::move(header_page_guard));
-    auto header_page = header_page_ctx.read_set_.back().template As<RandomLineHeaderPage>();
-    size += header_page->GetSize();
+  /** Getter and Setter method for attribution */
+  auto GetFileId() -> file_id_t;
+  auto GetEpsilon() -> float;
+  auto GetDimension() -> int;
+  auto GetDirectoryPageMaxSize() -> int;
+  auto GetDataPageMaxSize() -> int;
+  auto GetDistributionType() -> RandomLineDistributionType;
+  auto GetNormalizationType() -> RandomLineNormalizationType;
+  auto GetSize(RandomLineContext *ctx = nullptr, std::shared_ptr<std::vector<RID>> random_line_rids = nullptr) -> int;
 
-    while (header_page->GetNextPageId() != INVALID_PAGE_ID) {
-      size += header_page->GetSize();
-      auto next_header_page_guard = bpm_->FetchPageRead(header_page->GetNextPageId());
-      header_page_ctx.read_set_.emplace_back(std::move(next_header_page_guard));
-      header_page = header_page_ctx.read_set_.back().As<RandomLineHeaderPage>();
-    }
+  /** Information of the random line manager */
+  auto ToString() -> std::string;
 
-    return size;
-  }
+  /**
+   * Delete an entry in specific directory page
+   * @param directory_page_id
+   * @param slot
+   * @return delete success or not
+   */
+  auto Delete(page_id_t directory_page_id, int slot) -> bool;
 
  private:
 
-  /** Calculate the inner product of two random line*/
-  auto InnerProductByPageId(page_id_t random_line_page_id, const float* outer_array) -> float;
+  /** Calculate the inner product of two random line */
+  auto InnerProduct(page_id_t random_line_page_start_id, std::shared_ptr<RandomLineValueType[]> outer_array) -> RandomLineValueType;
 
   /** Store a random line with needed page*/
-  auto StoreAverageRandomLine(float *array, RandomLineHeaderPage *header_page) -> bool;
+  auto StoreAverageRandomLine(std::shared_ptr<RandomLineValueType[]> array, RandomLineContext *ctx = nullptr) -> bool;
 
   /** Store a random line with called page*/
-  auto Store(float *array, RandomLineHeaderPage *header_page) -> bool;
+  auto Store(std::shared_ptr<RandomLineValueType[]> array, RandomLineContext *ctx = nullptr) -> bool;
 
   /** Update average random line */
-  void UpdateAverageRandomLine(page_id_t average_random_line_page_id, page_id_t new_random_line_page_id, RandomLineHeaderPage *header_page);
+  void UpdateAverageRandomLine(std::shared_ptr<RandomLineValueType[]> array, RandomLineContext *ctx = nullptr);
 
-  /** Print a random line with called page*/
-  void PrintRandomLine(page_id_t random_line_page_id);
+  /** A random line with called page*/
+  auto RandomLineInformation(page_id_t random_line_page_id) -> std::string;
 
   std::string manager_name_;
-  BufferPoolManager *bpm_;
-  page_id_t header_page_id_;
+  file_id_t file_id_{INVALID_FILE_ID};
+  std::shared_ptr<BufferPoolManager> bpm_{nullptr};
+  std::shared_ptr<RandomLineGenerator<RandomLineValueType>> rlg_{nullptr};
+  page_id_t header_page_id_{INVALID_PAGE_ID};
   int dimension_;
+  int directory_page_max_size_{RANDOM_LINE_DIRECTORY_PAGE_SIZE};
+  int data_page_max_size_{RANDOM_LINE_DATA_PAGE_SIZE};
+  RandomLineDistributionType distribution_type_{RandomLineDistributionType::INVALID_DISTRIBUTION_TYPE};
+  RandomLineNormalizationType normalization_type_{RandomLineNormalizationType::INVALID_NORMALIZATION_TYPE};
   float epsilon_{EPSILON};
-  RandomLineGenerator *rlg_{nullptr};
 };
 
 } // namespace distribution_lsh

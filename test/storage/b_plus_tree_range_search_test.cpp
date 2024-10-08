@@ -19,8 +19,8 @@ namespace distribution_lsh {
 using distribution_lsh::DiskManagerUnlimitedMemory;
 
 TEST(BPlusTreeTests, RangeTest1) {
-  auto disk_manager = std::make_unique<DiskManagerUnlimitedMemory>();
-  auto *bpm = new BufferPoolManager(50, disk_manager.get());
+  auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
+  auto bpm = std::make_shared<BufferPoolManager>(50, disk_manager);
   // create and fetch header_page
   page_id_t page_id;
   auto header_page = bpm->NewPage(&page_id);
@@ -33,14 +33,14 @@ TEST(BPlusTreeTests, RangeTest1) {
   for (auto key : keys) {
     int64_t value = key & 0xFFFFFFFF;
     rid.Set(static_cast<int32_t>(key >> 32), value);
-    index_key = (float)key;
+    index_key = static_cast<float>(key);
     tree.Insert(index_key, rid);
   }
 
   std::vector<RID> rids;
   for (size_t i = 0; i < keys.size() - 2; ++i) {
-    float lkey  = (float)keys[i];
-    float rkey = (float)keys[i + 2];
+    auto lkey  = static_cast<float>(keys[i]);
+    auto rkey = static_cast<float>(keys[i + 2]);
     rids.clear();
     EXPECT_EQ(tree.RangeRead(lkey, rkey, &rids), true);
     EXPECT_EQ(rids.size(), 3);
@@ -50,8 +50,6 @@ TEST(BPlusTreeTests, RangeTest1) {
     }
   }
 
-  bpm->UnpinPage(HEADER_PAGE_ID, true);
-  delete bpm;
 }
 
 
