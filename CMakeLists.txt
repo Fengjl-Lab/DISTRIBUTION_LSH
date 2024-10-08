@@ -76,4 +76,4 @@ add_subdirectory(test)
 add_subdirectory(tools)
 
 # debug log level
-add_definitions(LOG_LEVEL=200)
+add_definitions(-DLOG_LEVEL=200)
