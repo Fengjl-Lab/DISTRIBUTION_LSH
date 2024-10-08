@@ -41,7 +41,7 @@ class BufferPoolManager {
   ~BufferPoolManager();
 
   /** @brief Return the size (number of frames) of the buffer pool. */
-  auto GetPoolSize() -> size_t { return pool_size_; }
+  auto GetPoolSize() const -> size_t { return pool_size_; }
 
   /** @brief Return the pointer to all the pages in the buffer pool. */
   auto GetPages() -> std::shared_ptr<Page[]> { return pages_; }
@@ -117,11 +117,13 @@ class BufferPoolManager {
   auto DeletePage(page_id_t page_id) -> bool;
 
  private:
-  /** Numer of pages in the buffer pool. */
+  /** Number of pages in the buffer pool. */
   const size_t pool_size_;
 
   /** Array of buffer pool pages. */
   std::shared_ptr<Page []> pages_;
+  /** Temporary page for null page record. */
+  std::shared_ptr<Page []> extra_pages_;
   /** Pointer to the disk scheduler. */
   std::unique_ptr<DiskScheduler> disk_scheduler_ __attribute__((__unused__));
   /** Pointer to the log manager. Please ignore this for P1. */
@@ -150,7 +152,6 @@ class BufferPoolManager {
    * @param page_id id of the page to deallocate
    */
   void DeallocatePage(__attribute__((unused)) page_id_t page_id) {
-    // This is a no-nop right now without a more complex data structure to track deallocated pages
     free_page_list_.push_back(page_id);
   }
 };
