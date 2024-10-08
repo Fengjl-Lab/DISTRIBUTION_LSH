@@ -13,9 +13,9 @@
 
 namespace distribution_lsh {
 
-#define FILE_TYPE_HEADER_SIZE 2
+#define COMMON_HEADER_PAGE_HEADER_SIZE 16
 
-enum class FileType {INVALID_FILE_TYPE, RANDOM_LINE_FILE, B_PLUS_TREE_FILE, DISTRIBUTION_DATASET_FILE, RELATION_FILE};
+enum class FileType : std::uint8_t {INVALID_FILE_TYPE = 0, RANDOM_LINE_FILE, B_PLUS_TREE_FILE, DISTRIBUTION_DATASET_FILE, RELATION_FILE};
 
 /**
  * @brief The header page for identification of the file type
@@ -24,11 +24,11 @@ class HeaderPage {
  public:
   /** Delete all constructor / destructor to ensure memory safety */
   HeaderPage() = delete;
-
   HeaderPage(const HeaderPage &other) = delete;
+  ~HeaderPage() = delete;
 
   [[nodiscard]] auto GetFileType() const -> FileType {
-    switch (static_cast<uint8_t>((file_identification_) >> 14)) {
+    switch (static_cast<uint8_t>(file_identification_ >> 30) & 0x03) {
       case 0x00: return FileType::RANDOM_LINE_FILE;
       case 0x01: return FileType::B_PLUS_TREE_FILE;
       case 0x02: return FileType::DISTRIBUTION_DATASET_FILE;
@@ -53,15 +53,15 @@ class HeaderPage {
         break;
       }
       case FileType::B_PLUS_TREE_FILE: {
-        file_identification_ = hash_value | 0x4000;
+        file_identification_ = hash_value | 0x0000'0000'4000'0000UL;
         break;
       }
       case FileType::DISTRIBUTION_DATASET_FILE: {
-        file_identification_ = hash_value | 0x8000;
+        file_identification_ = hash_value | 0x0000'0000'8000'0000UL;
         break;
       }
       case FileType::RELATION_FILE: {
-        file_identification_ = hash_value | 0xC000;
+        file_identification_ = hash_value | 0x0000'0000'C000'0000UL;
         break;
       }
       default: throw Exception("Unsupported file type");
@@ -70,7 +70,11 @@ class HeaderPage {
     return file_identification_;
   }
 
+  [[nodiscard]] auto GetNullPageSlotStart() const -> int {return null_page_slot_start_; }
+  void SetNullPageSlotStart(int null_page_slot_start) { null_page_slot_start_ = null_page_slot_start; }
+
  private:
   file_id_t file_identification_;
+  int null_page_slot_start_{0};
 };
 } // namespace distribution_lsh
