@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <sstream>
+#include <numeric>
 #include <omp.h>
 
 #include <fmt/core.h>
@@ -23,7 +24,7 @@ RANDOM_LINE_MANAGER_TYPE::RandomLineManager(
     std::string manager_name,
     file_id_t file_id,
     std::shared_ptr<distribution_lsh::BufferPoolManager> bpm,
-    std::shared_ptr<distribution_lsh::RandomLineGenerator<ValueType>> rlg,
+    std::shared_ptr<distribution_lsh::RandomLineGenerator<RandomLineValueType>> rlg,
     distribution_lsh::page_id_t header_page_id,
     int dimension,
     int directory_page_max_size,
@@ -71,7 +72,7 @@ RANDOM_LINE_MANAGER_TYPE::RandomLineManager(
 }
 
 RANDOM_LINE_TEMPLATE
-auto RANDOM_LINE_MANAGER_TYPE::IsEmpty(RandomLineContext *ctx) -> bool {
+auto RANDOM_LINE_MANAGER_TYPE::IsEmpty(RandomLineContext *ctx, bool is_read) -> bool {
   if (header_page_id_ == INVALID_PAGE_ID) {
     return true;
   }
@@ -80,10 +81,16 @@ auto RANDOM_LINE_MANAGER_TYPE::IsEmpty(RandomLineContext *ctx) -> bool {
     throw Exception(fmt::format(fg(fmt::color::red), "[ERROR] RANDOM LINE MANAGER: header page id is not valid, current header page id is: {}.", header_page_id_));
   }
 
-  RandomLineContext random_line_ctx;
-  auto header_page = ctx != nullptr && ctx->header_page_ != std::nullopt? ctx->header_page_.value().As<RandomLineHeaderPage>() : [&]() {
-    random_line_ctx.read_set_.emplace_back(bpm_->FetchPageRead(header_page_id_));
-    return random_line_ctx.read_set_.back().As<RandomLineHeaderPage>();
+  auto header_page = ctx != nullptr && !is_read ? [&]() {
+    if (ctx->header_page_.has_value()) {
+      return ctx->header_page_.value().template As<RandomLineHeaderPage>();
+    }
+    ctx->header_page_ = bpm_->FetchPageWrite(header_page_id_);
+    return ctx->header_page_.value().template As<RandomLineHeaderPage>();
+  }() : [&]() {
+    return ctx != nullptr && ctx->header_page_.has_value() ?
+    ctx->header_page_.value().template As<RandomLineHeaderPage>()
+    : bpm_->FetchPageRead(header_page_id_).template As<RandomLineHeaderPage>();
   }();
 
   return header_page->IsEmpty();
@@ -91,30 +98,26 @@ auto RANDOM_LINE_MANAGER_TYPE::IsEmpty(RandomLineContext *ctx) -> bool {
 
 RANDOM_LINE_TEMPLATE
 auto RANDOM_LINE_MANAGER_TYPE::GenerateRandomLineGroup(int group_size) -> bool {
-  {
-    std::scoped_lock<std::mutex> header_page_latch(latch_);
-    if (IsEmpty()) {
-      RandomLineContext ctx;
-      ctx.header_page_ = std::make_optional(bpm_->FetchPageWrite(header_page_id_));
-      auto header_page = ctx.header_page_.value().AsMut<RandomLineHeaderPage>();
-      auto directory_page_guard = bpm_->NewPageGuarded(&header_page->directory_page_start_page_id_);
+  RandomLineContext ctx;
+  if (IsEmpty(&ctx, false)) {
+    auto header_page = ctx.header_page_.value().AsMut<RandomLineHeaderPage>();
+    auto directory_page_guard = bpm_->NewPageGuarded(&header_page->directory_page_start_page_id_);
 
-      if (header_page->GetDirectoryPageStartPageId() == INVALID_PAGE_ID) {
-        LOG_DEBUG("create new directory page failed");
+    if (header_page->GetDirectoryPageStartPageId() == INVALID_PAGE_ID) {
+      LOG_DEBUG("create new directory page failed");
+      return false;
+    }
+
+    auto directory_page = directory_page_guard.template AsMut<RandomLineDirectoryPage>();
+    directory_page->Init(directory_page_max_size_);
+
+    // Use average random line
+    if (epsilon_ > 0) {
+      std::shared_ptr<RandomLineValueType[]> average_array(new RandomLineValueType[dimension_]);
+      memset(reinterpret_cast<void *>(average_array.get()), 0, sizeof(RandomLineValueType) * dimension_);
+      if (!StoreAverageRandomLine(average_array, &ctx)) {
+        LOG_DEBUG("store average random line failed");
         return false;
-      }
-
-      auto directory_page = directory_page_guard.template AsMut<RandomLineDirectoryPage>();
-      directory_page->Init(directory_page_max_size_);
-
-      // Use average random line
-      if (epsilon_ > 0) {
-        std::shared_ptr<ValueType[]> average_array(new ValueType[dimension_]);
-        memset(reinterpret_cast<void *>(average_array.get()), 0, sizeof(ValueType) * dimension_);
-        if (!StoreAverageRandomLine(average_array, &ctx)) {
-          LOG_DEBUG("store average random line failed");
-          return false;
-        }
       }
     }
   }
@@ -122,15 +125,16 @@ auto RANDOM_LINE_MANAGER_TYPE::GenerateRandomLineGroup(int group_size) -> bool {
   // Generate random line group
   auto current_size = 0;
   while (current_size < group_size) {
-    std::shared_ptr<ValueType[]> array = rlg_->GenerateRandomLine(distribution_type_, normalization_type_, dimension_);
+    std::shared_ptr<RandomLineValueType[]> array = rlg_->GenerateRandomLine(distribution_type_, normalization_type_, dimension_);
     if (array == nullptr) {
       LOG_DEBUG("generate new array failed.");
       return false;
     }
 
     if (epsilon_ > 0) {
-      auto header_page_guard = bpm_->FetchPageRead(header_page_id_);
-      auto header_page = header_page_guard.As<RandomLineHeaderPage>();
+      auto header_page = ctx.header_page_.has_value()?
+          ctx.header_page_.value().template As<RandomLineHeaderPage>()
+              : bpm_->FetchPageRead(header_page_id_).template As<RandomLineHeaderPage>();
       if (static_cast<float>(std::abs(InnerProduct(header_page->average_random_line_page_id_, array))) > epsilon_) {
         continue;
       }
@@ -138,8 +142,6 @@ auto RANDOM_LINE_MANAGER_TYPE::GenerateRandomLineGroup(int group_size) -> bool {
 
 
     // Store the random line
-    RandomLineContext ctx;
-    ctx.header_page_ = std::make_optional(bpm_->FetchPageWrite(header_page_id_));
     if (!Store(array, &ctx)) {
       return false;
     }
@@ -156,10 +158,10 @@ auto RANDOM_LINE_MANAGER_TYPE::GenerateRandomLineGroup(int group_size) -> bool {
 }
 
 RANDOM_LINE_TEMPLATE
-auto RANDOM_LINE_MANAGER_TYPE::StoreAverageRandomLine(std::shared_ptr<ValueType[]> array, RandomLineContext *ctx) -> bool {
+auto RANDOM_LINE_MANAGER_TYPE::StoreAverageRandomLine(std::shared_ptr<RandomLineValueType[]> array, RandomLineContext *ctx) -> bool {
   RandomLineContext random_line_ctx;
 
-  RandomLineHeaderPage* header_page = ctx != nullptr && ctx->header_page_ != std::nullopt?
+  RandomLineHeaderPage* header_page = ctx != nullptr && ctx->header_page_.has_value()?
       ctx->header_page_.value().AsMut<RandomLineHeaderPage>()
       : [&]() {
     random_line_ctx.header_page_ = bpm_->FetchPageWrite(header_page_id_);
@@ -175,8 +177,8 @@ auto RANDOM_LINE_MANAGER_TYPE::StoreAverageRandomLine(std::shared_ptr<ValueType[
 
   auto average_random_line_page_id = header_page->average_random_line_page_id_;
   auto current_average_random_line_page_id = average_random_line_page_id;
-  AverageRandomLinePage<ValueType> *average_random_line_page =
-      random_line_ctx.write_set_.back().template AsMut<AverageRandomLinePage<ValueType>>();
+  AverageRandomLinePage<RandomLineValueType> *average_random_line_page =
+      random_line_ctx.write_set_.back().template AsMut<AverageRandomLinePage<RandomLineValueType>>();
   average_random_line_page->Init(data_page_max_size_);
   std::list<page_id_t > page_id_list;
 
@@ -188,7 +190,7 @@ auto RANDOM_LINE_MANAGER_TYPE::StoreAverageRandomLine(std::shared_ptr<ValueType[
     if (dimension_ - current_size > current_average_random_line_page->GetMaxSize()) {
       memcpy(reinterpret_cast<char *>(current_average_random_line_page->array_),
              reinterpret_cast<char *>(&array[current_size]),
-             sizeof(ValueType) * current_average_random_line_page->GetMaxSize());
+             sizeof(RandomLineValueType) * current_average_random_line_page->GetMaxSize());
       current_average_random_line_page->SetSize(current_average_random_line_page->GetMaxSize());
 
       // Allocate new page and update data
@@ -216,13 +218,13 @@ auto RANDOM_LINE_MANAGER_TYPE::StoreAverageRandomLine(std::shared_ptr<ValueType[
       page_id_list.emplace_back(average_random_line_page_id);
 
       current_average_random_line_page_id = average_random_line_page_id;
-      current_average_random_line_page = random_line_ctx.write_set_.back().AsMut<AverageRandomLinePage<ValueType>>();
+      current_average_random_line_page = random_line_ctx.write_set_.back().AsMut<AverageRandomLinePage<RandomLineValueType>>();
       current_average_random_line_page->Init(data_page_max_size_);
 
       random_line_ctx.write_set_.pop_front();
     } else {
       memcpy(reinterpret_cast<char *>(current_average_random_line_page->array_), reinterpret_cast<char *>(&array[current_size]),
-             sizeof(ValueType) * (dimension_ - current_size));
+             sizeof(RandomLineValueType) * (dimension_ - current_size));
       current_average_random_line_page->SetSize(dimension_ - current_size);
     }
   }
@@ -232,11 +234,11 @@ auto RANDOM_LINE_MANAGER_TYPE::StoreAverageRandomLine(std::shared_ptr<ValueType[
 }
 
 RANDOM_LINE_TEMPLATE
-auto RANDOM_LINE_MANAGER_TYPE::Store(std::shared_ptr<ValueType[]> array, RandomLineContext *ctx) -> bool {
+auto RANDOM_LINE_MANAGER_TYPE::Store(std::shared_ptr<RandomLineValueType[]> array, RandomLineContext *ctx) -> bool {
   RandomLineContext random_line_ctx;
   // Get header page
   RandomLineHeaderPage* header_page =
-      ctx != nullptr && ctx->header_page_ != std::nullopt?
+      ctx != nullptr && ctx->header_page_.has_value()?
               ctx->header_page_.value().AsMut<RandomLineHeaderPage>()
               : [&]() {
         random_line_ctx.header_page_ = bpm_->FetchPageWrite(header_page_id_);
@@ -280,8 +282,8 @@ auto RANDOM_LINE_MANAGER_TYPE::Store(std::shared_ptr<ValueType[]> array, RandomL
 
   auto start_random_line_page_id = random_line_page_id;
   data_page_ctx.write_set_.emplace_back(random_line_page_basic_guard.UpgradeWrite());
-  RandomLineDataPage<ValueType>
-      *random_line_page = data_page_ctx.write_set_.back().AsMut<RandomLineDataPage<ValueType>>();
+  RandomLineDataPage<RandomLineValueType>
+      *random_line_page = data_page_ctx.write_set_.back().AsMut<RandomLineDataPage<RandomLineValueType>>();
   random_line_page->Init(data_page_max_size_);
   auto current_random_line_page = random_line_page;
   auto start_random_line_page = random_line_page;
@@ -293,7 +295,7 @@ auto RANDOM_LINE_MANAGER_TYPE::Store(std::shared_ptr<ValueType[]> array, RandomL
   for (int current_size = 0; current_size < dimension_; current_size += current_random_line_page->GetMaxSize()) {
     if (dimension_ - current_size > current_random_line_page->GetMaxSize()) {
       memcpy(reinterpret_cast<char *>(current_random_line_page->array_), reinterpret_cast<char *>(&array[current_size]),
-             sizeof(ValueType) * current_random_line_page->GetMaxSize());
+             sizeof(RandomLineValueType) * current_random_line_page->GetMaxSize());
       current_random_line_page->SetSize(current_random_line_page->GetMaxSize());
 
       // Allocate new page and update data
@@ -310,7 +312,7 @@ auto RANDOM_LINE_MANAGER_TYPE::Store(std::shared_ptr<ValueType[]> array, RandomL
           data_page_ctx.write_set_.pop_front();
           bpm_->DeletePage(delete_random_line_page_id);
           delete_random_line_page_id = delete_random_line_page->GetNextPageId();
-          delete_random_line_page = data_page_ctx.write_set_.front().template AsMut<RandomLineDataPage<ValueType>>();
+          delete_random_line_page = data_page_ctx.write_set_.front().template AsMut<RandomLineDataPage<RandomLineValueType>>();
         }
 
         // Delete last page
@@ -323,7 +325,7 @@ auto RANDOM_LINE_MANAGER_TYPE::Store(std::shared_ptr<ValueType[]> array, RandomL
 
       data_page_ctx.write_set_.emplace_back(random_line_page_basic_guard.UpgradeWrite());
 
-      random_line_page = data_page_ctx.write_set_.back().AsMut<RandomLineDataPage<ValueType> >();
+      random_line_page = data_page_ctx.write_set_.back().AsMut<RandomLineDataPage<RandomLineValueType> >();
       random_line_page->Init(data_page_max_size_);
 
       current_random_line_page->SetNextPageId(random_line_page_id);
@@ -332,7 +334,7 @@ auto RANDOM_LINE_MANAGER_TYPE::Store(std::shared_ptr<ValueType[]> array, RandomL
       data_page_ctx.write_set_.pop_front();
     } else {
       memcpy(reinterpret_cast<char *>(current_random_line_page->array_), reinterpret_cast<char *>(&array[current_size]),
-             sizeof(ValueType) * (dimension_ - current_size));
+             sizeof(RandomLineValueType) * (dimension_ - current_size));
       current_random_line_page->SetSize(dimension_ - current_size);
     }
   }
@@ -345,7 +347,7 @@ auto RANDOM_LINE_MANAGER_TYPE::InnerProduct(
     int index,
     distribution_lsh::page_id_t *directory_page_id,
     int *slot,
-    std::shared_ptr<ValueType[]> outer_array) -> ValueType {
+    std::shared_ptr<RandomLineValueType[]> outer_array) -> RandomLineValueType {
 
   if (index < 0 || IsEmpty()) {
     throw Exception(ExceptionType::OUT_OF_RANGE, fmt::format(fg(fmt::color::red), "[ERROR] RANDOM LINE MANAGER: current file is empty, invalid index {} input.", index));
@@ -386,16 +388,42 @@ auto RANDOM_LINE_MANAGER_TYPE::InnerProduct(
 }
 
 RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::InnerProduct(
+    page_id_t directory_page_id,
+    int slot,
+    std::shared_ptr<RandomLineValueType[]> outer_array) -> RandomLineValueType {
+  if (directory_page_id == INVALID_PAGE_ID || slot == INVALID_SLOT) {
+    throw Exception(ExceptionType::INVALID_ARGUMENT, "Input directory page id or slot invalid");
+  }
+
+  // Locate the target directory page
+  auto random_line_page_guard = bpm_->FetchPageRead(directory_page_id);
+  auto random_line_page = random_line_page_guard.template As<RandomLinePage>();
+  if (random_line_page->GetPageType() != RandomLinePageType::DIRECTORY_PAGE) {
+    throw Exception(ExceptionType::INVALID_ARGUMENT, "Input directory page id is not related to a directory page.");
+  }
+
+  auto directory_page = random_line_page_guard.template As<RandomLineDirectoryPage>();
+  auto target_random_line_data_page_id = directory_page->IndexAt(slot);
+
+  if (target_random_line_data_page_id == INVALID_PAGE_ID) {
+    throw Exception(ExceptionType::INVALID_ARGUMENT, "Input slot is not related to a valid data page.");
+  }
+
+  return InnerProduct(target_random_line_data_page_id, outer_array);
+}
+
+RANDOM_LINE_TEMPLATE
 auto RANDOM_LINE_MANAGER_TYPE::InnerProduct(page_id_t random_line_page_start_id,
-                                            std::shared_ptr<ValueType[]> outer_array) -> ValueType {
+                                            std::shared_ptr<RandomLineValueType[]> outer_array) -> RandomLineValueType {
   RandomLineContext ctx;
-  auto result = static_cast<ValueType>(0.0F);
+  auto result = static_cast<RandomLineValueType>(0.0F);
   auto current_size = 0;
   auto random_line_page_id = random_line_page_start_id;
 
   while (random_line_page_id != INVALID_PAGE_ID) {
     ctx.read_set_.emplace_back(bpm_->FetchPageRead(random_line_page_id));
-    auto random_page = ctx.read_set_.back().template As<RandomLineDataPage<ValueType>>();
+    auto random_page = ctx.read_set_.back().template As<RandomLineDataPage<RandomLineValueType>>();
 
     // Calculate inner product
 #pragma omp parallel for reduction(+:result) default(none) shared(random_page, outer_array, current_size)
@@ -424,7 +452,7 @@ auto RANDOM_LINE_MANAGER_TYPE::RandomLineInformation(distribution_lsh::page_id_t
       return "";
     }
 
-    auto random_line_data_page = random_line_page_guard.template As<RandomLineDataPage<ValueType>>();
+    auto random_line_data_page = random_line_page_guard.template As<RandomLineDataPage<RandomLineValueType>>();
 
     ss << fmt::format("current page id: {}, random line content [ ", random_line_page_id);
     for (int i = 0; i < random_line_page->GetSize(); ++i) {
@@ -481,10 +509,10 @@ auto RANDOM_LINE_MANAGER_TYPE::RandomLineGroupInformation() -> std::string {
 }
 
 RANDOM_LINE_TEMPLATE
-void RANDOM_LINE_MANAGER_TYPE::UpdateAverageRandomLine(std::shared_ptr<ValueType[]> array, RandomLineContext *ctx) {
+void RANDOM_LINE_MANAGER_TYPE::UpdateAverageRandomLine(std::shared_ptr<RandomLineValueType[]> array, RandomLineContext *ctx) {
   RandomLineContext random_line_ctx;
 
-  RandomLineHeaderPage* header_page = ctx != nullptr && ctx->header_page_ != std::nullopt?
+  RandomLineHeaderPage* header_page = ctx != nullptr && ctx->header_page_.has_value()?
                                       ctx->header_page_.value().AsMut<RandomLineHeaderPage>()
                                                                                          : [&]() {
         random_line_ctx.header_page_ = bpm_->FetchPageWrite(header_page_id_);
@@ -498,8 +526,8 @@ void RANDOM_LINE_MANAGER_TYPE::UpdateAverageRandomLine(std::shared_ptr<ValueType
     return;
   }
 
-  auto average_random_line_page = random_line_page_guard.AsMut<AverageRandomLinePage<ValueType>>();
-  auto factor = GetSize(ctx) - 1;
+  auto average_random_line_page = random_line_page_guard.AsMut<AverageRandomLinePage<RandomLineValueType>>();
+  auto factor = GetSize(ctx != nullptr && ctx->header_page_.has_value() ? ctx : &random_line_ctx) - 1;
 
   // Update average random line
   for (int current_size = 0; current_size < dimension_; current_size += average_random_line_page->GetSize()) {
@@ -516,12 +544,12 @@ void RANDOM_LINE_MANAGER_TYPE::UpdateAverageRandomLine(std::shared_ptr<ValueType
 
     random_line_page_guard.Drop();
     random_line_page_guard = bpm_->FetchPageWrite(average_random_line_page->GetNextPageId());
-    average_random_line_page = random_line_page_guard.AsMut<AverageRandomLinePage<ValueType>>();
+    average_random_line_page = random_line_page_guard.AsMut<AverageRandomLinePage<RandomLineValueType>>();
   }
 }
 
 RANDOM_LINE_TEMPLATE
-auto RANDOM_LINE_MANAGER_TYPE::GetSize(RandomLineContext *ctx) -> int {
+auto RANDOM_LINE_MANAGER_TYPE::GetSize(RandomLineContext *ctx, std::shared_ptr<std::vector<RID>> random_line_rids) -> int {
   if (IsEmpty(ctx)) {
     return 0;
   }
@@ -529,7 +557,7 @@ auto RANDOM_LINE_MANAGER_TYPE::GetSize(RandomLineContext *ctx) -> int {
   RandomLineContext random_line_ctx;
   auto size = 0;
 
-  auto header_page = ctx != nullptr && ctx->header_page_ != std::nullopt? ctx->header_page_.value().As<RandomLineHeaderPage>() : [&](){
+  auto header_page = ctx != nullptr && ctx->header_page_.has_value()? ctx->header_page_.value().As<RandomLineHeaderPage>() : [&](){
     random_line_ctx.read_set_.emplace_back(bpm_->FetchPageRead(header_page_id_));
     return random_line_ctx.read_set_.back().As<RandomLineHeaderPage>();
   }();
@@ -538,12 +566,30 @@ auto RANDOM_LINE_MANAGER_TYPE::GetSize(RandomLineContext *ctx) -> int {
   auto directory_page = directory_page_guard.template As<RandomLineDirectoryPage>();
   while (directory_page->GetNextPageId() != INVALID_PAGE_ID) {
     size += directory_page->GetSize();
+    if (random_line_rids != nullptr) {
+      std::vector<int> ranges(directory_page->GetSize());
+      std::iota(ranges.begin(), ranges.end(), 0);
+      std::for_each(ranges.cbegin(), ranges.cend(), [&random_line_rids, &directory_page_guard, &directory_page](const auto &slot) {
+        if (directory_page->IndexAt(slot) != INVALID_PAGE_ID) {
+          random_line_rids->emplace_back(RID(directory_page_guard.PageId(), slot));
+        }
+      });
+    }
     directory_page_guard.Drop();
     directory_page_guard = bpm_->FetchPageRead(directory_page->GetNextPageId());
     directory_page = directory_page_guard.template As<RandomLineDirectoryPage>();
   }
 
   size += directory_page->GetSize();
+  if (random_line_rids != nullptr) {
+    std::vector<int> ranges(directory_page->GetSize());
+    std::iota(ranges.begin(), ranges.end(), 0);
+    std::for_each(ranges.cbegin(), ranges.cend(), [&random_line_rids, &directory_page_guard, &directory_page](const auto &slot) {
+      if (directory_page->IndexAt(slot) != INVALID_PAGE_ID) {
+        random_line_rids->emplace_back(RID(directory_page_guard.PageId(), slot));
+      }
+    });
+  }
 
   return size;
 }
@@ -570,7 +616,7 @@ auto RANDOM_LINE_MANAGER_TYPE::Delete(page_id_t directory_page_id, int slot) -> 
   // Delete actual data page
   RandomLineContext data_ctx;
   data_ctx.write_set_.emplace_back(bpm_->FetchPageWrite(random_line_data_page_id));
-  auto random_line_data_page = data_ctx.write_set_.back().AsMut<RandomLineDataPage<ValueType>>();
+  auto random_line_data_page = data_ctx.write_set_.back().AsMut<RandomLineDataPage<RandomLineValueType>>();
   while (random_line_data_page->GetNextPageId()!= INVALID_PAGE_ID) {
     auto next_random_line_data_page_id = random_line_data_page->GetNextPageId();
     data_ctx.write_set_.pop_front();
@@ -578,7 +624,7 @@ auto RANDOM_LINE_MANAGER_TYPE::Delete(page_id_t directory_page_id, int slot) -> 
 
     random_line_data_page_id = next_random_line_data_page_id;
     data_ctx.write_set_.emplace_back(bpm_->FetchPageWrite(random_line_data_page_id));
-    random_line_data_page = data_ctx.write_set_.back().AsMut<RandomLineDataPage<ValueType>>();
+    random_line_data_page = data_ctx.write_set_.back().AsMut<RandomLineDataPage<RandomLineValueType>>();
   }
 
   // Delete last page
@@ -618,6 +664,9 @@ auto RANDOM_LINE_MANAGER_TYPE::Delete(page_id_t directory_page_id, int slot) -> 
 
   return true;
 }
+
+RANDOM_LINE_TEMPLATE
+auto RANDOM_LINE_MANAGER_TYPE::GetFileId() -> file_id_t { return file_id_; }
 
 RANDOM_LINE_TEMPLATE
 auto RANDOM_LINE_MANAGER_TYPE::GetEpsilon() -> float { return epsilon_; }
