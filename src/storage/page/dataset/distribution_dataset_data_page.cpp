@@ -11,7 +11,7 @@ namespace distribution_lsh {
 
 DISTRIBUTION_DATASET_TEMPLATE
 void DISTRIBUTION_DATASET_PAGE_TYPE::Init(int max_size) {
-  SetPageType(DistributionDatatSetPageType::DATA_PAGE);
+  SetPageType(DistributionDataSetPageType::DATA_PAGE);
   SetMaxSize(max_size);
   SetSize(0);
   SetNextPageId(INVALID_PAGE_ID);

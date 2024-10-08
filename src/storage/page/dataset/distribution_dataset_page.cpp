@@ -9,8 +9,8 @@
 
 namespace distribution_lsh {
 
-auto DistributionDataSetPage::IsDirectoryPage() const -> bool { return page_type_ == DistributionDatatSetPageType::DIRECTORY_PAGE; }
-void DistributionDataSetPage::SetPageType(DistributionDatatSetPageType page_type) { page_type_ = page_type; }
+auto DistributionDataSetPage::IsDirectoryPage() const -> bool { return page_type_ == DistributionDataSetPageType::DIRECTORY_PAGE; }
+void DistributionDataSetPage::SetPageType(DistributionDataSetPageType page_type) { page_type_ = page_type; }
 
 auto DistributionDataSetPage::GetSize() const -> int { return size_; }
 void DistributionDataSetPage::SetSize(int size) { size_ = size; }

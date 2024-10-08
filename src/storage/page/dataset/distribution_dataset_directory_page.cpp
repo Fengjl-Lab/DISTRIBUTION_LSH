@@ -10,7 +10,7 @@
 namespace distribution_lsh {
 
 void DistributionDataSetDirectoryPage::Init(int max_size) {
-  SetPageType(DistributionDatatSetPageType::DIRECTORY_PAGE);
+  SetPageType(DistributionDataSetPageType::DIRECTORY_PAGE);
   SetSize(0);
   SetMaxSize(max_size);
   SetNextPageId(INVALID_PAGE_ID);
