@@ -13,34 +13,35 @@
 #include <string>
 
 #include <buffer/buffer_pool_manager.h>
+#include <storage/page/data_page.h>
 
 namespace distribution_lsh {
 
-#define MappingType std::pair<KeyType, ValueType>
+#define MappingType std::pair<BPlusTreeKeyType, BPlusTreeValueType>
 
-#define INDEX_TEMPLATE_ARGUMENTS template <typename KeyType, typename ValueType>
+#define INDEX_TEMPLATE_ARGUMENTS template <typename BPlusTreeKeyType, typename BPlusTreeValueType>
 
 // define page type enum
 enum class IndexPageType { INVALID_ID_INDEX_PAGE = 0, LEAF_PAGE, INTERNAL_PAGE};
 
 
-class BPlusTreePage {
+class BPlusTreePage : public DataPage {
  public:
   // Delete all constructor / destructor to ensure memory safety
   BPlusTreePage() = delete;
   BPlusTreePage(const BPlusTreePage &other) = delete;
   ~BPlusTreePage() = delete;
 
-  auto IsLeafPage() const -> bool;
+  [[nodiscard]] auto IsLeafPage() const -> bool;
   void SetPageType(IndexPageType page_type);
 
-  auto GetSize() const -> int;
+  [[nodiscard]] auto GetSize() const -> int;
   void SetSize(int size);
   void IncreaseSize(int amount);
 
-  auto GetMaxSize() const -> int;
+  [[nodiscard]] auto GetMaxSize() const -> int;
   void SetMaxSize(int max_size);
-  auto GetMinSize() const -> int;
+  [[nodiscard]] auto GetMinSize() const -> int;
 
  private:
   // Member variables, attributes that both internal and leaf page share
