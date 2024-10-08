@@ -12,22 +12,23 @@
 namespace distribution_lsh {
 
 DISTRIBUTION_DATASET_TEMPLATE
-DISTRIBUTION_DATASET_MANAGER_TYPE::DistributionDataSetManager(std::string manager_name,
-                                                       distribution_lsh::DataSetType data_set_type,
-                                                       distribution_lsh::DistributionType distribution_type,
-                                                       distribution_lsh::NormalizationType normalization_type,
-                                                       std::shared_ptr<BufferPoolManager> training_set_bpm,
-                                                       std::shared_ptr<BufferPoolManager> testing_set_bpm,
-                                                       std::unique_ptr<DistributionDatasetProcessor<ValueType>> ddp,
-                                                       distribution_lsh::page_id_t training_set_header_page_id,
-                                                       distribution_lsh::page_id_t testing_set_header_page_id,
-                                                       int dimension,
-                                                       std::shared_ptr<float[2]> params,
-                                                       std::string directory_name,
-                                                       file_id_t training_set_file_id,
-                                                       file_id_t testing_set_file_id,
-                                                       int directory_page_max_size,
-                                                       int data_page_max_size) :
+DISTRIBUTION_DATASET_MANAGER_TYPE::DistributionDataSetManager(
+    std::string manager_name,
+    distribution_lsh::DataSetType data_set_type,
+    distribution_lsh::DistributionType distribution_type,
+    distribution_lsh::NormalizationType normalization_type,
+    std::shared_ptr<BufferPoolManager> training_set_bpm,
+    std::shared_ptr<BufferPoolManager> testing_set_bpm,
+    std::unique_ptr<DistributionDatasetProcessor<ValueType>> ddp,
+    distribution_lsh::page_id_t training_set_header_page_id,
+    distribution_lsh::page_id_t testing_set_header_page_id,
+    int dimension,
+    std::shared_ptr<float[2]> params,
+    std::string directory_name,
+    file_id_t training_set_file_id,
+    file_id_t testing_set_file_id,
+    int directory_page_max_size,
+    int data_page_max_size) :
     manager_name_(std::move(manager_name)),
     data_set_type_(data_set_type),
     distribution_type_(distribution_type),
@@ -138,16 +139,34 @@ DISTRIBUTION_DATASET_MANAGER_TYPE::DistributionDataSetManager(std::string manage
 }
 
 DISTRIBUTION_DATASET_TEMPLATE
-auto DISTRIBUTION_DATASET_MANAGER_TYPE::IsEmpty() -> bool {
+auto DISTRIBUTION_DATASET_MANAGER_TYPE::IsEmpty(DistributionDataSetContext *ctx, bool is_read) -> bool {
   if (training_set_header_page_id_ == INVALID_PAGE_ID && testing_set_header_page_id_ == INVALID_PAGE_ID) {
     return true;
   }
 
-  auto training_set_header_page_guard = training_set_bpm_->FetchPageRead(HEADER_PAGE_ID);
-  auto training_set_header_page = training_set_header_page_guard.As<DistributionDataSetHeaderPage>();
+  auto training_set_header_page = ctx != nullptr && !is_read ? [&]() {
+    if (ctx->training_set_header_page_.has_value()) {
+      return ctx->training_set_header_page_.value().template As<DistributionDataSetHeaderPage>();
+    }
+    ctx->training_set_header_page_ = training_set_bpm_->FetchPageWrite(training_set_header_page_id_);
+    return ctx->training_set_header_page_.value().template As<DistributionDataSetHeaderPage>();
+  }() : [&]() {
+    return ctx != nullptr && ctx->training_set_header_page_.has_value() ?
+           ctx->training_set_header_page_.value().template As<DistributionDataSetHeaderPage>()
+           : training_set_bpm_->FetchPageRead(training_set_header_page_id_).template As<DistributionDataSetHeaderPage>();
+  }();
 
-  auto testing_set_header_page_guard = testing_set_bpm_->FetchPageRead(HEADER_PAGE_ID);
-  auto testing_set_header_page = testing_set_header_page_guard.As<DistributionDataSetHeaderPage>();
+  auto testing_set_header_page = ctx != nullptr && !is_read ? [&]() {
+    if (ctx->testing_set_header_page_.has_value()) {
+      return ctx->testing_set_header_page_.value().template As<DistributionDataSetHeaderPage>();
+    }
+    ctx->testing_set_header_page_ = testing_set_bpm_->FetchPageWrite(testing_set_header_page_id_);
+    return ctx->testing_set_header_page_.value().template As<DistributionDataSetHeaderPage>();
+  }() : [&]() {
+    return ctx != nullptr && ctx->testing_set_header_page_.has_value() ?
+           ctx->testing_set_header_page_.value().template As<DistributionDataSetHeaderPage>()
+           : testing_set_bpm_->FetchPageRead(testing_set_header_page_id_).template As<DistributionDataSetHeaderPage>();
+  }();
 
   return training_set_header_page->IsEmpty() && testing_set_header_page->IsEmpty();
 }
@@ -191,36 +210,30 @@ auto DISTRIBUTION_DATASET_MANAGER_TYPE::IsTrainingSetMatchTestingSet() -> bool {
 
 DISTRIBUTION_DATASET_TEMPLATE
 auto DISTRIBUTION_DATASET_MANAGER_TYPE::GenerateDistributionDataset(int size, float ratio) -> bool {
-  {
-    std::scoped_lock<std::mutex> empty_latch(this->empty_mutex_);
+  DistributionDataSetContext ctx;
+  if (IsEmpty(&ctx, false)) {
+    // Allocate directory page for training set and testing set
+    auto training_set_header_page = ctx.training_set_header_page_->template AsMut<DistributionDataSetHeaderPage>();
+    auto training_set_directory_page_guard =
+        training_set_bpm_->NewPageGuarded(&training_set_header_page->directory_start_page_id_);
 
-    if (IsEmpty()) {
-      // Allocate directory page for training set and testing set
-      auto training_set_header_page_guard = training_set_bpm_->FetchPageWrite(training_set_header_page_id_);
-      auto training_set_header_page = training_set_header_page_guard.template AsMut<DistributionDataSetHeaderPage>();
-      auto training_set_directory_page_guard =
-          training_set_bpm_->NewPageGuarded(&training_set_header_page->directory_start_page_id_);
-
-      auto testing_set_header_page_guard = testing_set_bpm_->FetchPageWrite(testing_set_header_page_id_);
-      auto testing_set_header_page = testing_set_header_page_guard.template AsMut<DistributionDataSetHeaderPage>();
-      auto testing_set_directory_page_guard =
-          testing_set_bpm_->NewPageGuarded(&testing_set_header_page->directory_start_page_id_);
-
-      if (training_set_header_page->directory_start_page_id_ == INVALID_PAGE_ID
-          || testing_set_header_page->directory_start_page_id_ == INVALID_PAGE_ID) {
-        LOG_DEBUG("Allocate directory page for training set and testing set failed.");
-        return false;
-      }
-
-      // Initialize the directory page
-      auto training_set_directory_page =
-          training_set_directory_page_guard.template AsMut<DistributionDataSetDirectoryPage>();
-      training_set_directory_page->Init(directory_page_max_size_);
-
-      auto testing_set_directory_page =
-          testing_set_directory_page_guard.template AsMut<DistributionDataSetDirectoryPage>();
-      testing_set_directory_page->Init(directory_page_max_size_);
+    auto testing_set_header_page = ctx.testing_set_header_page_->template AsMut<DistributionDataSetHeaderPage>();
+    auto testing_set_directory_page_guard =
+        testing_set_bpm_->NewPageGuarded(&testing_set_header_page->directory_start_page_id_);
+    if (training_set_header_page->directory_start_page_id_ == INVALID_PAGE_ID
+    || testing_set_header_page->directory_start_page_id_ == INVALID_PAGE_ID) {
+      LOG_DEBUG("Allocate directory page for training set and testing set failed.");
+      return false;
     }
+
+    // Initialize the directory page
+    auto training_set_directory_page =
+        training_set_directory_page_guard.template AsMut<DistributionDataSetDirectoryPage>();
+    training_set_directory_page->Init(directory_page_max_size_);
+
+    auto testing_set_directory_page =
+        testing_set_directory_page_guard.template AsMut<DistributionDataSetDirectoryPage>();
+    testing_set_directory_page->Init(directory_page_max_size_);
   }
 
   // Generate training set and testing set data
@@ -266,37 +279,50 @@ auto DISTRIBUTION_DATASET_MANAGER_TYPE::GenerateDistributionDataset(int size, fl
 
   // Store training set data
   for (int current = 0; current < static_cast<int>(static_cast<float>(size) * ratio); ++current) {
-    Store(true, &training_set_data[current * this->dimension_]);
+    Store(true, &training_set_data[current * this->dimension_], &ctx);
   }
 
   // Store testing set data
   for (int current = 0; current < static_cast<int>(static_cast<float>(size) * (1 - ratio)); ++current) {
-    Store(false, &testing_set_data[current * this->dimension_]);
+    Store(false, &testing_set_data[current * this->dimension_], &ctx);
   }
 
   return true;
 }
 
 DISTRIBUTION_DATASET_TEMPLATE
-auto DISTRIBUTION_DATASET_MANAGER_TYPE::Store(bool is_training_set, ValueType *distribution) -> RID {
-  DistributionDataSetContext directory_ctx;
-  DistributionDataSetContext data_ctx;
+auto DISTRIBUTION_DATASET_MANAGER_TYPE::Store(bool is_training_set, ValueType *distribution, DistributionDataSetContext *ctx) -> RID {
+  DistributionDataSetContext dataset_ctx;
 
   // Judge data set type and locate the target directory page
   auto bpm = is_training_set ? training_set_bpm_ : testing_set_bpm_;
   auto header_page_id = is_training_set ? training_set_header_page_id_ : testing_set_header_page_id_;
-  auto header_page_guard = bpm->FetchPageWrite(header_page_id);
-  auto header_page = header_page_guard.template AsMut<DistributionDataSetHeaderPage>();
+  auto header_page = is_training_set ?
+      [&]() {
+        if (ctx != nullptr && ctx->training_set_header_page_.has_value()) {
+          return ctx->training_set_header_page_->template AsMut<DistributionDataSetHeaderPage>();
+        }
+        dataset_ctx.training_set_header_page_ = bpm->FetchPageWrite(header_page_id);
+        return dataset_ctx.training_set_header_page_->template AsMut<DistributionDataSetHeaderPage>();
+  }() :
+      [&]() {
+        if (ctx != nullptr && ctx->testing_set_header_page_.has_value()) {
+          return ctx->testing_set_header_page_->template AsMut<DistributionDataSetHeaderPage>();
+        }
+        dataset_ctx.testing_set_header_page_ = bpm->FetchPageWrite(header_page_id);
+        return dataset_ctx.testing_set_header_page_->template AsMut<DistributionDataSetHeaderPage>();
+  }();
+
   auto directory_page_guard = bpm->FetchPageWrite(header_page->directory_start_page_id_);
-  directory_ctx.write_set_.emplace_back(std::move(directory_page_guard));
+  dataset_ctx.write_set_.emplace_back(std::move(directory_page_guard));
 
   // Locate the last of the directory page
-  auto directory_page = directory_ctx.write_set_.back().template AsMut<DistributionDataSetDirectoryPage>();
+  auto directory_page = dataset_ctx.write_set_.back().template AsMut<DistributionDataSetDirectoryPage>();
   while (directory_page->next_page_id_ != INVALID_PAGE_ID) {
     directory_page_guard = bpm->FetchPageWrite(directory_page->next_page_id_);
-    directory_ctx.write_set_.pop_front();
-    directory_ctx.write_set_.emplace_back(std::move(directory_page_guard));
-    directory_page = directory_ctx.write_set_.back().template AsMut<DistributionDataSetDirectoryPage>();
+    dataset_ctx.write_set_.pop_front();
+    dataset_ctx.write_set_.emplace_back(std::move(directory_page_guard));
+    directory_page = dataset_ctx.write_set_.back().template AsMut<DistributionDataSetDirectoryPage>();
   }
 
   // Update the directory page
@@ -307,9 +333,10 @@ auto DISTRIBUTION_DATASET_MANAGER_TYPE::Store(bool is_training_set, ValueType *d
       throw Exception("Allocate directory page failed");
     }
     directory_page_guard = directory_page_basic_guard.UpgradeWrite();
-    directory_ctx.write_set_.emplace_back(std::move(directory_page_guard));
-    directory_page = directory_ctx.write_set_.back().AsMut<DistributionDataSetDirectoryPage>();
+    dataset_ctx.write_set_.emplace_back(std::move(directory_page_guard));
+    directory_page = dataset_ctx.write_set_.back().AsMut<DistributionDataSetDirectoryPage>();
     directory_page->Init(directory_page_max_size_);
+    dataset_ctx.write_set_.pop_front();
   }
 
   // Store the data with multi-pages
@@ -319,16 +346,16 @@ auto DISTRIBUTION_DATASET_MANAGER_TYPE::Store(bool is_training_set, ValueType *d
     throw Exception("Allocate data page for data set failed");
   }
 
-  data_ctx.write_set_.emplace_back(data_page_guard.UpgradeWrite());
-  DataPage *data_page = data_ctx.write_set_.back().template AsMut<DataPage>();
+  dataset_ctx.write_set_.emplace_front(data_page_guard.UpgradeWrite());
+  DataPage *data_page = dataset_ctx.write_set_.front().template AsMut<DataPage>();
   data_page->Init(this->data_page_max_size_);
   
   auto current_data_page_id = data_page_id;
   DataPage *current_data_page = data_page;
   
   auto start_data_page_id = data_page_id;
-  std::list<page_id_t > data_page_id_list;
-  data_page_id_list.emplace_back(data_page_id);
+  std::deque<page_id_t > data_page_id_list;
+  data_page_id_list.emplace_front(data_page_id);
 
 
   auto slot = -1;
@@ -338,7 +365,6 @@ auto DISTRIBUTION_DATASET_MANAGER_TYPE::Store(bool is_training_set, ValueType *d
     if (dimension_ - current_size > this->data_page_max_size_) {
       memcpy(reinterpret_cast<char *>(current_data_page->array_), reinterpret_cast<char *>(&distribution[current_size]),
              sizeof(ValueType) * this->data_page_max_size_);
-
 
       current_data_page->SetSize(this->data_page_max_size_);
 
@@ -353,7 +379,7 @@ auto DISTRIBUTION_DATASET_MANAGER_TYPE::Store(bool is_training_set, ValueType *d
         while (!data_page_id_list.empty()) {
           // Delete current page
           if (data_page_id_list.front() == current_data_page_id) {
-            data_ctx.write_set_.pop_front();
+            dataset_ctx.write_set_.pop_front();
           }
 
           bpm->DeletePage(data_page_id_list.front());
@@ -364,8 +390,8 @@ auto DISTRIBUTION_DATASET_MANAGER_TYPE::Store(bool is_training_set, ValueType *d
       }
 
       current_data_page->SetNextPageId(data_page_id);
-      data_ctx.write_set_.emplace_back(data_page_guard.UpgradeWrite());
-      data_page = data_ctx.write_set_.back().template AsMut<DataPage>();
+      dataset_ctx.write_set_.emplace_front(data_page_guard.UpgradeWrite());
+      data_page = dataset_ctx.write_set_.front().template AsMut<DataPage>();
       data_page->Init(this->data_page_max_size_);
       
       // Update the current page
@@ -375,13 +401,10 @@ auto DISTRIBUTION_DATASET_MANAGER_TYPE::Store(bool is_training_set, ValueType *d
       memcpy(reinterpret_cast<char *>(current_data_page->array_), reinterpret_cast<char *>(&distribution[current_size]),
              sizeof(ValueType) * (dimension_ - current_size));
       current_data_page->SetSize(dimension_ - current_size);
-
     }
-
-    data_ctx.write_set_.pop_front();
   }
 
-  return {directory_ctx.write_set_.back().PageId(), static_cast<uint32_t>(slot)};
+  return {dataset_ctx.write_set_.back().PageId(), static_cast<uint32_t>(slot)};
 }
 
 DISTRIBUTION_DATASET_TEMPLATE
@@ -535,7 +558,8 @@ auto DISTRIBUTION_DATASET_MANAGER_TYPE::GetDistributionData(bool is_training_set
 
 DISTRIBUTION_DATASET_TEMPLATE
 auto DISTRIBUTION_DATASET_MANAGER_TYPE::Delete(bool is_training_set, page_id_t directory_page_id, int index) -> bool {
-  DistributionDataSetContext directory_ctx, data_ctx;
+  DistributionDataSetContext directory_ctx;
+  DistributionDataSetContext data_ctx;
   auto bpm = is_training_set ? training_set_bpm_ : testing_set_bpm_;
   auto header_page_id = is_training_set ? training_set_header_page_id_ : testing_set_header_page_id_;
 

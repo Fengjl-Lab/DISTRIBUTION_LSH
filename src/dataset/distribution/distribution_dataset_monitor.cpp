@@ -1,7 +1,7 @@
 //===----------------------------------------------------
 //                    DISTRIBUTION_LSH
 // Created by chenjunhao on 2024/3/13.
-// src/dataset/distribution/dsitribution_dataset_monitor.cpp
+// src/dataset/distribution/distribution_dataset_monitor.cpp
 //
 //===-----------------------------------------------------
 
@@ -251,7 +251,7 @@ auto DISTRIBUTION_DATASET_MONITOR_TYPE::GenerateDataSet(distribution_lsh::DataSe
                                                         normalization_type,
                                                         int dimension,
                                                         float param1, float param2,
-                                                        int size, float ratio) -> int {
+                                                        int size, float ratio, file_id_t *training_set_file_id_ptr) -> int {
 
   auto training_set_file_id =
       GenerateFileIdentification(training_set_directory_name_, FileType::DISTRIBUTION_DATASET_FILE);
@@ -313,7 +313,7 @@ auto DISTRIBUTION_DATASET_MONITOR_TYPE::GenerateDataSet(distribution_lsh::DataSe
         relation_directory_name_ + "/" + std::to_string(relation_file_id) + RELATION_FILE_SUFFIX);
     auto relation_next_page_id = GetNextPageId(relation_disk_manager.get(), relation_directory_name_ + "/" + std::to_string(relation_file_id) + RELATION_FILE_SUFFIX);
     auto relation_bpm = std::make_shared<BufferPoolManager>(pool_size_, relation_disk_manager, k_, nullptr, relation_next_page_id);
-    auto relation_manager = std::make_shared<RelationManager<TrainingSetToTestingSetUnion>>("relation manager",
+    auto relation_manager = std::make_shared<RelationManager<TrainingSetToTestingSetUnion>>("relation manager-" + std::to_string(relation_file_id) ,
                                                                            relation_directory_name_,
                                                                            relation_bpm,
                                                                            RelationFileType::TRAINING_SET_TO_TESTING_SET,
@@ -324,6 +324,11 @@ auto DISTRIBUTION_DATASET_MONITOR_TYPE::GenerateDataSet(distribution_lsh::DataSe
 
   auto index = 0;
   relation_managers_.begin()->second->Insert({.map_{training_set_file_id, testing_set_file_id}}, &index);
+
+  // Set training set file id
+  if (training_set_file_id_ptr != nullptr) {
+    *training_set_file_id_ptr = training_set_file_id;
+  }
 
   return current_index_++;
 }
@@ -336,7 +341,8 @@ auto DISTRIBUTION_DATASET_MONITOR_TYPE::GetDataSetIndex(DataSetType data_set_typ
                                                         float param1,
                                                         float param2,
                                                         int size,
-                                                        float ratio) -> int {
+                                                        float ratio,
+                                                        file_id_t *training_set_file_id_ptr) -> int {
   std::unique_lock<std::mutex> lock(latch_);
   for (const auto &[index, manager] : dataset_managers_)  {
     if (manager->GetDataSetType() == data_set_type
@@ -353,12 +359,17 @@ auto DISTRIBUTION_DATASET_MONITOR_TYPE::GetDataSetIndex(DataSetType data_set_typ
         }
       }
 
+      // Set training set file id
+      if (training_set_file_id_ptr != nullptr) {
+        *training_set_file_id_ptr = manager->GetTrainingSetFileID();
+      }
+
       return index;
     }
   }
 
   // Create a new dataset if not found
-  return GenerateDataSet(data_set_type, distribution_type, normalization_type, dimension, param1, param2, size, ratio);
+  return GenerateDataSet(data_set_type, distribution_type, normalization_type, dimension, param1, param2, size, ratio, training_set_file_id_ptr);
 }
 
 DISTRIBUTION_DATASET_TEMPLATE
