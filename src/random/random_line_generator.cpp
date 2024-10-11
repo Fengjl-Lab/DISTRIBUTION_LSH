@@ -69,7 +69,7 @@ auto RandomLineGenerator<ValueType>::Normalization(std::shared_ptr<ValueType[]> 
         return data;
       }
 
-#pragma omp parallel default(none) shared(data, dimension, norm)
+#pragma omp parallel for shared(data, dimension, norm)
       for (int i = 0; i < dimension; ++i) {
         data[i] /= norm;
       }
@@ -85,7 +85,7 @@ auto RandomLineGenerator<ValueType>::Normalization(std::shared_ptr<ValueType[]> 
 
       norm = std::sqrt(norm);
 
-#pragma omp parallel default(none) shared(data, dimension, norm)
+#pragma omp parallel for default(none) shared(data, dimension, norm)
       for (int i = 0; i < dimension; ++i) {
         data[i] /= norm;
       }
