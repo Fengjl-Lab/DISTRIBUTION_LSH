@@ -10,6 +10,7 @@
 
 #include <dataset/distribution/distribution_dataset_processor.h>
 #include <file/random_line_monitor.h>
+#include <common/util/file.h>
 #include <gtest/gtest.h>
 
 namespace distribution_lsh {
@@ -39,18 +40,20 @@ TEST_F(RandomLineMonitorTest, RandomProjectionTest1) {
       DistributionType::UNIFORM,
       NormalizationType::MIN_MAX,
       params.get());
+  std::shared_ptr<std::vector<RID>> rids = std::make_shared<std::vector<RID>>(100);
   for (int i = 0; i < 100; ++i) {
-    auto result = rlm_->RandomProjection(
-        100,
-        {data, data.get() + i * 100},
-        RandomLineDistributionType::GAUSSIAN,
-        RandomLineNormalizationType::NONE,
-        1,
-        20,
-        0xFFFFUL,
-        RID(0, i));
+    rids->data()[i] = RID(0, i);
   }
-
+  rlm_->RandomProjection(
+      100,
+      data,
+      rids,
+      RandomLineDistributionType::GAUSSIAN,
+      RandomLineNormalizationType::NONE,
+      100,
+      20,
+      GetHashValue("training_set_file_id")
+  );
   rlm_->List();
 }
 
