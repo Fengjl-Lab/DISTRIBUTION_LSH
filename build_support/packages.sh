@@ -66,7 +66,7 @@ install_mac() {
   brew ls --versions git || brew install git
   (brew ls --versions llvm | grep 14) || brew install llvm@14
   brew ls --versions libelf || brew install libelf
-  brew ls --versions openmp || brew install libomp
+  brew ls --versions libomp || brew install libomp
 }
 
 install_linux() {
@@ -76,7 +76,7 @@ install_linux() {
   apt-get -y install \
       cmake \
       build-essential \
-      openmp
+      libomp
 #      clang-14 \
 #      clang-format-14 \
 #      clang-tidy-14 \
