@@ -20,7 +20,7 @@ class BasicPageGuard {
  public:
   BasicPageGuard() = default;
 
-  BasicPageGuard(BufferPoolManager *bpm, std::shared_ptr<Page> page) : bpm_(bpm), page_(std::move(page)) {}
+  BasicPageGuard(BufferPoolManager *bpm, std::shared_ptr<Page> page) : bpm_(bpm), page_(std::move(page)) { is_dirty_ = page_->IsDirty(); }
 
   BasicPageGuard(const BasicPageGuard &) = delete;
   auto operator=(const BasicPageGuard &) = delete;
@@ -89,7 +89,7 @@ class BasicPageGuard {
 class ReadPageGuard {
  public:
   ReadPageGuard() = default;
-  ReadPageGuard(BufferPoolManager *bpm, std::shared_ptr<Page> page) : guard_(bpm, std::move(page)) { guard_.page_->RLatch(); }
+  ReadPageGuard(BufferPoolManager *bpm, std::shared_ptr<Page>&& page) : guard_(bpm, std::move(page)) { guard_.page_->RLatch(); }
   ReadPageGuard(const ReadPageGuard &) = delete;
   auto operator=(const ReadPageGuard &) -> ReadPageGuard & = delete;
 
@@ -129,7 +129,7 @@ class ReadPageGuard {
 class WritePageGuard {
  public:
   WritePageGuard() = default;
-  WritePageGuard(BufferPoolManager *bpm, std::shared_ptr<Page> page) : guard_(bpm, std::move(page)) { guard_.page_->WLatch(); }
+  WritePageGuard(BufferPoolManager *bpm, std::shared_ptr<Page>&& page) : guard_(bpm, std::move(page)) { guard_.page_->WLatch(); }
   WritePageGuard(const WritePageGuard &) = delete;
   auto operator=(const WritePageGuard &) -> WritePageGuard & = delete;
 
