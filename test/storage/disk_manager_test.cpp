@@ -51,6 +51,7 @@ TEST_F(DiskManagerTest, ReadWritePageTest) {
 }
 
 // NOLINTNEXTLINE
+#ifdef LOG_FILE_NEEDED
 TEST_F(DiskManagerTest, ReadWriteLogTest) {
   char buf[16] = {0};
   char data[16] = {0};
@@ -66,6 +67,7 @@ TEST_F(DiskManagerTest, ReadWriteLogTest) {
 
   dm.ShutDown();
 }
+#endif
 
 // NOLINTNEXTLINE
 TEST_F(DiskManagerTest, ThrowBadFileTest) { EXPECT_THROW(DiskManager("dev/null\\/foo/bar/baz/test.db"), Exception); }

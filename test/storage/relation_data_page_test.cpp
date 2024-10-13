@@ -47,21 +47,21 @@ TEST(RelationDataPageTest, DeleteTest) {
   ASSERT_EQ(data_page->GetNullSlotStart(), 7);
   ASSERT_EQ(data_page->GetEndOfArray(), 10);
   ASSERT_EQ(data_page->GetSize(), 9);
-  ASSERT_EQ(data_page->Get(7).next_null_slot_, -1);
+  ASSERT_EQ(data_page->Get(7).next_null_slot_, INVALID_SLOT_VALUE);
 
   // Test 2
   data_page->Delete(5);
   ASSERT_EQ(data_page->GetNullSlotStart(), 5);
   ASSERT_EQ(data_page->GetEndOfArray(), 10);
   ASSERT_EQ(data_page->GetSize(), 8);
-  ASSERT_EQ(data_page->Get(7).next_null_slot_, -1);
+  ASSERT_EQ(data_page->Get(7).next_null_slot_, INVALID_SLOT_VALUE);
 
   // Test 3
   data_page->Delete(9);
   ASSERT_EQ(data_page->GetNullSlotStart(), 5);
   ASSERT_EQ(data_page->GetEndOfArray(), 10);
   ASSERT_EQ(data_page->GetSize(), 7);
-  ASSERT_EQ(data_page->Get(7).next_null_slot_, -1);
+  ASSERT_EQ(data_page->Get(7).next_null_slot_, INVALID_SLOT_VALUE);
 }
 
 } // namespace distribution_lsh
