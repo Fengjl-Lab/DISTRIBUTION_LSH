@@ -62,19 +62,17 @@ class RandomLineMonitor : public Monitor {
    * @param epsilon random line group epsilon, greater than 0 is valid
    * @param random_line_size random line group size
    * @param training_set_file_id training set file id corresponding to the data
-   * @param directory_page_id directory page id corresponding to the data
-   * @param slot slot number corresponding to the data
    * @return
    */
   auto RandomProjection(
       int dimension,
       std::shared_ptr<RandomLineValueType[] > data,
+      std::shared_ptr<std::vector<RID>> data_rids,
       RandomLineDistributionType distribution_type,
       RandomLineNormalizationType normalization_type,
       float epsilon,
       int random_line_size,
-      file_id_t training_set_file_id,
-      RID data_rid) -> std::shared_ptr<std::pair<file_id_t, RID> []>;
+      file_id_t training_set_file_id) -> std::shared_ptr<std::vector<std::vector<std::pair<file_id_t, RID>>>>;
 
 #ifdef BY_PASS_ACCESS_RANDOM_LINE_MANAGER
   /**
@@ -99,6 +97,8 @@ class RandomLineMonitor : public Monitor {
   void List() override;
 
  private:
+
+
   std::string b_plus_tree_directory_name_;
   std::string random_line_directory_name_;
   std::string relation_directory_name_;
