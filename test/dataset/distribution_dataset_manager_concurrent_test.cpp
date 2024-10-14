@@ -125,8 +125,8 @@ class DistributionDataSetManagerConcurrentTest : public ::testing::Test {
     params[0] = 0.0;
     params[1] = 1.0;
     std::string directory_name("fake directory");
-    file_id_t training_set_file_id = 0x8000 | GetHashValue("training set");
-    file_id_t testing_set_file_id = 0x8000 | GetHashValue("testing set");
+    file_id_t training_set_file_id = 0x8000'0000UL | GetHashValue("training set");
+    file_id_t testing_set_file_id = 0x8000'0000UL | GetHashValue("testing set");
     auto directory_page_max_size = 10;
     auto data_page_max_size = 10;
 

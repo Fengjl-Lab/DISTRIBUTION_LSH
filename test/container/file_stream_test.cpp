@@ -19,7 +19,7 @@ auto FileFullExTension(const std::string& file_name) -> std::string {
 }
 
 TEST(FileSystemTest, ListFileTest) {
-  std::string directory_name("/Users/chenjunhao/LSH/DISTRBUTION_LSH/raw_dataset/cifar10/cifar-10-batches-bin");
+  std::string directory_name("/Users/chenjunhao/LSH/DISTRIBUTION_LSH/raw_dataset/cifar10/cifar-10-batches-bin");
   for (const auto & file : std::filesystem::directory_iterator(directory_name)) {
     if (file.path().extension() == ".bin") {
       fmt::print("\033[31m Bin file path: {}, name: {} \033[0m\n", file.path().string(), file.path().filename().string());

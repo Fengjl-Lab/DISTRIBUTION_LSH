@@ -88,7 +88,7 @@ auto B_PLUS_TREE_TYPE::Get(const BPlusTreeKeyType &key, std::vector<BPlusTreeVal
     pos = pos != internal_page->GetSize() && std::abs(key - internal_page->KeyAt(pos + 1)) <= 1E-10 ? pos + 1 : pos;
 
     // Traverse to the leaf child
-    ctx.read_set_.emplace_back(std::move(bpm_->FetchPageRead(internal_page->ValueAt(pos))));
+    ctx.read_set_.emplace_back(bpm_->FetchPageRead(internal_page->ValueAt(pos)));
     current_page = ctx.read_set_.back().template As<BPlusTreePage>();
   }
 

@@ -271,12 +271,12 @@ RANDOM_LINE_MONITOR_TEMPLATE
 auto RANDOM_LINE_MONITOR_TYPE::RandomProjection(
     int dimension,
     std::shared_ptr<RandomLineValueType[]> data,
+    std::shared_ptr<std::vector<RID>> data_rids,
     RandomLineDistributionType distribution_type,
     RandomLineNormalizationType normalization_type,
     float epsilon,
     int random_line_size,
-    file_id_t training_set_file_id,
-    RID data_rid) -> std::shared_ptr<std::pair<file_id_t, RID>[]> {
+    file_id_t training_set_file_id) -> std::shared_ptr<std::vector<std::vector<std::pair<file_id_t, RID>>>> {
   // If the random line manager not exists
   {
     std::scoped_lock<std::mutex> lock(latch_);
@@ -326,60 +326,65 @@ auto RANDOM_LINE_MONITOR_TYPE::RandomProjection(
     random_line_manager->GenerateRandomLineGroup(random_line_size - random_line_manager->GetSize());
   }
 
-  std::shared_ptr<std::pair<file_id_t, RID>[]> result = std::make_shared<std::pair<file_id_t, RID>[]>(random_line_size);
+  // Prepare result
+  std::shared_ptr<std::vector<std::vector<std::pair<file_id_t, RID>>>> results =
+      std::make_shared<std::vector<std::vector<std::pair<file_id_t, RID>>>>
+      (data_rids->size(), std::vector<std::pair<file_id_t, RID>>(random_line_size));
   // Calculate the random projection value and insert it into the b plus tree
-  for (auto current_index = 0; current_index < random_line_size; current_index++) {
-    auto random_line_directory_page_id = INVALID_PAGE_ID;
-    auto random_line_slot = INVALID_SLOT;
-    auto random_projection_value =
-        random_line_manager->InnerProduct(current_index, &random_line_directory_page_id, &random_line_slot, data);
+  for (size_t data_rid_index = 0; data_rid_index < data_rids->size(); ++data_rid_index) {
+    for (auto current_index = 0; current_index < random_line_size; current_index++) {
+      auto random_line_directory_page_id = INVALID_PAGE_ID;
+      auto random_line_slot = INVALID_SLOT;
+      auto random_projection_value =
+          random_line_manager->InnerProduct(current_index, &random_line_directory_page_id, &random_line_slot, {data, data.get() + data_rid_index * dimension});
 
-    {
-      std::scoped_lock<std::mutex> lock(latch_);
-      if (b_plus_trees_.find({random_line_manager->GetFileId(), RID(random_line_directory_page_id, random_line_slot)})
-          == b_plus_trees_.end()) {
-        auto b_plus_tree_file_id = GenerateFileIdentification(b_plus_tree_directory_name_, FileType::B_PLUS_TREE_FILE);
-        auto b_plus_tree_disk_manager = std::make_shared<DiskManager>(
-            b_plus_tree_directory_name_ + "/" + std::to_string(b_plus_tree_file_id)
-                + B_PLUS_TREE_FILE_SUFFIX);
-        auto b_plus_tree_next_page_id = GetNextPageId(b_plus_tree_disk_manager.get(),
-                                                      b_plus_tree_directory_name_ + "/"
-                                                          + std::to_string(b_plus_tree_file_id)
-                                                          + B_PLUS_TREE_FILE_SUFFIX);
-        auto b_plus_tree_bpm = std::make_shared<BufferPoolManager>(
-            pool_size_,
-            b_plus_tree_disk_manager,
-            k_,
-            nullptr,
-            b_plus_tree_next_page_id);
-        b_plus_tree_bpms_.insert({b_plus_tree_file_id, b_plus_tree_bpm});
-        b_plus_trees_.insert({{random_line_manager->GetFileId(),
-                               RID(random_line_directory_page_id, random_line_slot)},
-                              std::make_shared<BPlusTree<BPlusTreeKeyType, BPlusTreeValueType>>(
-                                  std::to_string(random_line_manager->GetFileId()) + "-"
-                                      + std::to_string(random_line_directory_page_id) + "-"
-                                      + std::to_string(random_line_slot),
-                                  HEADER_PAGE_ID,
-                                  b_plus_tree_bpms_[b_plus_tree_file_id],
-                                  b_plus_tree_leaf_max_size_,
-                                  b_plus_tree_internal_max_size_)});
+      {
+        std::scoped_lock<std::mutex> lock(latch_);
+        if (b_plus_trees_.find({random_line_manager->GetFileId(), RID(random_line_directory_page_id, random_line_slot)})
+            == b_plus_trees_.end()) {
+          auto b_plus_tree_file_id = GenerateFileIdentification(b_plus_tree_directory_name_, FileType::B_PLUS_TREE_FILE);
+          auto b_plus_tree_disk_manager = std::make_shared<DiskManager>(
+              b_plus_tree_directory_name_ + "/" + std::to_string(b_plus_tree_file_id)
+                  + B_PLUS_TREE_FILE_SUFFIX);
+          auto b_plus_tree_next_page_id = GetNextPageId(b_plus_tree_disk_manager.get(),
+                                                        b_plus_tree_directory_name_ + "/"
+                                                            + std::to_string(b_plus_tree_file_id)
+                                                            + B_PLUS_TREE_FILE_SUFFIX);
+          auto b_plus_tree_bpm = std::make_shared<BufferPoolManager>(
+              pool_size_,
+              b_plus_tree_disk_manager,
+              k_,
+              nullptr,
+              b_plus_tree_next_page_id);
+          b_plus_tree_bpms_.insert({b_plus_tree_file_id, b_plus_tree_bpm});
+          b_plus_trees_.insert({{random_line_manager->GetFileId(),
+                                 RID(random_line_directory_page_id, random_line_slot)},
+                                std::make_shared<BPlusTree<BPlusTreeKeyType, BPlusTreeValueType>>(
+                                    std::to_string(random_line_manager->GetFileId()) + "-"
+                                        + std::to_string(random_line_directory_page_id) + "-"
+                                        + std::to_string(random_line_slot),
+                                    HEADER_PAGE_ID,
+                                    b_plus_tree_bpms_[b_plus_tree_file_id],
+                                    b_plus_tree_leaf_max_size_,
+                                    b_plus_tree_internal_max_size_)});
 
-        // Insert into the relation page
-        auto index{0};
-        relation_managers_.begin()->second->Insert({.map_{random_line_manager->GetFileId(),
-                                                          random_line_directory_page_id, random_line_slot,
-                                                          b_plus_tree_file_id, training_set_file_id}}, &index);
+          // Insert into the relation page
+          auto index{0};
+          relation_managers_.begin()->second->Insert({.map_{random_line_manager->GetFileId(),
+                                                            random_line_directory_page_id, random_line_slot,
+                                                            b_plus_tree_file_id, training_set_file_id}}, &index);
+        }
       }
-    }
 
-    auto b_plus_tree =
-        b_plus_trees_[{random_line_manager->GetFileId(), RID(random_line_directory_page_id, random_line_slot)}];
-    b_plus_tree->Insert(std::move(random_projection_value), data_rid);
-    result[current_index] =
-        {random_line_manager->GetFileId(), {random_line_directory_page_id, static_cast<uint32_t>(random_line_slot)}};
+      auto b_plus_tree =
+          b_plus_trees_[{random_line_manager->GetFileId(), RID(random_line_directory_page_id, random_line_slot)}];
+      b_plus_tree->Insert(std::move(random_projection_value), data_rids->data()[data_rid_index]);
+      results->data()[data_rid_index][current_index] =
+          {random_line_manager->GetFileId(), {random_line_directory_page_id, static_cast<uint32_t>(random_line_slot)}};
+    }
   }
 
-  return result;
+  return results;
 }
 
 RANDOM_LINE_MONITOR_TEMPLATE
@@ -393,7 +398,7 @@ void RANDOM_LINE_MONITOR_TYPE::List() {
     for (const auto &random_line_rid : *random_line_rids) {
       auto b_plus_tree =
           b_plus_trees_[{rlm.second->GetFileId(), random_line_rid}];
-      fmt::print("B PLUS TREE(random line file id: {}, rid: {})", rlm.second->GetFileId(), random_line_rid.Get());
+      fmt::print("B PLUS TREE(random line file id: {}, rid: {})\n", rlm.second->GetFileId(), random_line_rid.Get());
       std::cout << b_plus_tree->ToString();
     }
   }
@@ -419,10 +424,10 @@ auto RANDOM_LINE_MONITOR_TYPE::GetConstituencyPoints(
     throw new Exception(ExceptionType::INVALID_ARGUMENT, "Invalid random line rid, not related b plus tree");
   }
 
-  auto constituencys = std::make_shared<std::vector<RID>>();
+  auto constituency = std::make_shared<std::vector<RID>>();
   auto b_plus_tree = b_plus_trees_[{random_line_file_id, random_line_rid}];
-  b_plus_tree->RangeRead(random_projection_value - radius, random_projection_value + radius, constituencys.get());
-  return constituencys;
+  b_plus_tree->RangeRead(random_projection_value - radius, random_projection_value + radius, constituency.get());
+  return constituency;
 }
 #endif
 

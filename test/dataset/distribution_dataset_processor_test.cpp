@@ -130,7 +130,7 @@ TEST(DistributionDatasetProcessorTest, MNISTDataSet_MINIMAX) {
   auto dimension = 784;
   auto size = 1000;
   std::unique_ptr<float[]> distribution_dataset =
-      ddp.MNISTDistributionDataset(1000, "/Users/chenjunhao/LSH/DISTRBUTION_LSH/raw_dataset/mnist", NormalizationType::MIN_MAX);
+      ddp.MNISTDistributionDataset(1000, "/Users/chenjunhao/LSH/DISTRIBUTION_LSH/raw_dataset/mnist", NormalizationType::MIN_MAX);
 
   // Test distribution's property
   for (int i = 0; i < size; ++i) {

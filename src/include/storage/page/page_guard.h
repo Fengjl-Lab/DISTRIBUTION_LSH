@@ -20,7 +20,7 @@ class BasicPageGuard {
  public:
   BasicPageGuard() = default;
 
-  BasicPageGuard(BufferPoolManager *bpm, std::shared_ptr<Page> page) : bpm_(bpm), page_(std::move(page)) {}
+  BasicPageGuard(BufferPoolManager *bpm, std::shared_ptr<Page> page) : bpm_(bpm), page_(std::move(page)) { is_dirty_ = page_->IsDirty(); }
 
   BasicPageGuard(const BasicPageGuard &) = delete;
   auto operator=(const BasicPageGuard &) = delete;

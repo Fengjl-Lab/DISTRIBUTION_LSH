@@ -23,7 +23,7 @@ TEST(PageGuardTest, SampleTest) {
   const size_t k = 2;
 
   auto disk_manager = std::make_shared<DiskManagerUnlimitedMemory>();
-  auto bpm = std::make_shared<BufferPoolManager>(buffer_pool_size, disk_manager.get(), k);
+  auto bpm = std::make_shared<BufferPoolManager>(buffer_pool_size, disk_manager, k);
 
   page_id_t page_id_temp;
   auto page0 = bpm->NewPage(&page_id_temp);
